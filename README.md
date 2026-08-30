@@ -34,11 +34,10 @@ Release 1 is deliberately narrow:
 
 Release 1 does not include accounts, payments, a runtime database, native apps, full offline mode, or open-ended AI rulings for arbitrary user scenarios.
 
-## Current App Skeleton
+## Current App
 
-The first runnable web app lives in `web/`.
-
-It is a minimal mobile-first MarkRoom surface with:
+The first runnable web app lives at the repository root. It is a minimal
+mobile-first MarkRoom surface with:
 
 - an honest coming-soon page
 - a Next.js, TypeScript, and Tailwind scaffold
@@ -47,7 +46,6 @@ It is a minimal mobile-first MarkRoom surface with:
 Run it locally with:
 
 ```bash
-cd web
 npm install
 npm run dev
 ```
