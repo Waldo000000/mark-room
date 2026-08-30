@@ -34,12 +34,31 @@ Release 1 is deliberately narrow:
 
 Release 1 does not include accounts, payments, a runtime database, native apps, full offline mode, or open-ended AI rulings for arbitrary user scenarios.
 
+## Current App Skeleton
+
+The first runnable web app lives in `web/`.
+
+It is a minimal mobile-first MarkRoom surface with:
+
+- an honest coming-soon page
+- a Next.js, TypeScript, and Tailwind scaffold
+- a Vercel-ready path for production and pull-request previews
+
+Run it locally with:
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
 ## Recommended Stack
 
 Use a conventional, agent-friendly web stack:
 
 - Next.js, TypeScript, React
-- Tailwind CSS and shadcn/ui
+- Tailwind CSS
+- shadcn/ui when the first real component needs it
 - validated JSON corpus in Git
 - Zod schemas and build-time validation
 - Playwright for end-to-end and mobile viewport testing

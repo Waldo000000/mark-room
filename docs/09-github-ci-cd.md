@@ -18,10 +18,11 @@ Initial CI should run:
 - dependency install
 - lint
 - type check
-- unit tests
-- corpus validation
-- Playwright smoke tests
 - production build
+
+Unit tests, corpus validation, and Playwright smoke tests should be added as
+soon as the matching product slices exist. Until then, CI should not pretend to
+validate unavailable behavior.
 
 Add stronger checks as the app grows.
 
@@ -32,6 +33,12 @@ Use Vercel for deployment:
 - production deployment from `main`
 - preview deployment for each pull request
 - environment variables managed through Vercel
+
+For the current skeleton, import the GitHub repository into Vercel with:
+
+- root directory: `web`
+- install command: `npm ci`
+- build command: `npm run build`
 
 The production URL may be public during alpha, but the app should clearly represent the maturity and verification status of its content.
 
