@@ -1,0 +1,76 @@
+# MarkRoom
+
+MarkRoom is a mobile-first web app for learning and applying the Racing Rules of Sailing, starting with radio sailing and growing toward broader sailing use.
+
+The product teaches rules through authoritative explanations, animated scenario diagrams, structured rulings, and quizzes. Over time it should also help sailors construct or import real incidents, compare them with a curated corpus, and reason about which rules apply.
+
+## Repository Purpose
+
+This repository should be the durable source of truth for the project.
+
+Everything important belongs in Git:
+
+- product vision and scope
+- architecture decisions
+- corpus provenance
+- scenario schemas
+- agent instructions
+- testing expectations
+- backlog and phase definitions
+- deployment and workflow conventions
+
+ChatGPT, Codex, and other agent conversations are useful working rooms, but they are not authoritative project memory. When a durable decision is made in conversation, record it here.
+
+## Initial Product
+
+Release 1 is deliberately narrow:
+
+- mobile-first rules explorer
+- curated canonical scenarios for core boat-on-boat rules
+- keyframe-based animated scenario viewer
+- deterministic quiz mode over known scenarios
+- authoritative rules citations and provenance
+- explicit verification status for every scenario
+
+Release 1 does not include accounts, payments, a runtime database, native apps, full offline mode, or open-ended AI rulings for arbitrary user scenarios.
+
+## Recommended Stack
+
+Use a conventional, agent-friendly web stack:
+
+- Next.js, TypeScript, React
+- Tailwind CSS and shadcn/ui
+- validated JSON corpus in Git
+- Zod schemas and build-time validation
+- Playwright for end-to-end and mobile viewport testing
+- Vitest or the repo-selected unit test runner for pure domain logic
+- Vercel for production and pull-request preview deployments
+
+As of 2026-08-30, Next.js 16 is Active LTS and Next.js 15 is Maintenance LTS. The planning conversation mentioned Next.js 15, but new repo initialization should prefer the current Active LTS unless there is a concrete compatibility reason not to.
+
+## Start Here
+
+Read these files first:
+
+- [AGENTS.md](AGENTS.md)
+- [docs/00-vision.md](docs/00-vision.md)
+- [docs/02-roadmap.md](docs/02-roadmap.md)
+- [docs/03-architecture.md](docs/03-architecture.md)
+- [docs/08-dev-setup-windows-wsl.md](docs/08-dev-setup-windows-wsl.md)
+- [docs/12-initial-backlog.md](docs/12-initial-backlog.md)
+- [docs/13-non-goals.md](docs/13-non-goals.md)
+- [docs/14-source-notes.md](docs/14-source-notes.md)
+
+## Naming
+
+Working product name: **MarkRoom**
+
+Repository/package slug: **mark-room**
+
+The name is a working name, not final trademark clearance. It intentionally evokes the sailing concept of mark-room and the editor action of marking boat positions.
+
+## License Intent
+
+Application source code should use Apache-2.0.
+
+Corpus content, copied source text, official diagrams, and derived scenario data require separate licensing and provenance review. Do not assume that publicly visible World Sailing material can be republished wholesale.
