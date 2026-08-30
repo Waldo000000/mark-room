@@ -34,9 +34,9 @@ Use Vercel for deployment:
 - preview deployment for each pull request
 - environment variables managed through Vercel
 
-For the current skeleton, import the GitHub repository into Vercel with:
+For the current skeleton, import the GitHub repository into Vercel with the
+default root directory:
 
-- root directory: `web`
 - install command: `npm ci`
 - build command: `npm run build`
 
