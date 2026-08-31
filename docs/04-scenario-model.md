@@ -41,6 +41,18 @@ the wind comes from. A north wind is therefore `0`, while its flow arrow points
 south. Away from head-to-wind and dead-downwind ambiguity, tack facts are
 validated against each boat's heading and the wind direction.
 
+Each boat state also carries explicit sail state:
+
+- `side` is the side of the hull on which the sail lies
+- `trimDegrees` is the angle between the sail and the hull centreline, from
+  sheeted-in `0` to fully eased `90`
+- `luffing` selects a visibly wavy sail instead of a smooth loaded curve
+
+Sail state is explicit because trim depends on the actual moment being depicted,
+and because the sail side resolves tack when heading and wind alone are
+ambiguous. A port-tack fact requires the sail to lie to starboard, and a
+starboard-tack fact requires it to lie to port.
+
 ## Key Concepts
 
 A scenario contains:
@@ -53,6 +65,7 @@ A scenario contains:
 - boats with stable identities
 - discrete keyframes such as Position 1, 2, 3, 4
 - boat positions and headings at each keyframe
+- sail side, trim, and luffing state at each keyframe
 - optional course features: marks, zones, lines, boundaries, laylines
 - explicit physical or asserted facts: tack, overlap, zone entry, contact, course changes, hail events, penalties
 - structured ruling/findings

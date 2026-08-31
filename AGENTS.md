@@ -53,6 +53,11 @@ validated scenario record. A nonblank, responsive screenshot is not sufficient.
 Use browser assertions for machine-checkable geometry and inspect the result at
 phone and desktop sizes with sailing meaning in mind.
 
+Boat glyphs must use the established plan-view sailing-diagram convention:
+rounded hull silhouette, sail visibly offset to leeward, trim appropriate to the
+depicted point of sail, and a curved/wavy sail when luffing. Do not substitute a
+generic triangle, diamond, or navigation arrow for a boat.
+
 Every feature slice must also expose the smallest honest sailor-facing path in
 the deployed app that lets a domain user assess whether the product is moving
 in the right direction. Developer-only tooling or internal plumbing does not

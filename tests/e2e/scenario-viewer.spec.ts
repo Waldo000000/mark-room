@@ -44,9 +44,29 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
       'data-heading-degrees',
       String(state.headingDegrees),
     );
-    await expect(renderedBoat.locator('g')).toHaveAttribute(
+    await expect(renderedBoat.locator(':scope > g')).toHaveAttribute(
       'transform',
       `translate(${state.position.x} ${screenY}) rotate(${state.headingDegrees})`,
+    );
+
+    const glyph = renderedBoat.getByTestId('boat-glyph');
+    await expect(glyph).toHaveAttribute('data-sail-side', state.sail.side);
+    await expect(glyph).toHaveAttribute(
+      'data-trim-degrees',
+      String(state.sail.trimDegrees),
+    );
+    await expect(glyph).toHaveAttribute(
+      'data-luffing',
+      String(state.sail.luffing),
+    );
+
+    const sailRotation =
+      state.sail.side === 'port'
+        ? state.sail.trimDegrees
+        : -state.sail.trimDegrees;
+    await expect(glyph.getByTestId('boat-sail')).toHaveAttribute(
+      'transform',
+      `rotate(${sailRotation} 0 -3)`,
     );
   }
 
@@ -76,6 +96,12 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
   await expect(page.locator('html')).toHaveJSProperty(
     'scrollWidth',
     await page.locator('html').evaluate((element) => element.clientWidth),
+  );
+  await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
+    'port-starboard-diagram.png',
+    {
+      maxDiffPixelRatio: 0.02,
+    },
   );
   expect(runtimeErrors).toEqual([]);
 });

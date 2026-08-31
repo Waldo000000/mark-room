@@ -39,7 +39,12 @@
             "x": 70,
             "y": 45
           },
-          "headingDegrees": 315
+          "headingDegrees": 315,
+          "sail": {
+            "side": "port",
+            "trimDegrees": 16,
+            "luffing": false
+          }
         },
         {
           "boatId": "yellow",
@@ -47,7 +52,12 @@
             "x": 30,
             "y": 45
           },
-          "headingDegrees": 45
+          "headingDegrees": 45,
+          "sail": {
+            "side": "starboard",
+            "trimDegrees": 16,
+            "luffing": false
+          }
         }
       ]
     }

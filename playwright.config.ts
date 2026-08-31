@@ -7,6 +7,8 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? 'github' : 'list',
+  snapshotPathTemplate:
+    '{testDir}/{testFilePath}-snapshots/{arg}-{projectName}{ext}',
   use: {
     baseURL: 'http://127.0.0.1:3100',
     screenshot: 'only-on-failure',

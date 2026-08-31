@@ -42,7 +42,12 @@
             "x": 30,
             "y": 35
           },
-          "headingDegrees": 20
+          "headingDegrees": 20,
+          "sail": {
+            "side": "starboard",
+            "trimDegrees": 14,
+            "luffing": false
+          }
         },
         {
           "boatId": "bravo",
@@ -50,7 +55,12 @@
             "x": 45,
             "y": 38
           },
-          "headingDegrees": 340
+          "headingDegrees": 340,
+          "sail": {
+            "side": "port",
+            "trimDegrees": 14,
+            "luffing": false
+          }
         },
         {
           "boatId": "charlie",
@@ -58,7 +68,12 @@
             "x": 55,
             "y": 30
           },
-          "headingDegrees": 0
+          "headingDegrees": 0,
+          "sail": {
+            "side": "starboard",
+            "trimDegrees": 0,
+            "luffing": true
+          }
         }
       ]
     },
@@ -72,7 +87,12 @@
             "x": 43,
             "y": 53
           },
-          "headingDegrees": 20
+          "headingDegrees": 20,
+          "sail": {
+            "side": "starboard",
+            "trimDegrees": 14,
+            "luffing": false
+          }
         },
         {
           "boatId": "bravo",
@@ -80,7 +100,12 @@
             "x": 52,
             "y": 55
           },
-          "headingDegrees": 15
+          "headingDegrees": 15,
+          "sail": {
+            "side": "starboard",
+            "trimDegrees": 8,
+            "luffing": true
+          }
         },
         {
           "boatId": "charlie",
@@ -88,7 +113,12 @@
             "x": 58,
             "y": 48
           },
-          "headingDegrees": 0
+          "headingDegrees": 0,
+          "sail": {
+            "side": "port",
+            "trimDegrees": 0,
+            "luffing": true
+          }
         }
       ]
     }

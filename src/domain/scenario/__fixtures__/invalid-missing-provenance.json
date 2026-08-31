@@ -30,7 +30,12 @@
             "x": 5,
             "y": 5
           },
-          "headingDegrees": 0
+          "headingDegrees": 0,
+          "sail": {
+            "side": "starboard",
+            "trimDegrees": 0,
+            "luffing": true
+          }
         }
       ]
     }

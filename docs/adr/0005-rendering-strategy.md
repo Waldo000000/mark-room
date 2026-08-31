@@ -22,4 +22,9 @@ Tests must compare SVG geometry and labels to the validated record and assert
 sailing semantics such as wind flow, headings, and tack. Pixel presence alone
 does not validate a scenario diagram.
 
+Boat rendering follows the conventional plan view used in sailing rules
+diagrams: a narrow rounded hull and a separate sail line offset to leeward. Sail
+trim and luffing shape come from keyframe data rather than from decorative UI
+choices.
+
 The project does not make an ideological commitment to SVG. It commits to the simplest implementation that delivers the required user experience.

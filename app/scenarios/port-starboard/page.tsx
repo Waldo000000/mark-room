@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { BoatGlyph } from '@/src/components/scenario/boat-glyph';
 import validDevelopmentScenario from '@/src/domain/scenario/__fixtures__/valid-development-scenario.json';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
 import { scenarioSchema } from '@/src/domain/scenario/schema';
@@ -71,7 +72,10 @@ export default function PortStarboardScenarioPage() {
               </p>
             </div>
 
-            <div className="mt-3 aspect-square w-full overflow-hidden rounded-md border border-border bg-cyan-50 p-3 sm:p-5">
+            <div
+              className="mt-3 aspect-square w-full overflow-hidden rounded-md border border-border bg-cyan-50 p-3 sm:p-5"
+              data-testid="scenario-diagram"
+            >
               <svg
                 aria-labelledby="scenario-diagram-title"
                 className="size-full"
@@ -129,19 +133,9 @@ export default function PortStarboardScenarioPage() {
                       <g
                         transform={`translate(${state.position.x} ${screenY}) rotate(${state.headingDegrees})`}
                       >
-                        <path
-                          d="M 0 -9 L 4 5 L 0 8 L -4 5 Z"
-                          fill={boat.color ?? '#0f766e'}
-                          stroke="#0f172a"
-                          strokeWidth="0.8"
-                        />
-                        <line
-                          stroke="#ffffff"
-                          strokeWidth="0.7"
-                          x1="0"
-                          x2="0"
-                          y1="-7"
-                          y2="5"
+                        <BoatGlyph
+                          color={boat.color ?? '#0f766e'}
+                          sail={state.sail}
                         />
                       </g>
                       <text

@@ -38,6 +38,7 @@ output and assert machine-checkable geometry in Playwright:
 
 - wind source direction and arrow flow
 - boat positions and headings
+- standard hull silhouette plus sail side, trim angle, and luffing shape
 - tack facts implied by non-ambiguous heading and wind geometry
 - visible labels, findings, and rule references
 
@@ -48,6 +49,10 @@ valid DOM, and lack of horizontal overflow do not establish domain correctness.
 During rapid schema iteration, the deployed scenario view should expose the
 exact validated JSON driving the render so a reviewer can compare model and
 output directly.
+
+Commit a focused Playwright screenshot baseline when boat, sail, mark, or zone
+glyph geometry changes. Semantic assertions remain required because an approved
+pixel baseline can still encode a sailing mistake.
 
 ## Required Checks
 

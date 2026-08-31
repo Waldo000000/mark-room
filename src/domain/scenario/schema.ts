@@ -46,11 +46,20 @@ export const boatSchema = z
   })
   .strict();
 
+export const sailStateSchema = z
+  .object({
+    side: z.enum(['port', 'starboard']),
+    trimDegrees: z.number().gte(0).lte(90),
+    luffing: z.boolean(),
+  })
+  .strict();
+
 export const boatStateSchema = z
   .object({
     boatId: entityIdSchema,
     position: coordinateSchema,
     headingDegrees: headingDegreesSchema,
+    sail: sailStateSchema,
   })
   .strict();
 
@@ -578,12 +587,17 @@ export const scenarioSchema = z
       }
 
       if (fact.type === 'tack') {
-        const keyframe = scenario.keyframes.find(
+        const keyframeIndex = scenario.keyframes.findIndex(
           (candidate) => candidate.id === fact.atKeyframe,
         );
-        const boatState = keyframe?.boatStates.find(
+        const keyframe = scenario.keyframes[keyframeIndex];
+        const boatStateIndex = keyframe?.boatStates.findIndex(
           (state) => state.boatId === fact.boatId,
         );
+        const boatState =
+          boatStateIndex === undefined || boatStateIndex < 0
+            ? undefined
+            : keyframe.boatStates[boatStateIndex];
         const inferredTack = boatState
           ? inferTackFromHeading(
               boatState.headingDegrees,
@@ -596,6 +610,22 @@ export const scenarioSchema = z
             code: 'custom',
             path: ['facts', factIndex, 'tack'],
             message: `Tack conflicts with heading and wind: expected ${inferredTack}`,
+          });
+        }
+
+        const expectedSailSide = fact.tack === 'port' ? 'starboard' : 'port';
+        if (boatState && boatState.sail.side !== expectedSailSide) {
+          context.addIssue({
+            code: 'custom',
+            path: [
+              'keyframes',
+              keyframeIndex,
+              'boatStates',
+              boatStateIndex,
+              'sail',
+              'side',
+            ],
+            message: `${fact.tack} tack requires the sail to lie on the ${expectedSailSide} side`,
           });
         }
       }
@@ -663,6 +693,7 @@ export const scenarioSchema = z
 export type SailingArea = z.infer<typeof sailingAreaSchema>;
 export type Wind = z.infer<typeof windSchema>;
 export type Boat = z.infer<typeof boatSchema>;
+export type SailState = z.infer<typeof sailStateSchema>;
 export type BoatState = z.infer<typeof boatStateSchema>;
 export type Keyframe = z.infer<typeof keyframeSchema>;
 export type CourseFeature = z.infer<typeof courseFeatureSchema>;
