@@ -21,3 +21,13 @@ Planning implication:
 - Node.js release schedule: https://github.com/nodejs/release
 - Node.js releases page: https://nodejs.org/en/about/previous-releases
 
+## Sailing Diagram Convention
+
+Reviewed the World Sailing Call Book for Radio Sailing diagrams on 2026-08-31.
+They consistently use narrow rounded plan-view hulls and sails offset from the
+hull centreline; the preface states that wind is from the top unless indicated
+otherwise. MarkRoom follows that visual grammar with original SVG geometry and
+does not reproduce an official diagram.
+
+- World Sailing Call Book for Radio Sailing:
+  https://www.sailing.org/document/2021-2024-call-book-for-radio-sailing/

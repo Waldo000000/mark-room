@@ -30,6 +30,30 @@ Use Playwright for:
 - visual regressions around diagrams
 - PR smoke tests
 
+## Domain-Semantic Diagram Checks
+
+Scenario checks must prove more than successful rendering. For every changed
+diagram or renderer, compare the validated scenario record with the visible
+output and assert machine-checkable geometry in Playwright:
+
+- wind source direction and arrow flow
+- boat positions and headings
+- standard hull silhouette plus sail side, trim angle, and luffing shape
+- tack facts implied by non-ambiguous heading and wind geometry
+- visible labels, findings, and rule references
+
+Run those checks at phone and desktop sizes, retain screenshots on failure, and
+visually inspect the diagram with its sailing meaning in mind. A nonblank SVG,
+valid DOM, and lack of horizontal overflow do not establish domain correctness.
+
+During rapid schema iteration, the deployed scenario view should expose the
+exact validated JSON driving the render so a reviewer can compare model and
+output directly.
+
+Commit a focused Playwright screenshot baseline when boat, sail, mark, or zone
+glyph geometry changes. Semantic assertions remain required because an approved
+pixel baseline can still encode a sailing mistake.
+
 ## Required Checks
 
 Each PR should run:
@@ -70,6 +94,16 @@ Every PR description should include:
 - known gaps
 - screenshots for UI
 - corpus validation notes for data changes
+
+## Sailor-Facing Definition Of Done
+
+Every feature slice must expose a minimal, honest path in the deployed app that
+a sailor can use to assess the domain behavior and product direction. Internal
+schemas, infrastructure, and developer-only validators are necessary building
+blocks, but they are not done until the slice has a relevant user-facing proof.
+
+Development or unverified content must remain clearly labelled and must not be
+presented as canonical merely to satisfy this requirement.
 
 ## Corpus Validation
 

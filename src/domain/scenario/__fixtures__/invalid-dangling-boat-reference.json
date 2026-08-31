@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "0.1.0",
+  "id": "invalid-dangling-boat-reference",
+  "title": "Invalid development fixture",
+  "prompt": "This fixture must fail because a keyframe references an unknown boat.",
+  "context": {
+    "discipline": "general_rrs"
+  },
+  "sailingArea": {
+    "width": 10,
+    "height": 10
+  },
+  "wind": {
+    "fromDegrees": 0
+  },
+  "boats": [
+    {
+      "id": "declared-boat",
+      "label": "Declared boat"
+    }
+  ],
+  "keyframes": [
+    {
+      "id": "position-1",
+      "label": "Position 1",
+      "boatStates": [
+        {
+          "boatId": "unknown-boat",
+          "position": {
+            "x": 5,
+            "y": 5
+          },
+          "headingDegrees": 0,
+          "sail": {
+            "side": "starboard",
+            "trimDegrees": 0,
+            "luffing": true
+          }
+        }
+      ]
+    }
+  ],
+  "courseFeatures": [],
+  "facts": [],
+  "ruling": {
+    "findings": [
+      {
+        "id": "test-finding",
+        "subjectBoat": "declared-boat",
+        "findingType": "no_breach",
+        "ruleRefs": ["RRS test reference"],
+        "status": "definite"
+      }
+    ],
+    "conclusion": "Invalid development fixture."
+  },
+  "teachingText": "Invalid development fixture.",
+  "provenance": [
+    {
+      "sourceId": "synthetic-schema-fixture",
+      "sourceType": "other",
+      "extractionMethod": "manual",
+      "notes": "Invalid fixture used only by schema tests."
+    }
+  ],
+  "verification": {
+    "status": "unverified"
+  }
+}

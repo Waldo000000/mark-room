@@ -1,6 +1,8 @@
+import Link from 'next/link';
+
 const nextSteps = [
-  'Define the first scenario JSON schema and validation command.',
-  'Add one provenance-aware demo scenario from inspectable source notes.',
+  'Add the corpus directory and repository-wide validation command.',
+  'Add one provenance-aware scenario from inspectable source notes.',
   'Build the first real SVG scenario viewer from that data.',
 ];
 
@@ -11,16 +13,33 @@ export default function Home() {
         <p className="text-sm font-semibold uppercase text-muted-foreground">
           MarkRoom
         </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
+        <h1 className="mt-3 text-4xl font-semibold sm:text-5xl">
           Racing rules scenarios, carefully built.
         </h1>
         <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
           MarkRoom is a mobile-first learning app for the Racing Rules of
-          Sailing. The app scaffold is live; the scenario viewer, corpus, and
-          quizzes will appear here as they become verified product slices.
+          Sailing. The first scenario slice is now live; the full viewer,
+          corpus, and quizzes will appear here as they become verified product
+          slices.
         </p>
 
-        <div className="mt-10 rounded-lg border border-border bg-card p-5">
+        <section className="mt-10 border-y border-border py-6">
+          <p className="text-sm font-semibold">Available now</p>
+          <div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+              Inspect a port/starboard crossing rendered from validated,
+              provenance-aware scenario data.
+            </p>
+            <Link
+              href="/scenarios/port-starboard"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              View scenario
+            </Link>
+          </div>
+        </section>
+
+        <section className="mt-8">
           <h2 className="text-base font-semibold">Coming next</h2>
           <ol className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
             {nextSteps.map((step) => (
@@ -30,7 +49,7 @@ export default function Home() {
               </li>
             ))}
           </ol>
-        </div>
+        </section>
       </section>
     </main>
   );

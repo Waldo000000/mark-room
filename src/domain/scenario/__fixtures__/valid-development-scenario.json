@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "0.1.0",
+  "id": "development-port-starboard-crossing",
+  "title": "Port meets starboard",
+  "prompt": "Which boat must keep clear at Position 1?",
+  "context": {
+    "discipline": "radio_sailing",
+    "ruleSetVersion": "2025-2028"
+  },
+  "sailingArea": {
+    "width": 100,
+    "height": 100
+  },
+  "wind": {
+    "fromDegrees": 0
+  },
+  "boats": [
+    {
+      "id": "blue",
+      "label": "Blue",
+      "sailNumber": "01",
+      "color": "#2563EB"
+    },
+    {
+      "id": "yellow",
+      "label": "Yellow",
+      "sailNumber": "02",
+      "color": "#EAB308"
+    }
+  ],
+  "keyframes": [
+    {
+      "id": "position-1",
+      "label": "Position 1",
+      "boatStates": [
+        {
+          "boatId": "blue",
+          "position": {
+            "x": 70,
+            "y": 45
+          },
+          "headingDegrees": 315,
+          "sail": {
+            "side": "port",
+            "trimDegrees": 16,
+            "luffing": false
+          }
+        },
+        {
+          "boatId": "yellow",
+          "position": {
+            "x": 30,
+            "y": 45
+          },
+          "headingDegrees": 45,
+          "sail": {
+            "side": "starboard",
+            "trimDegrees": 16,
+            "luffing": false
+          }
+        }
+      ]
+    }
+  ],
+  "courseFeatures": [],
+  "facts": [
+    {
+      "id": "blue-tack",
+      "type": "tack",
+      "atKeyframe": "position-1",
+      "boatId": "blue",
+      "tack": "starboard"
+    },
+    {
+      "id": "yellow-tack",
+      "type": "tack",
+      "atKeyframe": "position-1",
+      "boatId": "yellow",
+      "tack": "port"
+    }
+  ],
+  "ruling": {
+    "findings": [
+      {
+        "id": "yellow-keeps-clear",
+        "atKeyframe": "position-1",
+        "subjectBoat": "yellow",
+        "findingType": "keep_clear",
+        "otherBoat": "blue",
+        "ruleRefs": ["RRS 10"],
+        "status": "definite",
+        "explanation": "Yellow is on port tack while Blue is on starboard tack.",
+        "provenanceRefs": ["world-sailing-rrs-2025-2028"]
+      }
+    ],
+    "conclusion": "Yellow, on port tack, must keep clear of Blue, on starboard tack."
+  },
+  "teachingText": "On opposite tacks, identify the starboard-tack boat first; the port-tack boat must keep clear.",
+  "provenance": [
+    {
+      "sourceId": "world-sailing-rrs-2025-2028",
+      "sourceType": "world_sailing_rule",
+      "title": "Racing Rules of Sailing 2025-2028",
+      "publisher": "World Sailing",
+      "url": "https://www.sailing.org/inside-world-sailing/rules-regulations/racingrules/",
+      "documentVersion": "2025-2028",
+      "accessedAt": "2026-08-31T00:00:00+10:00",
+      "pageOrSection": "Part 2, Section A, Rule 10",
+      "extractionMethod": "manual",
+      "notes": "The rule source is authoritative. The geometry and MarkRoom transcription remain unverified."
+    }
+  ],
+  "verification": {
+    "status": "unverified",
+    "notes": "The World Sailing source is authoritative; this MarkRoom transcription has not been human-verified."
+  }
+}

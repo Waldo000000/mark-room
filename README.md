@@ -40,6 +40,7 @@ The first runnable web app lives at the repository root. It is a minimal
 mobile-first MarkRoom surface with:
 
 - an honest coming-soon page
+- a first unverified sailing scenario rendered from validated data
 - a Next.js, TypeScript, and Tailwind scaffold
 - a Vercel-ready path for production and pull-request previews
 
@@ -48,6 +49,15 @@ Run it locally with:
 ```bash
 npm install
 npm run dev
+```
+
+Run the current CI checks locally with:
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
 ```
 
 ## Recommended Stack
