@@ -72,15 +72,21 @@ type Provenance = {
 
 A scenario can come from an official source and still have an unverified MarkRoom transcription.
 
-Use a separate verification record:
+Use a separate verification record. Reviewed records require both reviewer
+identity and timestamp; unverified records must not imply either kind of review:
 
 ```ts
-type Verification = {
-  status: "unverified" | "agent-reviewed" | "human-verified"
-  verifiedBy?: string
-  verifiedAt?: string
-  notes?: string
-}
+type Verification =
+  | {
+      status: "unverified"
+      notes?: string
+    }
+  | {
+      status: "agent-reviewed" | "human-verified"
+      verifiedBy: string
+      verifiedAt: string
+      notes?: string
+    }
 ```
 
 ## Licensing Guardrails

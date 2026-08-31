@@ -47,6 +47,11 @@ Every substantive PR should include appropriate verification:
 - visual or screenshot inspection for diagram changes
 - corpus validation for any data changes
 
+Every feature slice must also expose the smallest honest sailor-facing path in
+the deployed app that lets a domain user assess whether the product is moving
+in the right direction. Developer-only tooling or internal plumbing does not
+satisfy the definition of done by itself.
+
 If a test cannot be run, say so in the PR with the reason.
 
 ## Scenario And Corpus Rules

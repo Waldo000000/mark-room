@@ -71,6 +71,16 @@ Every PR description should include:
 - screenshots for UI
 - corpus validation notes for data changes
 
+## Sailor-Facing Definition Of Done
+
+Every feature slice must expose a minimal, honest path in the deployed app that
+a sailor can use to assess the domain behavior and product direction. Internal
+schemas, infrastructure, and developer-only validators are necessary building
+blocks, but they are not done until the slice has a relevant user-facing proof.
+
+Development or unverified content must remain clearly labelled and must not be
+presented as canonical merely to satisfy this requirement.
+
 ## Corpus Validation
 
 Corpus checks should fail CI when:

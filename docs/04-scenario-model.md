@@ -15,6 +15,27 @@ This applies to:
 
 Animation is derived from the model. Legal/rules reasoning operates on explicit scenario facts and keyframes, not on rendered pixels.
 
+## Initial Implementation
+
+The provisional `0.1.0` Zod schema lives in
+[`src/domain/scenario/schema.ts`](../src/domain/scenario/schema.ts). TypeScript
+types are inferred from that schema so runtime validation and application types
+cannot drift apart.
+
+Development fixtures live beside the schema tests. They are synthetic,
+unverified records and are not part of the canonical corpus. The corpus layout
+and repository-wide validation command belong to MR-003.
+
+The app exposes a minimal sailor-facing scenario at
+`/scenarios/port-starboard`. It renders directly from a validated fixture so a
+domain user can assess the diagram, finding, rule reference, provenance, and
+verification treatment in each deployed preview.
+
+Coordinates use abstract scenario units with the origin at the bottom-left.
+Positive `x` points right, positive `y` points up, and headings are degrees
+clockwise from north in the range `0 <= heading < 360`. Renderers are responsible
+for adapting that convention to their own coordinate systems.
+
 ## Key Concepts
 
 A scenario contains:
@@ -27,7 +48,7 @@ A scenario contains:
 - discrete keyframes such as Position 1, 2, 3, 4
 - boat positions and headings at each keyframe
 - optional course features: marks, zones, lines, boundaries, laylines
-- explicit facts: tack, overlap, zone entry, mark-room status, contact, course changes, hail events, penalties
+- explicit physical or asserted facts: tack, overlap, zone entry, contact, course changes, hail events, penalties
 - structured ruling/findings
 - explanatory teaching text
 - source provenance
@@ -78,6 +99,9 @@ Keep these separate:
 - facts: what physically happened or was asserted
 - findings: structured rules conclusions
 - explanation: human-readable teaching material
+
+Legal conclusions such as entitlement to mark-room belong in findings, not in
+the physical facts layer.
 
 Do not infer stronger findings than the authoritative source supports.
 

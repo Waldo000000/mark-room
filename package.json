@@ -9,14 +9,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "oxlint app",
+    "lint": "oxlint app src",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "format": "oxfmt"
   },
   "dependencies": {
     "next": "^16.0.0",
     "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.2.1",
@@ -27,7 +29,8 @@
     "oxlint": "1.76.0",
     "oxlint-tsgolint": "7.0.2001",
     "tailwindcss": "4.2.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^4.1.11"
   },
   "type": "module"
 }
