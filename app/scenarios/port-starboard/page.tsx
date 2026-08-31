@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import validDevelopmentScenario from '@/src/domain/scenario/__fixtures__/valid-development-scenario.json';
+import { formatCompassDirection } from '@/src/domain/scenario/geometry';
 import { scenarioSchema } from '@/src/domain/scenario/schema';
 
 export const metadata: Metadata = {
@@ -12,6 +13,26 @@ export const metadata: Metadata = {
 
 const scenario = scenarioSchema.parse(validDevelopmentScenario);
 const keyframe = scenario.keyframes[0];
+const tackFacts = scenario.facts.filter((fact) => fact.type === 'tack');
+const finding = scenario.ruling.findings[0];
+const subjectBoat = scenario.boats.find(
+  (boat) => boat.id === finding.subjectBoat,
+);
+const otherBoat = scenario.boats.find((boat) => boat.id === finding.otherBoat);
+const subjectTack = tackFacts.find(
+  (fact) => fact.boatId === finding.subjectBoat,
+);
+const otherTack = tackFacts.find((fact) => fact.boatId === finding.otherBoat);
+const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
+const scenarioJson = JSON.stringify(scenario, null, 2);
+const diagramTitle = `${tackFacts
+  .map((fact) => {
+    const boat = scenario.boats.find(
+      (candidate) => candidate.id === fact.boatId,
+    );
+    return `${boat?.label} on ${fact.tack} tack`;
+  })
+  .join(' and ')} approaching each other in wind from ${windDirection}`;
 
 export default function PortStarboardScenarioPage() {
   return (
@@ -45,7 +66,9 @@ export default function PortStarboardScenarioPage() {
           <section className="min-w-0">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-base font-semibold">{keyframe.label}</h2>
-              <p className="text-sm text-muted-foreground">Wind from north</p>
+              <p className="text-sm text-muted-foreground">
+                Wind from {windDirection}
+              </p>
             </div>
 
             <div className="mt-3 aspect-square w-full overflow-hidden rounded-md border border-border bg-cyan-50 p-3 sm:p-5">
@@ -54,10 +77,7 @@ export default function PortStarboardScenarioPage() {
                 className="size-full"
                 viewBox={`0 0 ${scenario.sailingArea.width} ${scenario.sailingArea.height}`}
               >
-                <title id="scenario-diagram-title">
-                  Blue on starboard tack and Yellow on port tack approaching
-                  each other
-                </title>
+                <title id="scenario-diagram-title">{diagramTitle}</title>
                 <defs>
                   <marker
                     id="wind-arrow"
@@ -71,15 +91,21 @@ export default function PortStarboardScenarioPage() {
                   </marker>
                 </defs>
 
-                <line
-                  markerEnd="url(#wind-arrow)"
-                  stroke="#155e75"
-                  strokeWidth="1"
-                  x1="10"
-                  x2="10"
-                  y1="18"
-                  y2="7"
-                />
+                <g
+                  data-testid="wind-indicator"
+                  data-wind-from-degrees={scenario.wind.fromDegrees}
+                  transform={`translate(10 12) rotate(${scenario.wind.fromDegrees})`}
+                >
+                  <line
+                    markerEnd="url(#wind-arrow)"
+                    stroke="#155e75"
+                    strokeWidth="1"
+                    x1="0"
+                    x2="0"
+                    y1="-5"
+                    y2="6"
+                  />
+                </g>
                 <text fill="#155e75" fontSize="4" x="15" y="12">
                   WIND
                 </text>
@@ -94,7 +120,12 @@ export default function PortStarboardScenarioPage() {
                     scenario.sailingArea.height - state.position.y;
 
                   return (
-                    <g key={boat.id}>
+                    <g
+                      key={boat.id}
+                      data-boat-id={boat.id}
+                      data-heading-degrees={state.headingDegrees}
+                      data-testid={`boat-${boat.id}`}
+                    >
                       <g
                         transform={`translate(${state.position.x} ${screenY}) rotate(${state.headingDegrees})`}
                       >
@@ -129,8 +160,7 @@ export default function PortStarboardScenarioPage() {
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {scenario.facts.map((fact) => {
-                if (fact.type !== 'tack') return null;
+              {tackFacts.map((fact) => {
                 const boat = scenario.boats.find(
                   (candidate) => candidate.id === fact.boatId,
                 );
@@ -156,12 +186,12 @@ export default function PortStarboardScenarioPage() {
                 Finding
               </p>
               <h2 className="mt-2 text-xl font-semibold">
-                Yellow must keep clear of Blue.
+                {subjectBoat?.label} must keep clear of {otherBoat?.label}.
               </h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Yellow is on port tack and Blue is on starboard tack. The
-                structured finding cites{' '}
-                {scenario.ruling.findings[0].ruleRefs.join(', ')}.
+                {subjectBoat?.label} is on {subjectTack?.tack} tack and{' '}
+                {otherBoat?.label} is on {otherTack?.tack} tack. The structured
+                finding cites {finding.ruleRefs.join(', ')}.
               </p>
             </section>
 
@@ -197,6 +227,24 @@ export default function PortStarboardScenarioPage() {
             </section>
           </aside>
         </div>
+
+        <section className="mt-10 border-t border-border pt-8">
+          <details open>
+            <summary className="cursor-pointer text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-4">
+              Scenario JSON
+            </summary>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+              This is the exact validated scenario record driving the diagram
+              and finding above.
+            </p>
+            <pre
+              className="mt-4 max-h-[42rem] overflow-auto rounded-md border border-border bg-slate-950 p-4 text-xs leading-5 text-slate-100"
+              data-testid="scenario-json"
+            >
+              {scenarioJson}
+            </pre>
+          </details>
+        </section>
       </div>
     </main>
   );

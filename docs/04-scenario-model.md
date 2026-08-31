@@ -36,6 +36,11 @@ Positive `x` points right, positive `y` points up, and headings are degrees
 clockwise from north in the range `0 <= heading < 360`. Renderers are responsible
 for adapting that convention to their own coordinate systems.
 
+`wind.fromDegrees` uses the same compass convention and records the direction
+the wind comes from. A north wind is therefore `0`, while its flow arrow points
+south. Away from head-to-wind and dead-downwind ambiguity, tack facts are
+validated against each boat's heading and the wind direction.
+
 ## Key Concepts
 
 A scenario contains:
@@ -44,6 +49,7 @@ A scenario contains:
 - title and short prompt/question
 - sailing context, such as radio sailing or general RRS
 - 2D sailing area
+- wind direction
 - boats with stable identities
 - discrete keyframes such as Position 1, 2, 3, 4
 - boat positions and headings at each keyframe
@@ -62,32 +68,32 @@ Use structured findings:
 
 ```ts
 type ScenarioFinding = {
-  id: string
-  atKeyframe?: string
-  subjectBoat: string
+  id: string;
+  atKeyframe?: string;
+  subjectBoat: string;
   findingType:
-    | "right_of_way"
-    | "keep_clear"
-    | "entitled_to_room"
-    | "entitled_to_mark_room"
-    | "must_give_room"
-    | "must_avoid_contact"
-    | "rule_applies"
-    | "rule_breached"
-    | "exonerated"
-    | "penalty"
-    | "no_breach"
-  otherBoat?: string
-  ruleRefs: string[]
-  status: "definite" | "conditional" | "not_determinable"
-  explanation?: string
-  provenanceRefs?: string[]
-}
+    | 'right_of_way'
+    | 'keep_clear'
+    | 'entitled_to_room'
+    | 'entitled_to_mark_room'
+    | 'must_give_room'
+    | 'must_avoid_contact'
+    | 'rule_applies'
+    | 'rule_breached'
+    | 'exonerated'
+    | 'penalty'
+    | 'no_breach';
+  otherBoat?: string;
+  ruleRefs: string[];
+  status: 'definite' | 'conditional' | 'not_determinable';
+  explanation?: string;
+  provenanceRefs?: string[];
+};
 
 type ScenarioRuling = {
-  findings: ScenarioFinding[]
-  conclusion: string
-}
+  findings: ScenarioFinding[];
+  conclusion: string;
+};
 ```
 
 This list is a hypothesis, not a frozen ontology. The corpus discovery process must test and refine it.

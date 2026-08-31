@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { inferTackFromHeading } from './geometry';
+
 export const SCENARIO_SCHEMA_VERSION = '0.1.0' as const;
 
 const entityIdSchema = z
@@ -18,6 +20,12 @@ const coordinateSchema = z
   .strict();
 
 const headingDegreesSchema = z.number().gte(0).lt(360);
+
+export const windSchema = z
+  .object({
+    fromDegrees: headingDegreesSchema,
+  })
+  .strict();
 
 export const sailingAreaSchema = z
   .object({
@@ -300,6 +308,7 @@ export const scenarioSchema = z
       })
       .strict(),
     sailingArea: sailingAreaSchema,
+    wind: windSchema,
     boats: z.array(boatSchema).min(1),
     keyframes: z.array(keyframeSchema).min(1),
     courseFeatures: z.array(courseFeatureSchema),
@@ -567,6 +576,29 @@ export const scenarioSchema = z
       } else {
         requireBoat(fact.boatId, 'boatId');
       }
+
+      if (fact.type === 'tack') {
+        const keyframe = scenario.keyframes.find(
+          (candidate) => candidate.id === fact.atKeyframe,
+        );
+        const boatState = keyframe?.boatStates.find(
+          (state) => state.boatId === fact.boatId,
+        );
+        const inferredTack = boatState
+          ? inferTackFromHeading(
+              boatState.headingDegrees,
+              scenario.wind.fromDegrees,
+            )
+          : null;
+
+        if (inferredTack && inferredTack !== fact.tack) {
+          context.addIssue({
+            code: 'custom',
+            path: ['facts', factIndex, 'tack'],
+            message: `Tack conflicts with heading and wind: expected ${inferredTack}`,
+          });
+        }
+      }
     });
 
     scenario.ruling.findings.forEach((finding, findingIndex) => {
@@ -629,6 +661,7 @@ export const scenarioSchema = z
   });
 
 export type SailingArea = z.infer<typeof sailingAreaSchema>;
+export type Wind = z.infer<typeof windSchema>;
 export type Boat = z.infer<typeof boatSchema>;
 export type BoatState = z.infer<typeof boatStateSchema>;
 export type Keyframe = z.infer<typeof keyframeSchema>;

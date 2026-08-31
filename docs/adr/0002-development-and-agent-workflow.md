@@ -23,7 +23,12 @@ Use:
 - ChatGPT as thinking room
 - GitHub as durable source of truth
 - a sailor-facing deployed proof as part of the definition of done for every feature slice
+- domain-semantic browser assertions for scenario diagram changes, alongside visual inspection
 
 ## Consequences
 
 Agents can work independently without sharing one fragile working tree. The repo must include enough docs and tests for an agent to resume from scratch.
+
+Diagram verification must compare rendered geometry and sailing conclusions to
+the validated scenario record. Rendering successfully is not, by itself, a
+passing result.

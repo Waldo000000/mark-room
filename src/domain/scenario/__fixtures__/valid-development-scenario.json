@@ -11,6 +11,9 @@
     "width": 100,
     "height": 100
   },
+  "wind": {
+    "fromDegrees": 0
+  },
   "boats": [
     {
       "id": "blue",
@@ -33,18 +36,18 @@
         {
           "boatId": "blue",
           "position": {
-            "x": 30,
-            "y": 45
-          },
-          "headingDegrees": 45
-        },
-        {
-          "boatId": "yellow",
-          "position": {
             "x": 70,
             "y": 45
           },
           "headingDegrees": 315
+        },
+        {
+          "boatId": "yellow",
+          "position": {
+            "x": 30,
+            "y": 45
+          },
+          "headingDegrees": 45
         }
       ]
     }

@@ -11,6 +11,8 @@ MarkRoom needs scenarios that can be displayed, tested, imported, queried, and r
 ## Decision
 
 Use a typed, keyframe-based 2D scenario model as the canonical representation.
+Wind source direction is explicit scenario data and uses degrees clockwise from
+north, matching boat headings.
 
 Use structured rulings and findings rather than a single `answer` field.
 

@@ -30,6 +30,25 @@ Use Playwright for:
 - visual regressions around diagrams
 - PR smoke tests
 
+## Domain-Semantic Diagram Checks
+
+Scenario checks must prove more than successful rendering. For every changed
+diagram or renderer, compare the validated scenario record with the visible
+output and assert machine-checkable geometry in Playwright:
+
+- wind source direction and arrow flow
+- boat positions and headings
+- tack facts implied by non-ambiguous heading and wind geometry
+- visible labels, findings, and rule references
+
+Run those checks at phone and desktop sizes, retain screenshots on failure, and
+visually inspect the diagram with its sailing meaning in mind. A nonblank SVG,
+valid DOM, and lack of horizontal overflow do not establish domain correctness.
+
+During rapid schema iteration, the deployed scenario view should expose the
+exact validated JSON driving the render so a reviewer can compare model and
+output directly.
+
 ## Required Checks
 
 Each PR should run:

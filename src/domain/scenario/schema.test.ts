@@ -115,4 +115,22 @@ describe('scenarioSchema', () => {
 
     expect(scenarioSchema.safeParse(scenario).success).toBe(false);
   });
+
+  it('rejects a tack fact that conflicts with heading and wind', () => {
+    const scenario = cloneValidFixture() as typeof validDevelopmentScenario;
+    scenario.keyframes[0].boatStates[0].headingDegrees = 45;
+
+    const result = scenarioSchema.safeParse(scenario);
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(
+        result.error.issues.some(
+          (issue) =>
+            issue.message ===
+            'Tack conflicts with heading and wind: expected port',
+        ),
+      ).toBe(true);
+    }
+  });
 });

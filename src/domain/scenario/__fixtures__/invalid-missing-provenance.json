@@ -10,6 +10,9 @@
     "width": 10,
     "height": 10
   },
+  "wind": {
+    "fromDegrees": 0
+  },
   "boats": [
     {
       "id": "test-boat",
