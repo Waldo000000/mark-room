@@ -20,11 +20,14 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: '.nvmrc'
           cache: npm
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Check project consistency
+        run: npm run check:project
 
       - name: Lint
         run: npm run lint

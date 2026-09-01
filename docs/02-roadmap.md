@@ -7,7 +7,7 @@ Goal: make the repo ready for parallel agents.
 Deliverables:
 
 - Next.js app scaffold with TypeScript
-- Tailwind and shadcn/ui setup
+- Tailwind setup; add shadcn/ui only when a real component needs it
 - linting, formatting, type checking, unit tests, and Playwright
 - corpus directory and initial Zod schemas
 - scenario fixture examples

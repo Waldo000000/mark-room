@@ -6,7 +6,11 @@ These are agent-ready slices for starting the project.
 
 ### MR-001: Scaffold App
 
-Create the initial Next.js TypeScript app with Tailwind, shadcn/ui, linting, formatting, Vitest or equivalent, and Playwright.
+Status: Complete via PR #2. shadcn/ui remains intentionally deferred until a
+real component needs it.
+
+Create the initial Next.js TypeScript app with Tailwind, linting, formatting,
+Vitest or equivalent, and Playwright.
 
 Done when:
 
@@ -16,6 +20,8 @@ Done when:
 - tests pass
 
 ### MR-002: Add Scenario Schema
+
+Status: Complete via PR #3.
 
 Create initial Zod schemas and TypeScript types for scenarios, boats, keyframes, course features, rulings, findings, provenance, and verification.
 
@@ -27,11 +33,13 @@ Done when:
 
 ### MR-003: Corpus Directory And Validation Command
 
+Status: Next foundation slice.
+
 Create corpus file structure and validation script.
 
 Done when:
 
-- `pnpm validate:corpus` validates all scenario/source files
+- `npm run validate:corpus` validates all scenario/source files
 - CI can call it
 - at least two tiny example scenarios exist
 
@@ -49,6 +57,9 @@ Done when:
 
 ### MR-011: Scenario Viewer Prototype
 
+Status: Partially implemented in PR #3; keyframe switching and generic course
+feature rendering remain.
+
 Render a keyframe scenario with SVG.
 
 Done when:
@@ -58,6 +69,8 @@ Done when:
 - Playwright verifies visible elements in mobile and desktop viewports
 
 ### MR-012: Structured Ruling Display
+
+Status: Partially implemented in PR #3 for one `keep_clear` finding.
 
 Display findings, rule refs, status, and explanation for a scenario.
 
@@ -114,6 +127,8 @@ Done when:
 
 ### MR-030: CI Workflow
 
+Status: Implemented except for corpus validation, which depends on MR-003.
+
 Add GitHub Actions for lint, type check, tests, corpus validation, Playwright smoke tests, and build.
 
 Done when:
@@ -124,6 +139,8 @@ Done when:
 
 ### MR-031: PR And Issue Templates
 
+Status: Complete via PR #2.
+
 Add PR and issue templates for feature work, bugs, corpus items, and ADRs.
 
 Done when:
@@ -132,6 +149,8 @@ Done when:
 - templates align with `AGENTS.md`
 
 ### MR-032: Vercel Deployment
+
+Status: Complete. Production and pull-request previews are operational.
 
 Connect Vercel production and PR previews.
 

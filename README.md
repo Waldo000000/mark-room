@@ -47,17 +47,22 @@ mobile-first MarkRoom surface with:
 Run it locally with:
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
+
+Node 24 and npm are the repository standard. `.nvmrc`, `package.json`, CI, and
+Vercel are kept aligned; native Windows, WSL2, macOS, and Linux are supported.
 
 Run the current CI checks locally with:
 
 ```bash
+npm run check:project
 npm run lint
 npm run typecheck
 npm test
 npm run build
+npm run test:e2e
 ```
 
 ## Recommended Stack
@@ -73,7 +78,8 @@ Use a conventional, agent-friendly web stack:
 - Vitest or the repo-selected unit test runner for pure domain logic
 - Vercel for production and pull-request preview deployments
 
-As of 2026-08-30, Next.js 16 is Active LTS and Next.js 15 is Maintenance LTS. The planning conversation mentioned Next.js 15, but new repo initialization should prefer the current Active LTS unless there is a concrete compatibility reason not to.
+As of 2026-09-01, Next.js 16 is Active LTS and Next.js 15 is Maintenance LTS.
+The repository uses Node 24 LTS for local development, CI, and Vercel.
 
 ## Start Here
 

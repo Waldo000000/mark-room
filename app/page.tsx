@@ -3,7 +3,7 @@ import Link from 'next/link';
 const nextSteps = [
   'Add the corpus directory and repository-wide validation command.',
   'Add one provenance-aware scenario from inspectable source notes.',
-  'Build the first real SVG scenario viewer from that data.',
+  'Turn the scenario prototype into a reusable keyframe viewer.',
 ];
 
 export default function Home() {
