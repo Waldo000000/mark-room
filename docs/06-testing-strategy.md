@@ -54,6 +54,11 @@ Commit a focused Playwright screenshot baseline when boat, sail, mark, or zone
 glyph geometry changes. Semantic assertions remain required because an approved
 pixel baseline can still encode a sailing mistake.
 
+Playwright runs against a production build, rather than the development server,
+so framework development controls and stale dev output cannot enter committed
+baselines. Run `npm run test:e2e -- --update-snapshots` deliberately when the
+reviewed diagram geometry changes, then inspect both phone and desktop images.
+
 ## Required Checks
 
 Each PR should run:
@@ -106,6 +111,9 @@ Development or unverified content must remain clearly labelled and must not be
 presented as canonical merely to satisfy this requirement.
 
 ## Corpus Validation
+
+Run `npm run validate:corpus` locally. The same command is a named CI step and
+validates every JSON record in `corpus/scenarios`.
 
 Corpus checks should fail CI when:
 

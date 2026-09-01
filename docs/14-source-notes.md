@@ -32,3 +32,14 @@ does not reproduce an official diagram.
 
 - World Sailing Call Book for Radio Sailing:
   https://www.sailing.org/document/2021-2024-call-book-for-radio-sailing/
+
+## First Corpus Rules Sources
+
+Reviewed the current World Sailing Racing Rules of Sailing 2025-2028 PDF on
+2026-09-01 for the first two corpus records. The records paraphrase Rule 10
+(port and starboard tacks), Rule 11 (same tack, overlapped), and the definition
+of leeward and windward. They link to the source and retain page references;
+their MarkRoom geometry and rulings remain explicitly unverified.
+
+- World Sailing Racing Rules of Sailing 2025-2028, changes and corrections:
+  https://media.sailing.org/sailing/wp-content/uploads/2025/07/29083752/2025-2028-RRS-with-Changes-and-Corrections.pdf

@@ -1,9 +1,9 @@
 import Link from 'next/link';
 
 const nextSteps = [
-  'Add the corpus directory and repository-wide validation command.',
-  'Add one provenance-aware scenario from inspectable source notes.',
-  'Turn the scenario prototype into a reusable keyframe viewer.',
+  'Add keyframe switching to the reusable scenario viewer.',
+  'Test the schema against a broader set of racing situations.',
+  'Generate deterministic quiz questions from authored findings.',
 ];
 
 export default function Home() {
@@ -18,23 +18,22 @@ export default function Home() {
         </h1>
         <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
           MarkRoom is a mobile-first learning app for the Racing Rules of
-          Sailing. The first scenario slice is now live; the full viewer,
-          corpus, and quizzes will appear here as they become verified product
-          slices.
+          Sailing. The first small scenario corpus is now live; richer viewers
+          and quizzes will follow as verified product slices.
         </p>
 
         <section className="mt-10 border-y border-border py-6">
           <p className="text-sm font-semibold">Available now</p>
           <div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-xl text-sm leading-6 text-muted-foreground">
-              Inspect a port/starboard crossing rendered from validated,
-              provenance-aware scenario data.
+              Compare two right-of-way situations rendered from validated,
+              provenance-aware scenario records.
             </p>
             <Link
-              href="/scenarios/port-starboard"
+              href="/scenarios"
               className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
             >
-              View scenario
+              Browse scenarios
             </Link>
           </div>
         </section>

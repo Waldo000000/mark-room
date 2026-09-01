@@ -1,8 +1,8 @@
 {
   "schemaVersion": "0.1.0",
-  "id": "development-port-starboard-crossing",
-  "title": "Port meets starboard",
-  "prompt": "Which boat must keep clear at Position 1?",
+  "id": "development-windward-leeward-overlap",
+  "title": "Windward and leeward",
+  "prompt": "The boats are overlapped on the same tack. Which boat must keep clear?",
   "context": {
     "discipline": "radio_sailing",
     "ruleSetVersion": "2025-2028"
@@ -36,7 +36,7 @@
         {
           "boatId": "blue",
           "position": {
-            "x": 70,
+            "x": 45,
             "y": 45
           },
           "headingDegrees": 315,
@@ -49,12 +49,12 @@
         {
           "boatId": "yellow",
           "position": {
-            "x": 30,
-            "y": 45
+            "x": 55,
+            "y": 55
           },
-          "headingDegrees": 45,
+          "headingDegrees": 315,
           "sail": {
-            "side": "starboard",
+            "side": "port",
             "trimDegrees": 16,
             "luffing": false
           }
@@ -76,7 +76,15 @@
       "type": "tack",
       "atKeyframe": "position-1",
       "boatId": "yellow",
-      "tack": "port"
+      "tack": "starboard"
+    },
+    {
+      "id": "boats-overlapped",
+      "type": "overlap",
+      "atKeyframe": "position-1",
+      "subjectBoat": "yellow",
+      "otherBoat": "blue",
+      "relationship": "overlapped"
     }
   ],
   "ruling": {
@@ -87,25 +95,25 @@
         "subjectBoat": "yellow",
         "findingType": "keep_clear",
         "otherBoat": "blue",
-        "ruleRefs": ["RRS 10"],
+        "ruleRefs": ["RRS 11"],
         "status": "definite",
-        "explanation": "Yellow is on port tack while Blue is on starboard tack.",
+        "explanation": "Yellow is the windward boat and Blue is the leeward boat while they are overlapped on the same tack.",
         "provenanceRefs": ["world-sailing-rrs-2025-2028"]
       }
     ],
-    "conclusion": "Yellow, on port tack, must keep clear of Blue, on starboard tack."
+    "conclusion": "Yellow, the windward boat, must keep clear of Blue, the leeward boat."
   },
-  "teachingText": "On opposite tacks, identify the starboard-tack boat first; the port-tack boat must keep clear.",
+  "teachingText": "For overlapped boats on the same tack, first identify which boat is to windward; that boat must keep clear.",
   "provenance": [
     {
       "sourceId": "world-sailing-rrs-2025-2028",
       "sourceType": "world_sailing_rule",
       "title": "Racing Rules of Sailing 2025-2028",
       "publisher": "World Sailing",
-      "url": "https://www.sailing.org/inside-world-sailing/rules-regulations/racingrules/",
-      "documentVersion": "2025-2028",
-      "accessedAt": "2026-08-31T00:00:00+10:00",
-      "pageOrSection": "Part 2, Section A, Rule 10",
+      "url": "https://media.sailing.org/sailing/wp-content/uploads/2025/07/29083752/2025-2028-RRS-with-Changes-and-Corrections.pdf",
+      "documentVersion": "2025-2028, changes and corrections as of 2025-01-01",
+      "accessedAt": "2026-09-01T00:00:00+10:00",
+      "pageOrSection": "Page 20, Part 2, Section A, Rule 11; definition of Leeward and Windward on page 13",
       "extractionMethod": "manual",
       "notes": "The rule source is authoritative. The geometry and MarkRoom transcription remain unverified."
     }

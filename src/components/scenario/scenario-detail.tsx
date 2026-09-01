@@ -1,49 +1,102 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { BoatGlyph } from '@/src/components/scenario/boat-glyph';
-import validDevelopmentScenario from '@/src/domain/scenario/__fixtures__/valid-development-scenario.json';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
-import { scenarioSchema } from '@/src/domain/scenario/schema';
+import type {
+  Scenario,
+  ScenarioFact,
+  ScenarioFinding,
+} from '@/src/domain/scenario/schema';
 
-export const metadata: Metadata = {
-  title: 'Port meets starboard | MarkRoom',
-  description:
-    'An unverified MarkRoom scenario illustrating a port-starboard crossing.',
+import { BoatGlyph } from './boat-glyph';
+
+type ScenarioDetailProps = {
+  scenario: Scenario;
 };
 
-const scenario = scenarioSchema.parse(validDevelopmentScenario);
-const keyframe = scenario.keyframes[0];
-const tackFacts = scenario.facts.filter((fact) => fact.type === 'tack');
-const finding = scenario.ruling.findings[0];
-const subjectBoat = scenario.boats.find(
-  (boat) => boat.id === finding.subjectBoat,
-);
-const otherBoat = scenario.boats.find((boat) => boat.id === finding.otherBoat);
-const subjectTack = tackFacts.find(
-  (fact) => fact.boatId === finding.subjectBoat,
-);
-const otherTack = tackFacts.find((fact) => fact.boatId === finding.otherBoat);
-const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
-const scenarioJson = JSON.stringify(scenario, null, 2);
-const diagramTitle = `${tackFacts
-  .map((fact) => {
-    const boat = scenario.boats.find(
-      (candidate) => candidate.id === fact.boatId,
-    );
-    return `${boat?.label} on ${fact.tack} tack`;
-  })
-  .join(' and ')} approaching each other in wind from ${windDirection}`;
+function boatLabel(scenario: Scenario, boatId: string | undefined): string {
+  if (!boatId) return 'another boat';
+  return scenario.boats.find((boat) => boat.id === boatId)?.label ?? boatId;
+}
 
-export default function PortStarboardScenarioPage() {
+function findingLabel(scenario: Scenario, finding: ScenarioFinding): string {
+  const subject = boatLabel(scenario, finding.subjectBoat);
+  const other = boatLabel(scenario, finding.otherBoat);
+
+  switch (finding.findingType) {
+    case 'keep_clear':
+      return `${subject} must keep clear of ${other}.`;
+    case 'right_of_way':
+      return `${subject} has right of way over ${other}.`;
+    case 'must_give_room':
+      return `${subject} must give room to ${other}.`;
+    case 'entitled_to_room':
+      return `${subject} is entitled to room from ${other}.`;
+    case 'entitled_to_mark_room':
+      return `${subject} is entitled to mark-room from ${other}.`;
+    case 'must_avoid_contact':
+      return `${subject} must avoid contact.`;
+    case 'rule_applies':
+      return `A rule applies to ${subject}.`;
+    case 'rule_breached':
+      return `${subject} broke a rule.`;
+    case 'exonerated':
+      return `${subject} is exonerated.`;
+    case 'penalty':
+      return `${subject} takes a penalty.`;
+    case 'no_breach':
+      return `${subject} did not break a rule.`;
+  }
+}
+
+function factLabel(scenario: Scenario, fact: ScenarioFact): string | null {
+  if (fact.type === 'tack') {
+    return `${boatLabel(scenario, fact.boatId)} is on ${fact.tack} tack.`;
+  }
+
+  if (fact.type === 'overlap') {
+    return `${boatLabel(scenario, fact.subjectBoat)} and ${boatLabel(scenario, fact.otherBoat)} are ${fact.relationship}.`;
+  }
+
+  return null;
+}
+
+function verificationLabel(status: Scenario['verification']['status']): string {
+  return status === 'human-verified'
+    ? 'Human verified'
+    : status === 'agent-reviewed'
+      ? 'Agent reviewed'
+      : 'Unverified transcription';
+}
+
+export function ScenarioDetail({ scenario }: ScenarioDetailProps) {
+  const keyframe = scenario.keyframes[0];
+  const keyframeFacts = scenario.facts.filter(
+    (fact) => fact.atKeyframe === keyframe.id,
+  );
+  const visibleFacts = keyframeFacts
+    .map((fact) => ({ fact, label: factLabel(scenario, fact) }))
+    .filter((item): item is { fact: ScenarioFact; label: string } =>
+      Boolean(item.label),
+    );
+  const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
+  const scenarioJson = JSON.stringify(scenario, null, 2);
+  const tackDescription = keyframeFacts
+    .filter((fact) => fact.type === 'tack')
+    .map((fact) => `${boatLabel(scenario, fact.boatId)} on ${fact.tack} tack`)
+    .join(' and ');
+  const diagramTitle = `${tackDescription} in wind from ${windDirection}`;
+
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main
+      className="min-h-screen bg-background text-foreground"
+      data-scenario-id={scenario.id}
+    >
       <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
         <Link
-          href="/"
+          href="/scenarios"
           className="text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
         >
-          Back to MarkRoom
+          Back to scenarios
         </Link>
 
         <header className="mt-7 border-b border-border pb-6">
@@ -51,8 +104,11 @@ export default function PortStarboardScenarioPage() {
             <p className="text-sm font-semibold uppercase text-muted-foreground">
               Scenario
             </p>
-            <span className="rounded-sm border border-amber-600 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-900">
-              Unverified transcription
+            <span
+              className="rounded-sm border border-amber-600 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-900"
+              data-testid="verification-status"
+            >
+              {verificationLabel(scenario.verification.status)}
             </span>
           </div>
           <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">
@@ -122,6 +178,8 @@ export default function PortStarboardScenarioPage() {
 
                   const screenY =
                     scenario.sailingArea.height - state.position.y;
+                  const labelOnLeft =
+                    state.position.x < scenario.sailingArea.width / 2;
 
                   return (
                     <g
@@ -142,7 +200,9 @@ export default function PortStarboardScenarioPage() {
                         fill="#0f172a"
                         fontSize="4"
                         fontWeight="600"
-                        x={state.position.x + 6}
+                        data-testid={`boat-label-${boat.id}`}
+                        textAnchor={labelOnLeft ? 'end' : 'start'}
+                        x={state.position.x + (labelOnLeft ? -11 : 11)}
                         y={screenY - 5}
                       >
                         {boat.label}
@@ -154,39 +214,53 @@ export default function PortStarboardScenarioPage() {
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {tackFacts.map((fact) => {
-                const boat = scenario.boats.find(
-                  (candidate) => candidate.id === fact.boatId,
-                );
-
-                return (
-                  <div
-                    key={fact.id}
-                    className="border-l-4 border-primary pl-3 text-sm leading-6"
-                  >
-                    <span className="font-semibold">{boat?.label}</span>{' '}
-                    <span className="text-muted-foreground">
-                      is on {fact.tack} tack.
-                    </span>
-                  </div>
-                );
-              })}
+              {visibleFacts.map(({ fact, label }) => (
+                <div
+                  key={fact.id}
+                  className="border-l-4 border-primary pl-3 text-sm leading-6 text-muted-foreground"
+                  data-boat-id={'boatId' in fact ? fact.boatId : undefined}
+                  data-fact-type={fact.type}
+                >
+                  {label}
+                </div>
+              ))}
             </div>
           </section>
 
           <aside className="min-w-0 border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
             <section>
               <p className="text-sm font-semibold uppercase text-muted-foreground">
-                Finding
+                Authored ruling
               </p>
               <h2 className="mt-2 text-xl font-semibold">
-                {subjectBoat?.label} must keep clear of {otherBoat?.label}.
+                {scenario.ruling.conclusion}
               </h2>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                {subjectBoat?.label} is on {subjectTack?.tack} tack and{' '}
-                {otherBoat?.label} is on {otherTack?.tack} tack. The structured
-                finding cites {finding.ruleRefs.join(', ')}.
-              </p>
+              <div className="mt-5 space-y-5">
+                {scenario.ruling.findings.map((finding) => (
+                  <article
+                    key={finding.id}
+                    data-finding-type={finding.findingType}
+                    data-testid={`finding-${finding.id}`}
+                  >
+                    <h3 className="font-semibold">
+                      {findingLabel(scenario, finding)}
+                    </h3>
+                    <p className="mt-1 text-sm font-semibold text-primary">
+                      {finding.ruleRefs.join(', ')}
+                    </p>
+                    {finding.explanation ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {finding.explanation}
+                      </p>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+              {scenario.teachingText ? (
+                <p className="mt-5 border-l-4 border-accent pl-3 text-sm leading-6">
+                  {scenario.teachingText}
+                </p>
+              ) : null}
             </section>
 
             <section className="mt-7 border-t border-border pt-6">
@@ -212,6 +286,8 @@ export default function PortStarboardScenarioPage() {
                     <a
                       className="mt-2 inline-block font-semibold text-primary underline underline-offset-4"
                       href={source.url}
+                      rel="noreferrer"
+                      target="_blank"
                     >
                       Open World Sailing source
                     </a>
@@ -229,7 +305,7 @@ export default function PortStarboardScenarioPage() {
             </summary>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
               This is the exact validated scenario record driving the diagram
-              and finding above.
+              and authored ruling above.
             </p>
             <pre
               className="mt-4 max-h-[42rem] overflow-auto rounded-md border border-border bg-slate-950 p-4 text-xs leading-5 text-slate-100"

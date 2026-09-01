@@ -38,6 +38,9 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Validate corpus
+        run: npm run validate:corpus
+
       - name: Build
         run: npm run build
 

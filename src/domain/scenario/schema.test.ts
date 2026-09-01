@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import invalidDanglingBoatReference from './__fixtures__/invalid-dangling-boat-reference.json';
 import invalidMissingProvenance from './__fixtures__/invalid-missing-provenance.json';
-import validDevelopmentScenario from './__fixtures__/valid-development-scenario.json';
+import validDevelopmentScenario from '../../../corpus/scenarios/port-starboard.json';
 import validRichDevelopmentScenario from './__fixtures__/valid-rich-development-scenario.json';
 import { scenarioSchema, type Scenario } from './schema';
 

@@ -20,11 +20,13 @@ Initial CI should run:
 - lint
 - type check
 - unit tests
+- corpus validation
 - production build
 - Playwright browser tests
 
-Corpus validation should be added in MR-003, when the corpus exists. CI should
-not pretend to validate unavailable behavior.
+Corpus validation runs through `npm run validate:corpus` and reports the file
+and field for invalid scenario records. `npm run check:project` guards the CI
+step and package script against configuration drift.
 
 ## Vercel
 

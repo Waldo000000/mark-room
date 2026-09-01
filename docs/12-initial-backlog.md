@@ -33,7 +33,7 @@ Done when:
 
 ### MR-003: Corpus Directory And Validation Command
 
-Status: Next foundation slice.
+Status: Complete via PR #5.
 
 Create corpus file structure and validation script.
 
@@ -57,8 +57,9 @@ Done when:
 
 ### MR-011: Scenario Viewer Prototype
 
-Status: Partially implemented in PR #3; keyframe switching and generic course
-feature rendering remain.
+Status: Partially implemented in PRs #3 and #5; the shared viewer now renders
+multiple corpus records, while keyframe switching and generic course feature
+rendering remain.
 
 Render a keyframe scenario with SVG.
 
@@ -70,7 +71,8 @@ Done when:
 
 ### MR-012: Structured Ruling Display
 
-Status: Partially implemented in PR #3 for one `keep_clear` finding.
+Status: Partially implemented in PRs #3 and #5 for authored `keep_clear`
+findings across two right-of-way situations.
 
 Display findings, rule refs, status, and explanation for a scenario.
 
@@ -127,7 +129,7 @@ Done when:
 
 ### MR-030: CI Workflow
 
-Status: Implemented except for corpus validation, which depends on MR-003.
+Status: Complete via PRs #2 through #5.
 
 Add GitHub Actions for lint, type check, tests, corpus validation, Playwright smoke tests, and build.
 

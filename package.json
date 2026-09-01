@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "check:project": "node scripts/check-project-consistency.mjs",
+    "validate:corpus": "vitest run src/domain/corpus/validate.test.ts --reporter=verbose",
     "lint": "oxlint app scripts src tests playwright.config.ts vitest.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

@@ -22,14 +22,17 @@ The provisional `0.1.0` Zod schema lives in
 types are inferred from that schema so runtime validation and application types
 cannot drift apart.
 
-Development fixtures live beside the schema tests. They are synthetic,
-unverified records and are not part of the canonical corpus. The corpus layout
-and repository-wide validation command belong to MR-003.
+Sailor-facing development records live in [`corpus/scenarios`](../corpus/scenarios).
+They are unverified and are not canonical merely because they validate. Rich
+and intentionally invalid test-only fixtures remain beside the schema tests.
+`npm run validate:corpus` parses every checked-in corpus scenario and rejects
+schema failures or duplicate scenario IDs.
 
-The app exposes a minimal sailor-facing scenario at
-`/scenarios/port-starboard`. It renders directly from a validated fixture so a
-domain user can assess the diagram, finding, rule reference, provenance, and
-verification treatment in each deployed preview.
+The app exposes a catalog at `/scenarios` and statically generates a route for
+each registered corpus record. The shared viewer renders directly from the
+validated record so a domain user can assess the diagram, authored findings,
+rule references, provenance, verification treatment, and exact JSON in each
+deployed preview.
 
 Coordinates use abstract scenario units with the origin at the bottom-left.
 Positive `x` points right, positive `y` points up, and headings are degrees

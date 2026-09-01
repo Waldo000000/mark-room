@@ -36,11 +36,12 @@ Release 1 does not include accounts, payments, a runtime database, native apps, 
 
 ## Current App
 
-The first runnable web app lives at the repository root. It is a minimal
-mobile-first MarkRoom surface with:
+The runnable web app lives at the repository root. It is a minimal mobile-first
+MarkRoom surface with:
 
-- an honest coming-soon page
-- a first unverified sailing scenario rendered from validated data
+- a browseable catalog of two unverified sailing scenarios
+- diagrams, authored rulings, source references, and inspectable scenario JSON
+- a Git-backed corpus with repository-wide validation
 - a Next.js, TypeScript, and Tailwind scaffold
 - a Vercel-ready path for production and pull-request previews
 
@@ -58,6 +59,7 @@ Run the current CI checks locally with:
 
 ```bash
 npm run check:project
+npm run validate:corpus
 npm run lint
 npm run typecheck
 npm test

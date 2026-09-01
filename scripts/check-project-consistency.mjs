@@ -50,6 +50,14 @@ requireValue(
   'GitHub Actions must use npm ci',
 );
 requireValue(
+  packageJson.scripts?.['validate:corpus']?.includes('validate.test.ts'),
+  'package.json must expose the corpus validation suite',
+);
+requireValue(
+  workflow.includes('run: npm run validate:corpus'),
+  'GitHub Actions must run corpus validation',
+);
+requireValue(
   vercelConfig.framework === 'nextjs',
   'vercel.json must explicitly select the Next.js framework preset',
 );
