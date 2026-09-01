@@ -16,15 +16,15 @@ Protect `main`:
 Initial CI should run:
 
 - dependency install
+- project consistency check
 - lint
 - type check
+- unit tests
 - production build
+- Playwright browser tests
 
-Unit tests, corpus validation, and Playwright smoke tests should be added as
-soon as the matching product slices exist. Until then, CI should not pretend to
-validate unavailable behavior.
-
-Add stronger checks as the app grows.
+Corpus validation should be added in MR-003, when the corpus exists. CI should
+not pretend to validate unavailable behavior.
 
 ## Vercel
 
@@ -37,8 +37,14 @@ Use Vercel for deployment:
 For the current skeleton, import the GitHub repository into Vercel with the
 default root directory:
 
+- framework preset: `Next.js`
+- Node.js version: `24.x`
 - install command: `npm ci`
 - build command: `npm run build`
+
+The framework preset is also committed as `"framework": "nextjs"` in
+`vercel.json`. This prevents a newly linked Vercel project from falling back to
+the `Other` preset that previously produced a production 404.
 
 The production URL may be public during alpha, but the app should clearly represent the maturity and verification status of its content.
 

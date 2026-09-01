@@ -4,18 +4,27 @@ Status: Accepted
 
 Date: 2026-08-30
 
+Amended: 2026-09-01
+
 ## Context
 
-The primary development machine is Windows. The project should still feel easy to edit and run, while keeping agent tooling close to CI and deployment environments.
+The primary development machine is Windows. The initial plan made WSL2 and a
+Linux-hosted checkout mandatory, but the repository, CI, and Vercel were
+successfully established with npm and native cross-platform tooling.
 
 ## Decision
 
-Use Windows host plus WSL2 Ubuntu as the canonical local development environment.
+Use Node 24 and npm as the canonical toolchain. Keep the Node major in `.nvmrc`
+and `package.json`, and make CI consume `.nvmrc`.
 
-The repo should live in the WSL filesystem. VS Code opens the repo through the WSL extension. Browser testing and preview happen normally from Windows.
+Support native Windows, WSL2, macOS, and Linux. Do not require a particular
+checkout filesystem when the full verification suite passes.
 
 ## Consequences
 
-This avoids many Windows-specific scripting and filesystem issues while preserving a normal Windows laptop workflow.
+The package lock, commands, and runtime stay consistent across local work, CI,
+and deployment. Contributors can choose their operating environment without
+creating a second package-management path.
 
-macOS and Linux remain supported contributor environments.
+An automated project-consistency check prevents documentation and CI from
+silently drifting to a different Node major or package manager.

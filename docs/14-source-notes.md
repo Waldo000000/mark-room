@@ -4,15 +4,16 @@ These notes capture time-sensitive technical facts checked while creating the pl
 
 ## Framework Versions
 
-As of 2026-08-30:
+As of 2026-09-01:
 
 - Next.js 16 is Active LTS, and Next.js 15 is Maintenance LTS.
-- Node.js 24 is Active LTS, and Node.js 26 is Current.
+- Node.js 24 is the latest LTS line, and Node.js 26 is Current.
 
 Planning implication:
 
 - the original conversation mentioned Next.js 15, but a fresh repo should prefer the current Active LTS line at initialization unless there is a concrete compatibility reason to stay on 15
-- use Node Active LTS for local development and CI
+- use Node 24 for local development, CI, and Vercel
+- keep the version in `.nvmrc` and make CI consume that file
 
 ## References
 
