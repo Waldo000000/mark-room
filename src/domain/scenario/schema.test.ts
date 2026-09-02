@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import invalidDanglingBoatReference from './__fixtures__/invalid-dangling-boat-reference.json';
-import invalidMissingProvenance from './__fixtures__/invalid-missing-provenance.json';
 import validDevelopmentScenario from './__fixtures__/valid-development-scenario.json';
 import validRichDevelopmentScenario from './__fixtures__/valid-rich-development-scenario.json';
 import { scenarioSchema, type Scenario } from './schema';
@@ -10,14 +9,13 @@ const cloneValidFixture = (): unknown =>
   structuredClone(validDevelopmentScenario);
 
 describe('scenarioSchema', () => {
-  it('validates a provenance-aware development scenario', () => {
+  it('validates a development scenario', () => {
     const scenario: Scenario = scenarioSchema.parse(validDevelopmentScenario);
 
     expect(scenario.id).toBe('development-port-starboard-crossing');
-    expect(scenario.verification.status).toBe('unverified');
   });
 
-  it('validates representative features, facts, references, and reviewed metadata', () => {
+  it('validates representative features, facts, and references', () => {
     const scenario = scenarioSchema.parse(validRichDevelopmentScenario);
 
     expect(scenario.courseFeatures.map((feature) => feature.type)).toEqual([
@@ -28,13 +26,6 @@ describe('scenarioSchema', () => {
       'layline',
     ]);
     expect(scenario.facts).toHaveLength(7);
-    expect(scenario.verification.status).toBe('agent-reviewed');
-  });
-
-  it('rejects a scenario without provenance', () => {
-    expect(scenarioSchema.safeParse(invalidMissingProvenance).success).toBe(
-      false,
-    );
   });
 
   it('rejects a dangling boat reference', () => {
@@ -80,13 +71,6 @@ describe('scenarioSchema', () => {
       expect(messages).toContain('Missing boat state: yellow');
       expect(messages).toContain('Coordinate exceeds sailing area width');
     }
-  });
-
-  it('rejects verified records without reviewer metadata', () => {
-    const scenario = cloneValidFixture() as Record<string, unknown>;
-    scenario.verification = { status: 'human-verified' };
-
-    expect(scenarioSchema.safeParse(scenario).success).toBe(false);
   });
 
   it('requires explanations for uncertain findings', () => {

@@ -34,38 +34,45 @@ Use this lifecycle:
 
 Release 1 can include unverified development fixtures, but the UI and docs must not imply they are human-verified canonical scenarios.
 
+## Metadata Is Separate From Scenario
+
+Every stored corpus scenario has a sidecar metadata record keyed by
+`scenarioId`. The sidecar owns teaching text, source provenance, and
+verification. These stewardship concerns do not belong in the Scenario model,
+which remains usable as direct editor input.
+
 ## Provenance Is Required
 
-Every scenario needs source metadata:
+Every corpus scenario sidecar needs source metadata:
 
 ```ts
 type Provenance = {
-  sourceId: string
+  sourceId: string;
   sourceType:
-    | "world_sailing_rule"
-    | "world_sailing_case"
-    | "official_interpretation"
-    | "club_training"
-    | "competitor_reference"
-    | "user_report"
-    | "image"
-    | "video"
-    | "other"
-  title?: string
-  publisher?: string
-  url?: string
-  documentVersion?: string
-  publicationDate?: string
-  accessedAt?: string
-  pageOrSection?: string
+    | 'world_sailing_rule'
+    | 'world_sailing_case'
+    | 'official_interpretation'
+    | 'club_training'
+    | 'competitor_reference'
+    | 'user_report'
+    | 'image'
+    | 'video'
+    | 'other';
+  title?: string;
+  publisher?: string;
+  url?: string;
+  documentVersion?: string;
+  publicationDate?: string;
+  accessedAt?: string;
+  pageOrSection?: string;
   extractionMethod:
-    | "manual"
-    | "agent_assisted"
-    | "ocr"
-    | "image_reconstruction"
-    | "video_reconstruction"
-  notes?: string
-}
+    | 'manual'
+    | 'agent_assisted'
+    | 'ocr'
+    | 'image_reconstruction'
+    | 'video_reconstruction';
+  notes?: string;
+};
 ```
 
 ## Verification Is Separate
@@ -78,15 +85,15 @@ identity and timestamp; unverified records must not imply either kind of review:
 ```ts
 type Verification =
   | {
-      status: "unverified"
-      notes?: string
+      status: 'unverified';
+      notes?: string;
     }
   | {
-      status: "agent-reviewed" | "human-verified"
-      verifiedBy: string
-      verifiedAt: string
-      notes?: string
-    }
+      status: 'agent-reviewed' | 'human-verified';
+      verifiedBy: string;
+      verifiedAt: string;
+      notes?: string;
+    };
 ```
 
 ## Licensing Guardrails

@@ -23,7 +23,9 @@ Done when:
 
 Status: Complete via PR #3.
 
-Create initial Zod schemas and TypeScript types for scenarios, boats, keyframes, course features, rulings, findings, provenance, and verification.
+Create initial Zod schemas and TypeScript types for scenarios, boats,
+keyframes, course features, rulings, findings, and separate corpus metadata for
+provenance and verification.
 
 Done when:
 
@@ -39,7 +41,7 @@ Create corpus file structure and validation script.
 
 Done when:
 
-- `npm run validate:corpus` validates all scenario/source files
+- `npm run validate:corpus` validates all scenario/metadata pairs
 - CI can call it
 - at least two tiny example scenarios exist
 

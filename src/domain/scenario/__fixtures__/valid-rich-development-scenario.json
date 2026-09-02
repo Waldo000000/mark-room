@@ -257,26 +257,9 @@
         "otherBoat": "bravo",
         "ruleRefs": ["RRS development reference"],
         "status": "conditional",
-        "explanation": "This synthetic finding exists only to exercise conditional validation behavior.",
-        "provenanceRefs": ["synthetic-rich-fixture"]
+        "explanation": "This synthetic finding exists only to exercise conditional validation behavior."
       }
     ],
     "conclusion": "Development-only coverage fixture; not a canonical MarkRoom ruling."
-  },
-  "teachingText": "This record exercises the provisional schema and does not teach a sailing conclusion.",
-  "provenance": [
-    {
-      "sourceId": "synthetic-rich-fixture",
-      "sourceType": "other",
-      "title": "Synthetic rich schema fixture",
-      "extractionMethod": "manual",
-      "notes": "Created solely for automated schema coverage; it is not an authoritative source."
-    }
-  ],
-  "verification": {
-    "status": "agent-reviewed",
-    "verifiedBy": "schema-test-agent",
-    "verifiedAt": "2026-08-31T00:00:00+10:00",
-    "notes": "Reviewed only for schema coverage, not sailing correctness."
   }
 }

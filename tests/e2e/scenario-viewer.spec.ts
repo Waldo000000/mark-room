@@ -23,7 +23,20 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
   const keyframe = scenario.keyframes[0];
 
   expect(scenario).not.toHaveProperty('lengthUnit');
+  expect(scenario).not.toHaveProperty('teachingText');
+  expect(scenario).not.toHaveProperty('provenance');
+  expect(scenario).not.toHaveProperty('verification');
   expect(scenario.sailingArea).toEqual({ width: 6, height: 6 });
+
+  await expect(page.getByText('Unverified transcription')).toBeVisible();
+  await expect(
+    page.getByText(
+      'On opposite tacks, identify the starboard-tack boat first; the port-tack boat must keep clear.',
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Open World Sailing source' }),
+  ).toBeVisible();
 
   await expect(page.getByTestId('wind-indicator')).toHaveAttribute(
     'data-wind-from-degrees',

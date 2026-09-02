@@ -111,8 +111,9 @@ presented as canonical merely to satisfy this requirement.
 Corpus checks should fail CI when:
 
 - scenario JSON does not match schema
-- source provenance is missing
-- verification status is invalid
+- its paired corpus metadata is missing or references another scenario
+- source provenance is missing from corpus metadata
+- corpus verification status is invalid
 - rule references are malformed
 - a canonical scenario lacks required verification
 - schema version migration is missing
