@@ -118,6 +118,12 @@ export function KeepClearQuiz({
           >
             Review the full ruling
           </Link>
+          <Link
+            className="mt-3 block text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+            href="/quiz"
+          >
+            Back to practice questions
+          </Link>
         </div>
       ) : null}
     </section>
