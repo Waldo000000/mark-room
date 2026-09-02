@@ -102,6 +102,20 @@ identify the boat, moment, obligation type, boat owed the obligation,
 and applicable rule references. Outcomes identify breaches, exoneration,
 penalties, or no breach.
 
+Known examples are packaged as `EvalCase` records with exactly one Scenario
+input and expected Situation and Ruling outputs:
+
+```ts
+type ScenarioEvalCase = {
+  input: Scenario;
+  expected: { situation: Situation; ruling: Ruling };
+};
+```
+
+The eval boundary validates matching context, boats, and moments, plus every
+Ruling reference into Situation. It does not add teaching, provenance, or
+verification fields; those remain in corpus metadata.
+
 ## Ruling Shape
 
 Avoid a free-text `answer` field. A Ruling uses compact statements such as:
