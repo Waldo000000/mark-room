@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import portStarboardMetadata from '../../../corpus/metadata/port-starboard.json';
 import portStarboardTrainingExample from '../../../corpus/training-examples/port-starboard.json';
+import { deriveMarkZones } from '../scenario/mark-zone';
 import { validateCorpusDirectory, validateCorpusRecords } from './validate';
 
 describe('corpus validation', () => {
@@ -32,17 +33,12 @@ describe('corpus validation', () => {
       ruleRefs: ['RRS 11'],
     });
     const windwardMarkZone = entries[2].trainingExample;
-    expect(windwardMarkZone.scenario.courseFeatures).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: 'windward-mark', type: 'mark' }),
-        expect.objectContaining({
-          id: 'windward-mark-zone',
-          markId: 'windward-mark',
-          radius: 3,
-          type: 'zone',
-        }),
-      ]),
-    );
+    expect(windwardMarkZone.scenario.courseFeatures).toEqual([
+      expect.objectContaining({ id: 'windward-mark', type: 'mark' }),
+    ]);
+    expect(deriveMarkZones(windwardMarkZone.scenario)).toEqual([
+      expect.objectContaining({ markId: 'windward-mark', radius: 4 }),
+    ]);
     expect(
       windwardMarkZone.situation.moments[0].boatStates.every((state) =>
         state.inZoneOfMarks.includes('windward-mark'),

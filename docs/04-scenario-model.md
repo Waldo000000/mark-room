@@ -69,7 +69,7 @@ A scenario contains:
 - boats with stable identities
 - discrete keyframes such as Position 1, 2, 3, 4
 - boat positions, headings, and explicit tack at each keyframe
-- optional course features: marks, zones, lines, boundaries, laylines
+- optional course features: marks, lines, boundaries, laylines
 - user-observed events that geometry cannot reveal, currently hails and penalties taken
 
 Corpus records associate this model with separate metadata containing teaching
@@ -90,6 +90,13 @@ MarkRoom uses three bounded models:
 3. `Ruling` contains obligations and outcomes derived from Situation without
    needing Scenario geometry. It is deterministic structured output: statement
    IDs, confidence, authored explanations, and conclusion prose are excluded.
+
+Rules zones are not Scenario course features. A zone is implied by a mark and
+the rules context: for the 2025-2028 rules it extends three hull lengths from
+the mark under general RRS and four hull lengths in radio sailing under
+Appendix E1.1. The viewer derives that circle from the mark position. Whether a
+boat is in a mark's zone remains explicit Situation data in `inZoneOfMarks`;
+MarkRoom does not yet claim to derive that semantic fact from geometry.
 
 The provisional Situation schema lives in
 [`src/domain/situation/schema.ts`](../src/domain/situation/schema.ts). Temporal
@@ -113,11 +120,11 @@ type TrainingExample = {
 };
 ```
 
-The training-example boundary validates matching context, boats, and moments,
-plus every Ruling reference into Situation. It does not claim that Situation or
-Rulings were automatically derived from Scenario. Engine evaluation cases can
-be introduced as a separate model once those transforms exist. Teaching,
-provenance, and verification fields remain in corpus metadata.
+The training-example boundary validates matching context, boats, marks, and
+moments, plus every Ruling reference into Situation. It does not claim that
+Situation or Rulings were automatically derived from Scenario. Engine
+evaluation cases can be introduced as a separate model once those transforms
+exist. Teaching, provenance, and verification fields remain in corpus metadata.
 
 ## Ruling Shape
 

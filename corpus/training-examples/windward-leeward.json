@@ -1,6 +1,6 @@
 {
   "scenario": {
-    "schemaVersion": "0.3.0",
+    "schemaVersion": "0.4.0",
     "id": "development-windward-leeward-overlap",
     "title": "Windward meets leeward",
     "context": {

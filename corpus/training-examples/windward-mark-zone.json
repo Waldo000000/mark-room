@@ -1,6 +1,6 @@
 {
   "scenario": {
-    "schemaVersion": "0.3.0",
+    "schemaVersion": "0.4.0",
     "id": "development-windward-mark-zone",
     "title": "Overlapped boats near a mark",
     "context": {
@@ -64,17 +64,6 @@
           "y": 5.5
         },
         "radius": 0.2
-      },
-      {
-        "type": "zone",
-        "id": "windward-mark-zone",
-        "label": "3 hull length zone",
-        "center": {
-          "x": 4,
-          "y": 5.5
-        },
-        "radius": 3,
-        "markId": "windward-mark"
       }
     ],
     "observedEvents": []

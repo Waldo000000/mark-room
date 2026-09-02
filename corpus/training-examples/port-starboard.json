@@ -1,6 +1,6 @@
 {
   "scenario": {
-    "schemaVersion": "0.3.0",
+    "schemaVersion": "0.4.0",
     "id": "development-port-starboard-crossing",
     "title": "Port meets starboard",
     "context": {

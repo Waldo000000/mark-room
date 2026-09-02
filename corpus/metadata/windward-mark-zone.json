@@ -1,6 +1,6 @@
 {
   "scenarioId": "development-windward-mark-zone",
-  "teachingText": "The dashed circle represents the three-hull-length zone around the mark. The structured Rule 11 obligation is recorded separately.",
+  "teachingText": "The dashed circle is the four-hull-length radio-sailing zone derived from the mark and rules context. The structured Rule 11 obligation is recorded separately.",
   "provenance": [
     {
       "sourceId": "world-sailing-rrs-2025-2028",
@@ -10,9 +10,9 @@
       "url": "https://www.sailing.org/inside-world-sailing/rules-regulations/racingrules/",
       "documentVersion": "2025-2028",
       "accessedAt": "2026-09-02T00:00:00+10:00",
-      "pageOrSection": "Definitions: Zone; Part 2, Section A, Rule 11",
+      "pageOrSection": "Definitions: Zone; Appendix E1.1; Part 2, Section A, Rule 11",
       "extractionMethod": "manual",
-      "notes": "The definitions and rule source are authoritative. The mark placement, zone geometry, boat positions, and MarkRoom transcription are authored training content and remain unverified."
+      "notes": "The zone distance and rule source are authoritative. The zone circle is derived from the authored mark position and radio-sailing context; the boat positions and MarkRoom transcription remain unverified."
     }
   ],
   "verification": {
