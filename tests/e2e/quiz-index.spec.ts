@@ -110,3 +110,76 @@ test('discovers and scores an applicable-rule question without revealing its ans
   );
   expect(runtimeErrors).toEqual([]);
 });
+
+test('discovers and retries a mark-room question without revealing its answer', async ({
+  page,
+}) => {
+  const runtimeErrors: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') runtimeErrors.push(message.text());
+  });
+  page.on('pageerror', (error) => runtimeErrors.push(error.message));
+
+  await page.goto('/quiz');
+
+  const questions = page.getByRole('region', {
+    name: 'Available mark-room questions',
+  });
+  await expect(questions.getByRole('article')).toHaveCount(4);
+  await expect(questions).not.toContainText('Blue is owed mark-room');
+  await expect(questions).not.toContainText('RRS 18.2(a)(1)');
+  await expect(questions).not.toContainText('RRS 18.2(a)(2)');
+
+  const positionOne = questions
+    .getByRole('article')
+    .filter({ hasText: 'Inside overlap at a leeward mark' })
+    .filter({ hasText: 'First boat reaches the zone' });
+  await positionOne
+    .getByRole('link', { name: 'Start mark-room question' })
+    .click();
+
+  await expect(page).toHaveURL(
+    '/scenarios/leeward-mark-overlap?position=position-1&mode=quiz&question=mark-room',
+  );
+  await expect(
+    page.getByRole('heading', {
+      level: 2,
+      name: 'Which boat is owed mark-room at First boat reaches the zone?',
+    }),
+  ).toBeVisible();
+  await expect(page.getByTestId('ruling-statements')).toBeHidden();
+  await expect(page.getByTestId('rulings-json')).toBeHidden();
+
+  await page.getByRole('radio', { name: 'Yellow' }).check();
+  await page.getByRole('button', { name: 'Check answer' }).click();
+  await expect(page.getByTestId('mark-room-quiz-feedback')).toHaveAttribute(
+    'data-correct',
+    'false',
+  );
+  await expect(page.getByTestId('mark-room-quiz-feedback')).toContainText(
+    'Blue is owed mark-room from Yellow.',
+  );
+  await expect(page.getByTestId('mark-room-quiz-feedback')).toContainText(
+    'RRS 18.2(a)(1)',
+  );
+
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(page.getByTestId('mark-room-quiz-feedback')).toHaveCount(0);
+  await page.getByRole('radio', { name: 'Blue' }).check();
+  await page.getByRole('button', { name: 'Check answer' }).click();
+  await expect(page.getByTestId('mark-room-quiz-feedback')).toHaveAttribute(
+    'data-correct',
+    'true',
+  );
+  await expect(
+    page.getByRole('link', { name: 'Review the full ruling' }),
+  ).toHaveAttribute(
+    'href',
+    '/scenarios/leeward-mark-overlap?position=position-1',
+  );
+  await expect(page.locator('html')).toHaveJSProperty(
+    'scrollWidth',
+    await page.locator('html').evaluate((element) => element.clientWidth),
+  );
+  expect(runtimeErrors).toEqual([]);
+});
