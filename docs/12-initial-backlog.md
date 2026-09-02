@@ -153,6 +153,8 @@ multi-moment evals.
 Done when:
 
 - standard hull and zone constants are versioned in domain code
+- all Scenario geometry uses hull-length units and every rendered hull is one
+  unit long under the equal-size boat limitation
 - tack, point of sail, luffing, contact, overlap, windward/leeward, proximity,
   and zone membership are derived where applicable
 - expected Situation evals pass without invoking rules logic

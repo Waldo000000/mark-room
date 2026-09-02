@@ -82,6 +82,7 @@ for (const expectedScenario of expectedScenarios) {
 
     expect(scenario).not.toHaveProperty('ruling');
     expect(scenario).not.toHaveProperty('facts');
+    expect(scenario.lengthUnit).toBe('hull-length');
     expect(situation).not.toHaveProperty('sailingArea');
 
     await expect(page.locator('main')).toHaveAttribute(
@@ -94,7 +95,7 @@ for (const expectedScenario of expectedScenarios) {
     );
     await expect(page.getByTestId('wind-indicator')).toHaveAttribute(
       'transform',
-      `translate(10 12) rotate(${scenario.wind.fromDegrees})`,
+      `translate(0.6 0.72) rotate(${scenario.wind.fromDegrees})`,
     );
 
     const windLine = page.getByTestId('wind-indicator').locator('line');
@@ -124,13 +125,49 @@ for (const expectedScenario of expectedScenarios) {
         page.getByTestId(`boat-label-${state.boatId}`),
       ).toHaveAttribute(
         'x',
-        String(state.position.x + (labelOnLeft ? -11 : 11)),
+        String(state.position.x + (labelOnLeft ? -0.66 : 0.66)),
       );
       await expect(
         page.getByTestId(`boat-label-${state.boatId}`),
       ).toHaveAttribute('text-anchor', labelOnLeft ? 'end' : 'start');
 
       const glyph = renderedBoat.getByTestId('boat-glyph');
+      await expect(glyph).toHaveAttribute('data-hull-length', '1');
+
+      const renderedHullLength = await renderedBoat
+        .getByTestId('boat-hull')
+        .evaluate((hull) => {
+          const box = (hull as SVGGraphicsElement).getBBox();
+          const matrix = (hull as SVGGraphicsElement).getScreenCTM();
+          if (!matrix) throw new Error('Hull has no screen transform');
+
+          const bow = new DOMPoint(
+            box.x + box.width / 2,
+            box.y,
+          ).matrixTransform(matrix);
+          const stern = new DOMPoint(
+            box.x + box.width / 2,
+            box.y + box.height,
+          ).matrixTransform(matrix);
+
+          return Math.hypot(stern.x - bow.x, stern.y - bow.y);
+        });
+      const renderedScaleLength = await page
+        .getByTestId('hull-length-scale-line')
+        .evaluate((line) => {
+          const x1 = Number(line.getAttribute('x1'));
+          const x2 = Number(line.getAttribute('x2'));
+          const y1 = Number(line.getAttribute('y1'));
+          const y2 = Number(line.getAttribute('y2'));
+          const matrix = (line as SVGGraphicsElement).getScreenCTM();
+          if (!matrix) throw new Error('Scale has no screen transform');
+
+          const start = new DOMPoint(x1, y1).matrixTransform(matrix);
+          const end = new DOMPoint(x2, y2).matrixTransform(matrix);
+          return Math.hypot(end.x - start.x, end.y - start.y);
+        });
+      expect(renderedHullLength).toBeCloseTo(renderedScaleLength, 1);
+
       await expect(glyph).toHaveAttribute(
         'data-sail-side',
         situationState!.sail.side,
@@ -153,6 +190,16 @@ for (const expectedScenario of expectedScenarios) {
         `rotate(${sailRotation} 0 -3)`,
       );
     }
+
+    const scaleLine = page.getByTestId('hull-length-scale-line');
+    expect(
+      Number(await scaleLine.getAttribute('x2')) -
+        Number(await scaleLine.getAttribute('x1')),
+    ).toBe(1);
+    await expect(page.getByTestId('hull-length-scale')).toContainText(
+      '1 hull length',
+    );
+    await expect(page.getByTestId('hull-length-scale')).toBeVisible();
 
     for (const state of keyframe.boatStates) {
       const labelBox = await page

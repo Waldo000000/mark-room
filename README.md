@@ -42,6 +42,7 @@ MarkRoom surface with:
 - a browseable catalog of two unverified sailing scenarios
 - diagrams, expected Situations and Rulings, source references, and inspectable
   pipeline eval JSON
+- hull-length geometry with equal-size one-unit boats and a visible scale
 - a Git-backed corpus with repository-wide validation
 - a Next.js, TypeScript, and Tailwind scaffold
 - a Vercel-ready path for production and pull-request previews

@@ -39,3 +39,10 @@ explanation, but it does not replace either deterministic transform.
 The first product focuses on core boat-on-boat rules, dependent definitions, relevant Appendix E modifications, and enough surrounding rules to explain selected scenarios.
 
 Schema discovery must still sample broadly.
+
+## No Mixed Hull Lengths Initially
+
+All boats initially share one standard hull size. Scenario geometry is measured
+in that common hull length, and each rendered hull is exactly one Scenario unit
+long. Mixed fleets and per-boat scaling are deferred until a concrete use case
+justifies the additional schema and geometry complexity.

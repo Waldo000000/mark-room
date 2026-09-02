@@ -34,6 +34,11 @@ Record tack explicitly in every Scenario boat state. An editor may calculate a
 default, while validation permits either tack at head-to-wind and dead-downwind
 ambiguity.
 
+Use hull length as the only linear Scenario unit and include the literal
+`lengthUnit: "hull-length"` in every Scenario record. For the first cut, all
+boats are the same size and exactly one Scenario unit long; do not add per-boat
+length or renderer scaling inputs.
+
 Keep standard hull geometry and other app-wide physical constants in code.
 Geometry may use hull shapes to derive contact, overlap, proximity, and zone
 membership, but Situation does not persist hull polygons.

@@ -54,6 +54,10 @@ responsive screenshot is not sufficient.
 Use browser assertions for machine-checkable geometry and inspect the result at
 phone and desktop sizes with sailing meaning in mind.
 
+All linear Scenario dimensions use hull lengths. Until an accepted ADR changes
+the limitation, all boats are the same size and every rendered hull is exactly
+one Scenario unit long.
+
 Boat glyphs must use the established plan-view sailing-diagram convention:
 rounded hull silhouette, sail visibly offset to leeward, trim appropriate to the
 depicted point of sail, and a curved/wavy sail when luffing. Do not substitute a

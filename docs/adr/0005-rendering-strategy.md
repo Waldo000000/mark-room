@@ -30,4 +30,8 @@ trim and luffing shape come from Situation rather than from decorative UI
 choices. The standard hull path is versioned renderer/domain code and is not
 persisted as a Situation hull polygon.
 
+The renderer normalizes that standard hull path to exactly one Scenario
+hull-length unit and displays a one-hull-length scale. Renderer pixels do not
+define or alter Scenario dimensions.
+
 The project does not make an ideological commitment to SVG. It commits to the simplest implementation that delivers the required user experience.

@@ -32,6 +32,7 @@ validated eval and assert:
 - wind source direction and arrow flow from Scenario
 - boat positions, headings, and explicit tack from Scenario
 - standard hull silhouette from versioned app code
+- every hull spanning one Scenario unit and a visible one-hull-length scale
 - sail side, trim, point of sail, and luffing from expected Situation
 - visible RRS relationships, obligations, and rule references
 - labels that do not obscure any hull or sail

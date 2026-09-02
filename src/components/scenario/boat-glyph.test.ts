@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
-import { BOAT_HULL_PATH, getSailPath } from './boat-glyph';
+import {
+  BOAT_GLYPH_INTERNAL_HULL_LENGTH,
+  BOAT_GLYPH_SCALE,
+  BOAT_HULL_PATH,
+  getSailPath,
+} from './boat-glyph';
 
 describe('BoatGlyph geometry', () => {
   it('uses a curved plan-view hull rather than a polygonal diamond', () => {
     expect(BOAT_HULL_PATH).toContain('C');
     expect(BOAT_HULL_PATH).toContain('Q');
+  });
+
+  it('normalizes the standard rendered hull to one Scenario hull length', () => {
+    expect(BOAT_GLYPH_INTERNAL_HULL_LENGTH * BOAT_GLYPH_SCALE).toBe(1);
   });
 
   it('uses a smooth sail when drawing normally', () => {

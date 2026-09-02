@@ -8,7 +8,8 @@
       "discipline": "radio_sailing",
       "ruleSetVersion": "2025-2028"
     },
-    "sailingArea": { "width": 100, "height": 100 },
+    "lengthUnit": "hull-length",
+    "sailingArea": { "width": 6, "height": 6 },
     "wind": { "fromDegrees": 0 },
     "boats": [
       {
@@ -31,13 +32,13 @@
         "boatStates": [
           {
             "boatId": "blue",
-            "position": { "x": 45, "y": 45 },
+            "position": { "x": 2.7, "y": 2.7 },
             "headingDegrees": 315,
             "tack": "starboard"
           },
           {
             "boatId": "yellow",
-            "position": { "x": 55, "y": 55 },
+            "position": { "x": 3.3, "y": 3.3 },
             "headingDegrees": 315,
             "tack": "starboard"
           }

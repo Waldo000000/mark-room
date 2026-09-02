@@ -11,6 +11,8 @@ describe('scenarioSchema', () => {
     const scenario = scenarioSchema.parse(portStarboardEval.input);
 
     expect(scenario.id).toBe('development-port-starboard-crossing');
+    expect(scenario.lengthUnit).toBe('hull-length');
+    expect(scenario.sailingArea).toEqual({ width: 6, height: 6 });
     expect(scenario.keyframes[0].boatStates[0].tack).toBe('starboard');
     expect(scenario).not.toHaveProperty('facts');
     expect(scenario).not.toHaveProperty('ruling');
@@ -63,5 +65,15 @@ describe('scenarioSchema', () => {
     const polluted = cloneScenario() as unknown as Record<string, unknown>;
     polluted.facts = [];
     expect(scenarioSchema.safeParse(polluted).success).toBe(false);
+  });
+
+  it('does not allow per-boat hull lengths in the equal-length first cut', () => {
+    const scenario = cloneScenario();
+    const boat = scenario.boats[0] as (typeof scenario.boats)[number] & {
+      hullLength: number;
+    };
+    boat.hullLength = 1.2;
+
+    expect(scenarioSchema.safeParse(scenario).success).toBe(false);
   });
 });

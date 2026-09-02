@@ -32,6 +32,11 @@ Scenario does not contain sail trim, luffing, hull polygons, overlap, contact,
 zone membership, windward/leeward relationships, room assessments, obligations,
 breaches, or penalties imposed by a ruling.
 
+All linear Scenario dimensions are measured in hull lengths and the JSON carries
+the literal `lengthUnit: "hull-length"`. Coordinates, sailing-area dimensions,
+mark radii, line endpoints, and boundary points are therefore multiples of the
+common boat hull length. Angles remain degrees.
+
 The provisional Scenario schema is version `0.2.0` and lives in
 [`src/domain/scenario/schema.ts`](../src/domain/scenario/schema.ts).
 
@@ -40,7 +45,7 @@ The provisional Scenario schema is version `0.2.0` and lives in
 Values that a sailor does not edit belong in versioned domain code, not in each
 Scenario. Examples include:
 
-- standard hull length, beam, and collision shape
+- standard hull shape, beam-to-length ratio, and collision shape
 - the no-go/luffing angle relative to the wind
 - point-of-sail and sail-trim curves
 - zone construction in hull lengths
@@ -48,6 +53,10 @@ Scenario. Examples include:
 Renderers may use the standard hull silhouette, but hull polygons are an
 implementation detail. They may be used while deriving contact, separation,
 overlap, and zone membership; they are never persisted in Situation.
+
+For the initial product, every boat has the same size and is exactly one hull
+length long. Scenario has no per-boat hull-length field. Supporting mixed fleets
+later will require a deliberate schema and geometry decision.
 
 ## Situation: RRS Language
 
@@ -136,9 +145,10 @@ compare geometry, RRS observations, and obligations while the schemas evolve.
 
 ## Coordinate Convention
 
-Scenario coordinates use abstract units with the origin at bottom-left.
-Positive `x` points right, positive `y` points up, and headings are degrees
-clockwise from north in the range `0 <= heading < 360`.
+One Scenario coordinate unit is one hull length of the common boat class. The
+origin is bottom-left, positive `x` points right, positive `y` points up, and
+headings are degrees clockwise from north in the range
+`0 <= heading < 360`.
 `wind.fromDegrees` records the direction the wind comes from.
 
 ## Discovery Requirement

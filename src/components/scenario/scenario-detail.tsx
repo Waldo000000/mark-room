@@ -9,6 +9,10 @@ import type { SituationRelationship } from '@/src/domain/situation/schema';
 
 import { BoatGlyph } from './boat-glyph';
 
+const DIAGRAM_FONT_SIZE = 0.24;
+const BOAT_LABEL_X_OFFSET = 0.66;
+const BOAT_LABEL_Y_OFFSET = 0.3;
+
 type ScenarioDetailProps = {
   evalCase: ScenarioEvalCase;
   metadata: CorpusMetadata;
@@ -150,19 +154,24 @@ export function ScenarioDetail({ evalCase, metadata }: ScenarioDetailProps) {
                 <g
                   data-testid="wind-indicator"
                   data-wind-from-degrees={scenario.wind.fromDegrees}
-                  transform={`translate(10 12) rotate(${scenario.wind.fromDegrees})`}
+                  transform={`translate(0.6 0.72) rotate(${scenario.wind.fromDegrees})`}
                 >
                   <line
                     markerEnd="url(#wind-arrow)"
                     stroke="#155e75"
-                    strokeWidth="1"
+                    strokeWidth="0.06"
                     x1="0"
                     x2="0"
-                    y1="-5"
-                    y2="6"
+                    y1="-0.3"
+                    y2="0.36"
                   />
                 </g>
-                <text fill="#155e75" fontSize="4" x="15" y="12">
+                <text
+                  fill="#155e75"
+                  fontSize={DIAGRAM_FONT_SIZE}
+                  x="0.9"
+                  y="0.72"
+                >
                   WIND
                 </text>
 
@@ -197,18 +206,53 @@ export function ScenarioDetail({ evalCase, metadata }: ScenarioDetailProps) {
                       </g>
                       <text
                         fill="#0f172a"
-                        fontSize="4"
+                        fontSize={DIAGRAM_FONT_SIZE}
                         fontWeight="600"
                         data-testid={`boat-label-${boat.id}`}
                         textAnchor={labelOnLeft ? 'end' : 'start'}
-                        x={state.position.x + (labelOnLeft ? -11 : 11)}
-                        y={screenY - 5}
+                        x={
+                          state.position.x +
+                          (labelOnLeft
+                            ? -BOAT_LABEL_X_OFFSET
+                            : BOAT_LABEL_X_OFFSET)
+                        }
+                        y={screenY - BOAT_LABEL_Y_OFFSET}
                       >
                         {boat.label}
                       </text>
                     </g>
                   );
                 })}
+
+                <g
+                  data-testid="hull-length-scale"
+                  transform={`translate(${scenario.sailingArea.width - 1.3} ${scenario.sailingArea.height - 0.3})`}
+                >
+                  <text
+                    fill="#155e75"
+                    fontSize="0.2"
+                    textAnchor="middle"
+                    x="0.5"
+                    y="-0.14"
+                  >
+                    1 hull length
+                  </text>
+                  <line
+                    data-testid="hull-length-scale-line"
+                    stroke="#155e75"
+                    strokeWidth="0.035"
+                    x1="0"
+                    x2="1"
+                    y1="0"
+                    y2="0"
+                  />
+                  <path
+                    d="M 0 -0.08 V 0.08 M 1 -0.08 V 0.08"
+                    fill="none"
+                    stroke="#155e75"
+                    strokeWidth="0.035"
+                  />
+                </g>
               </svg>
             </div>
 
