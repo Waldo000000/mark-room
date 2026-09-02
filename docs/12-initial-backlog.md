@@ -35,7 +35,8 @@ Done when:
 
 ### MR-003: Corpus Directory And Validation Command
 
-Status: Next foundation slice.
+Status: Planned. See the current order in
+[Delivery Handoff](15-delivery-handoff.md).
 
 Create corpus file structure and validation script.
 
