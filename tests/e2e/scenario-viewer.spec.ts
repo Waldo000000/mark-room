@@ -28,8 +28,15 @@ test('browses the validated corpus and opens a scenario', async ({ page }) => {
     }),
   ).toBeVisible();
   await expect(page.getByText('Unverified transcription')).toHaveCount(3);
-  await expect(page.getByText('RRS 10', { exact: true })).toBeVisible();
-  await expect(page.getByText('RRS 11', { exact: true })).toHaveCount(2);
+  const availableScenarios = page.getByRole('region', {
+    name: 'Available scenarios',
+  });
+  await expect(
+    availableScenarios.getByText('RRS 10', { exact: true }),
+  ).toBeVisible();
+  await expect(
+    availableScenarios.getByText('RRS 11', { exact: true }),
+  ).toHaveCount(2);
 
   await page
     .getByRole('article')
