@@ -13,7 +13,7 @@ Everything important belongs in Git:
 - product vision and scope
 - architecture decisions
 - corpus provenance
-- scenario schemas
+- Scenario, Situation, Ruling, and eval schemas
 - agent instructions
 - testing expectations
 - backlog and phase definitions
@@ -40,7 +40,8 @@ The runnable web app lives at the repository root. It is a minimal mobile-first
 MarkRoom surface with:
 
 - a browseable catalog of two unverified sailing scenarios
-- diagrams, authored rulings, source references, and inspectable scenario JSON
+- diagrams, expected Situations and Rulings, source references, and inspectable
+  pipeline eval JSON
 - a Git-backed corpus with repository-wide validation
 - a Next.js, TypeScript, and Tailwind scaffold
 - a Vercel-ready path for production and pull-request previews

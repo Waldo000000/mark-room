@@ -30,7 +30,9 @@ Avoid architecture that would make offline support impossible later.
 
 Release 1 should not require an LLM for the basic experience. Quizzes over known scenarios should score deterministically.
 
-AI-assisted analysis arrives after the scenario model, corpus, and editor are proven.
+Deterministic analysis arrives after the three domain models, corpus boundaries,
+and editor are proven. AI assistance may later support input, retrieval, and
+explanation, but it does not replace either deterministic transform.
 
 ## No Broad RRS Coverage In Release 1
 

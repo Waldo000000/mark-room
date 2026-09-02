@@ -1,117 +1,114 @@
 {
-  "schemaVersion": "0.1.0",
-  "id": "development-port-starboard-crossing",
-  "title": "Port meets starboard",
-  "prompt": "Which boat must keep clear at Position 1?",
-  "context": {
-    "discipline": "radio_sailing",
-    "ruleSetVersion": "2025-2028"
-  },
-  "sailingArea": {
-    "width": 100,
-    "height": 100
-  },
-  "wind": {
-    "fromDegrees": 0
-  },
-  "boats": [
-    {
-      "id": "blue",
-      "label": "Blue",
-      "sailNumber": "01",
-      "color": "#2563EB"
+  "input": {
+    "schemaVersion": "0.2.0",
+    "id": "development-port-starboard-crossing",
+    "title": "Port meets starboard",
+    "prompt": "Which boat must keep clear at Position 1?",
+    "context": {
+      "discipline": "radio_sailing",
+      "ruleSetVersion": "2025-2028"
     },
-    {
-      "id": "yellow",
-      "label": "Yellow",
-      "sailNumber": "02",
-      "color": "#EAB308"
-    }
-  ],
-  "keyframes": [
-    {
-      "id": "position-1",
-      "label": "Position 1",
-      "boatStates": [
-        {
-          "boatId": "blue",
-          "position": {
-            "x": 70,
-            "y": 45
-          },
-          "headingDegrees": 315,
-          "sail": {
-            "side": "port",
-            "trimDegrees": 16,
-            "luffing": false
-          }
-        },
-        {
-          "boatId": "yellow",
-          "position": {
-            "x": 30,
-            "y": 45
-          },
-          "headingDegrees": 45,
-          "sail": {
-            "side": "starboard",
-            "trimDegrees": 16,
-            "luffing": false
-          }
-        }
-      ]
-    }
-  ],
-  "courseFeatures": [],
-  "facts": [
-    {
-      "id": "blue-tack",
-      "type": "tack",
-      "atKeyframe": "position-1",
-      "boatId": "blue",
-      "tack": "starboard"
-    },
-    {
-      "id": "yellow-tack",
-      "type": "tack",
-      "atKeyframe": "position-1",
-      "boatId": "yellow",
-      "tack": "port"
-    }
-  ],
-  "ruling": {
-    "findings": [
+    "sailingArea": { "width": 100, "height": 100 },
+    "wind": { "fromDegrees": 0 },
+    "boats": [
       {
-        "id": "yellow-keeps-clear",
-        "atKeyframe": "position-1",
-        "subjectBoat": "yellow",
-        "findingType": "keep_clear",
-        "otherBoat": "blue",
-        "ruleRefs": ["RRS 10"],
-        "status": "definite",
-        "explanation": "Yellow is on port tack while Blue is on starboard tack.",
-        "provenanceRefs": ["world-sailing-rrs-2025-2028"]
+        "id": "blue",
+        "label": "Blue",
+        "sailNumber": "01",
+        "color": "#2563EB"
+      },
+      {
+        "id": "yellow",
+        "label": "Yellow",
+        "sailNumber": "02",
+        "color": "#EAB308"
       }
     ],
-    "conclusion": "Yellow, on port tack, must keep clear of Blue, on starboard tack."
+    "keyframes": [
+      {
+        "id": "position-1",
+        "label": "Position 1",
+        "boatStates": [
+          {
+            "boatId": "blue",
+            "position": { "x": 70, "y": 45 },
+            "headingDegrees": 315,
+            "tack": "starboard"
+          },
+          {
+            "boatId": "yellow",
+            "position": { "x": 30, "y": 45 },
+            "headingDegrees": 45,
+            "tack": "port"
+          }
+        ]
+      }
+    ],
+    "courseFeatures": [],
+    "observedEvents": []
   },
-  "teachingText": "On opposite tacks, identify the starboard-tack boat first; the port-tack boat must keep clear.",
-  "provenance": [
-    {
-      "sourceId": "world-sailing-rrs-2025-2028",
-      "sourceType": "world_sailing_rule",
-      "title": "Racing Rules of Sailing 2025-2028",
-      "publisher": "World Sailing",
-      "url": "https://media.sailing.org/sailing/wp-content/uploads/2025/07/29083752/2025-2028-RRS-with-Changes-and-Corrections.pdf",
-      "documentVersion": "2025-2028, changes and corrections as of 2025-01-01",
-      "accessedAt": "2026-09-01T00:00:00+10:00",
-      "pageOrSection": "Page 20, Part 2, Section A, Rule 10",
-      "extractionMethod": "manual",
-      "notes": "The rule source is authoritative. The geometry and MarkRoom transcription remain unverified."
+  "expected": {
+    "situation": {
+      "schemaVersion": "0.1.0",
+      "scenarioId": "development-port-starboard-crossing",
+      "context": {
+        "discipline": "radio_sailing",
+        "ruleSetVersion": "2025-2028"
+      },
+      "boats": [
+        { "id": "blue", "label": "Blue" },
+        { "id": "yellow", "label": "Yellow" }
+      ],
+      "marks": [],
+      "moments": [
+        {
+          "id": "position-1",
+          "label": "Position 1",
+          "boatStates": [
+            {
+              "boatId": "blue",
+              "tack": "starboard",
+              "pointOfSail": "close-hauled",
+              "sail": {
+                "side": "port",
+                "trimDegrees": 16,
+                "luffing": false
+              },
+              "inZoneOfMarks": []
+            },
+            {
+              "boatId": "yellow",
+              "tack": "port",
+              "pointOfSail": "close-hauled",
+              "sail": {
+                "side": "starboard",
+                "trimDegrees": 16,
+                "luffing": false
+              },
+              "inZoneOfMarks": []
+            }
+          ],
+          "relationships": [],
+          "actions": []
+        }
+      ],
+      "transitions": []
+    },
+    "ruling": {
+      "schemaVersion": "0.1.0",
+      "obligations": [
+        {
+          "id": "yellow-keeps-clear",
+          "atMoment": "position-1",
+          "boatId": "yellow",
+          "type": "keep-clear",
+          "owedToBoatId": "blue",
+          "ruleRefs": ["RRS 10"],
+          "explanation": "Yellow is on port tack while Blue is on starboard tack."
+        }
+      ],
+      "outcomes": [],
+      "conclusion": "Yellow, on port tack, must keep clear of Blue, on starboard tack."
     }
-  ],
-  "verification": {
-    "status": "unverified",
-    "notes": "The World Sailing source is authoritative; this MarkRoom transcription has not been human-verified."
   }
 }

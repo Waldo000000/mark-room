@@ -9,7 +9,7 @@ Deliverables:
 - Next.js app scaffold with TypeScript
 - Tailwind setup; add shadcn/ui only when a real component needs it
 - linting, formatting, type checking, unit tests, and Playwright
-- corpus directory and initial Zod schemas
+- corpus directory and initial Scenario, Situation, Ruling, and eval schemas
 - scenario fixture examples
 - CI workflow
 - Vercel preview and production deployment
@@ -28,7 +28,7 @@ Scope:
 - approximately 20 to 40 high-quality canonical scenarios
 - keyframe-based scenario viewer
 - timeline scrubber or position selector
-- structured findings and conclusions
+- structured expected Situations, obligations, outcomes, and conclusions
 - rule citations and source provenance
 - deterministic quiz scoring for known scenarios
 - clear verification status in UI
@@ -53,7 +53,7 @@ Scope:
 - selected renderer documented by ADR
 - add, move, rotate, and label boats
 - place marks, zones, and course features
-- edit discrete positions/keyframes
+- edit discrete positions/keyframes, including explicit tack
 - undo/redo
 - local draft persistence in browser storage
 - export/import scenario JSON
@@ -61,19 +61,21 @@ Scope:
 
 The canonical scenario schema remains independent of renderer choice.
 
-## Release 3: AI-Assisted Scenario Analysis
+## Release 3: Deterministic Scenario Analysis
 
-Goal: help users reason about novel scenarios without treating the model as an oracle.
+Goal: produce reproducible rulings for valid novel scenarios through the same
+three-stage pipeline proven by the corpus.
 
 Scope:
 
-- OpenAI-only backend behind a small internal AI service boundary
-- retrieval over curated corpus
-- candidate structured findings
+- deterministic `Scenario -> Situation` geometry interpretation
+- deterministic `Situation -> Ruling` rules evaluation
+- boundary evals plus selected end-to-end evals from the curated corpus
+- explicit validation and unsupported-coverage errors
 - citations to relevant rules and similar scenarios
-- confidence/caveat presentation
-- user-editable facts
-- no claim of authoritative ruling unless the scenario has been verified
+- optional OpenAI assistance behind a small internal service boundary for input,
+  retrieval, and explanation only
+- no claim that an unverified corpus transcription is authoritative
 
 ## Release 4: Import And Corpus Expansion
 
@@ -85,7 +87,7 @@ Scope:
 - extraction tooling
 - image/sketch-assisted reconstruction
 - broad schema adequacy sampling
-- source-to-normalized scenario audit trail
+- source-to-Scenario and expected-output audit trail
 - agent review workflow
 - human verification workflow
 

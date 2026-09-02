@@ -22,17 +22,22 @@ MarkRoom starts as an educational web app:
 
 - a better rules explorer than a static PDF
 - animated and scrub-able scenario diagrams
-- structured rulings and findings
+- structured Situations and deterministic Rulings
 - quizzes over known, verified scenarios
 
 Later, MarkRoom grows into an analysis tool:
 
 - users construct their own incident scenarios
 - users import sketches, images, or videos
-- the app normalizes those inputs into the same scenario model
+- the app normalizes those inputs into the editor-focused Scenario model
+- deterministic geometry derives an RRS-language Situation
+- deterministic rules logic derives a Ruling from that Situation
 - the app retrieves similar verified scenarios
-- AI helps generate candidate rulings with citations and caveats
+- AI may assist input, retrieval, and explanation without replacing the
+  deterministic domain pipeline
 
 ## Foundational Bet
 
-The durable asset is not a pile of prompts. It is a curated, provenance-aware corpus of sailing scenarios normalized into a typed keyframe model, plus a product that teaches and reasons from that corpus.
+The durable asset is not a pile of prompts. It is a curated, provenance-aware
+corpus of typed Scenario-to-Situation-to-Ruling evals, plus a product that
+teaches and reasons from that corpus.

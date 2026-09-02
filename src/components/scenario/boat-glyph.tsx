@@ -1,4 +1,4 @@
-import type { SailState } from '@/src/domain/scenario/schema';
+import type { SailState } from '@/src/domain/situation/schema';
 
 export const BOAT_HULL_PATH =
   'M 0 -9 C 2.3 -6.8 3.2 -2.7 3.1 3.4 L 2.2 7.2 Q 0 8.2 -2.2 7.2 L -3.1 3.4 C -3.2 -2.7 -2.3 -6.8 0 -9 Z';

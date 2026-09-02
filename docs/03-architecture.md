@@ -20,13 +20,18 @@ As of 2026-08-30, Next.js 16 is Active LTS. Prefer the current Active LTS at rep
 
 Keep these boundaries clean:
 
-- `domain`: scenario types, geometry, findings, validation helpers, quiz derivation
-- `corpus`: source records, normalized scenario JSON, validation fixtures
+- `scenario`: editor-controlled geometry and directly observed actions
+- `situation`: self-contained RRS-language moments and transitions
+- `ruling`: deterministic obligations and outcomes
+- `domain`: pure transforms and validation helpers between those models
+- `corpus`: eval inputs/expected outputs plus provenance and verification sidecars
 - `viewer`: renderer adapters and UI components
 - `app`: route composition and product screens
 - `ai`: small internal interface for OpenAI-backed features when introduced
 
-The scenario model should not know whether it is displayed by SVG, Canvas, Konva, screenshots, or tests.
+No domain model should know whether it is displayed by SVG, Canvas, Konva,
+screenshots, or tests. A rules transform consumes Situation only and never
+reaches back into Scenario geometry.
 
 ## Persistence
 
@@ -54,8 +59,8 @@ Do not:
 
 Do:
 
-- ask the model for candidate structured findings
-- validate those findings
+- ask the model only for assistive input, retrieval, or explanatory output
+- validate all structured output at its domain boundary
 - retrieve supporting corpus records
 - present citations and caveats
 

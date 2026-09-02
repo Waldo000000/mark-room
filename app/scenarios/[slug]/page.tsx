@@ -24,8 +24,8 @@ export async function generateMetadata({
   if (!entry) return {};
 
   return {
-    title: `${entry.scenario.title} | MarkRoom`,
-    description: entry.scenario.prompt,
+    title: `${entry.evalCase.input.title} | MarkRoom`,
+    description: entry.evalCase.input.prompt,
   };
 }
 
@@ -35,5 +35,5 @@ export default async function ScenarioPage({ params }: ScenarioPageProps) {
 
   if (!entry) notFound();
 
-  return <ScenarioDetail scenario={entry.scenario} />;
+  return <ScenarioDetail evalCase={entry.evalCase} metadata={entry.metadata} />;
 }

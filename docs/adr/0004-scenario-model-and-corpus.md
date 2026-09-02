@@ -1,29 +1,69 @@
-# ADR 0004: Scenario Model And Corpus
+# ADR 0004: Scenario, Situation, Ruling, And Corpus
 
 Status: Accepted
 
 Date: 2026-08-30
 
+Updated: 2026-09-02
+
 ## Context
 
-MarkRoom needs scenarios that can be displayed, tested, imported, queried, and reasoned about. A free-text answer is not sufficient for deterministic quizzes or safe AI assistance.
+The initial `0.1.0` Scenario record combined editor geometry, derived physical
+observations, legal conclusions, teaching copy, provenance, and verification.
+That made invalid combinations representable and would have coupled the rules
+engine to editor data. Heading also cannot determine tack when a boat is head to
+wind or running square.
+
+Rules that depend on change over time require more than a bag of snapshot facts,
+but raw keyframe geometry is not the language in which the Racing Rules of
+Sailing are most naturally evaluated.
 
 ## Decision
 
-Use a typed, keyframe-based 2D scenario model as the canonical representation.
-Wind source direction is explicit scenario data and uses degrees clockwise from
-north, matching boat headings.
+Adopt a one-way, three-stage domain pipeline:
 
-Each keyframed boat state explicitly records sail side, trim angle, and whether
-the sail is luffing. These values drive the renderer and help resolve tack in
-head-to-wind and dead-downwind states where heading alone is insufficient.
+```text
+Scenario -> Situation -> Ruling
+```
 
-Use structured rulings and findings rather than a single `answer` field.
+- `Scenario` is editor-controlled geometry and directly observed actions.
+- `Situation` is a self-contained temporal description in RRS language.
+- `Ruling` is obligations and outcomes produced from Situation alone.
 
-Store initial corpus records as validated files in Git. Every scenario must carry provenance and verification status.
+Record tack explicitly in every Scenario boat state. An editor may calculate a
+default, while validation permits either tack at head-to-wind and dead-downwind
+ambiguity.
+
+Keep standard hull geometry and other app-wide physical constants in code.
+Geometry may use hull shapes to derive contact, overlap, proximity, and zone
+membership, but Situation does not persist hull polygons.
+
+Represent temporal Situation data as ordered moments plus explicit transitions.
+Refine that vocabulary against the discovery corpus before declaring it stable.
+
+Use deterministic transforms with these contracts:
+
+```ts
+deriveSituation(scenario: Scenario): Situation;
+determineRuling(situation: Situation): Ruling;
+```
+
+Do not encode confidence or uncertainty in Ruling. Invalid or incomplete input
+fails validation; unsupported rules coverage is an explicit capability error.
+
+Store Git-backed evals as `EvalCase<Scenario, { situation; ruling }>` records
+containing only `input` and `expected`. Store teaching copy, provenance, and
+verification in required sidecar metadata keyed by Scenario ID.
 
 ## Consequences
 
-Scenarios become inspectable, diffable, and testable. The model can support SVG, Canvas, Konva, or other renderers without changing legal/rules data.
+The editor, geometry interpreter, and rules engine can evolve and be tested in
+isolation. Situation data can be authored directly for rules-engine tests, and
+the same record supports occasional end-to-end checks.
 
-The schema must be discovered and refined against a broad corpus before being treated as stable.
+Situation duplicates selected identities and explicit tack because it is a
+self-contained translation into another bounded context. It does not duplicate
+coordinates or renderer geometry.
+
+The schema is still provisional. Multi-moment cases, room, mark-room,
+obstructions, and changing obligations must drive further vocabulary discovery.

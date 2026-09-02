@@ -21,27 +21,47 @@ Done when:
 
 ### MR-002: Add Scenario Schema
 
-Status: Complete via PR #3.
+Status: Initial Scenario schema shipped via PR #3; replaced by the explicit
+three-stage boundary in PR #5.
 
-Create initial Zod schemas and TypeScript types for scenarios, boats, keyframes, course features, rulings, findings, provenance, and verification.
+Create Zod schemas and TypeScript types for editor-controlled Scenario,
+RRS-language Situation, deterministic Ruling, generic evals, provenance, and
+verification.
 
 Done when:
 
-- schema validates example fixtures
-- invalid fixtures fail tests
+- each boundary validates example fixtures independently
+- invalid and cross-boundary fixtures fail tests
 - docs link to schema
 
 ### MR-003: Corpus Directory And Validation Command
 
-Status: Complete via PR #5.
+Status: In review via PR #5.
 
 Create corpus file structure and validation script.
 
 Done when:
 
-- `npm run validate:corpus` validates all scenario/source files
+- `npm run validate:corpus` validates eval files and required metadata sidecars
 - CI can call it
 - at least two tiny example scenarios exist
+
+### MR-004: Establish Domain Pipeline Boundaries
+
+Status: In review via PR #5.
+
+Adopt `Scenario -> Situation -> Ruling` as three bounded contexts. Keep tack as
+explicit Scenario input, keep hull geometry in code, and model Situation time as
+ordered moments plus RRS-language transitions.
+
+Done when:
+
+- schemas and ADR agree on all three boundaries
+- eval records contain only input and expected outputs
+- provenance and verification remain required sidecars
+- the live app lets a sailor inspect geometry, expected Situation, expected
+  Ruling, and exact eval JSON
+- tests reject derived state in Scenario and hull polygons in Situation
 
 ## Product
 
@@ -71,20 +91,20 @@ Done when:
 
 ### MR-012: Structured Ruling Display
 
-Status: Partially implemented in PRs #3 and #5 for authored `keep_clear`
-findings across two right-of-way situations.
+Status: Partially implemented in PRs #3 and #5 for expected `keep-clear`
+obligations across two right-of-way Situations.
 
-Display findings, rule refs, status, and explanation for a scenario.
+Display Situation observations, Ruling obligations and outcomes, rule refs, and
+explanation for a Scenario eval.
 
 Done when:
 
 - user can see who must keep clear, who has right of way, and which rules apply
-- conditional and not-determinable findings have distinct presentation
 - verification status is visible
 
 ### MR-013: Quiz Prototype
 
-Generate deterministic quiz questions from structured findings.
+Generate deterministic quiz questions from structured Rulings.
 
 Done when:
 
@@ -100,9 +120,9 @@ Design source metadata files for official and secondary sources.
 
 Done when:
 
-- source records validate
-- scenarios can reference source IDs
-- missing source references fail validation
+- source records validate as corpus metadata sidecars
+- every eval has exactly one matching sidecar
+- missing and orphaned sidecars fail validation
 
 ### MR-021: Schema Adequacy Discovery Set
 
@@ -123,7 +143,32 @@ Done when:
 - each scenario has provenance
 - each scenario validates
 - verification status is explicit
-- rule refs and findings are structured
+- expected Situation, Ruling obligations/outcomes, and rule refs are structured
+
+### MR-023: Derive Situation From Scenario
+
+Implement the first deterministic geometry interpreter for current and selected
+multi-moment evals.
+
+Done when:
+
+- standard hull and zone constants are versioned in domain code
+- tack, point of sail, luffing, contact, overlap, windward/leeward, proximity,
+  and zone membership are derived where applicable
+- expected Situation evals pass without invoking rules logic
+- at least one multi-moment sailor-facing example exposes derived transitions
+
+### MR-024: Determine Ruling From Situation
+
+Implement the first deterministic rules slice against directly authored
+Situations, beginning with Rules 10 and 11.
+
+Done when:
+
+- the transform accepts Situation only
+- Rules 10 and 11 obligations match expected Rulings
+- unsupported coverage is an explicit capability error
+- at least one live sailor-facing example shows an engine-produced Ruling
 
 ## Workflow
 

@@ -1,16 +1,16 @@
 import { expect, test } from '@playwright/test';
 
+import type { ScenarioEvalCase } from '../../src/domain/eval/schema';
 import { inferTackFromHeading } from '../../src/domain/scenario/geometry';
-import type { Scenario } from '../../src/domain/scenario/schema';
 
 const expectedScenarios = [
   {
     slug: 'port-starboard',
     title: 'Port meets starboard',
-    finding: {
-      subjectBoat: 'yellow',
-      otherBoat: 'blue',
-      findingType: 'keep_clear',
+    obligation: {
+      boatId: 'yellow',
+      owedToBoatId: 'blue',
+      type: 'keep-clear',
       ruleRef: 'RRS 10',
     },
     tackByBoat: { blue: 'starboard', yellow: 'port' },
@@ -19,10 +19,10 @@ const expectedScenarios = [
   {
     slug: 'windward-leeward',
     title: 'Windward and leeward',
-    finding: {
-      subjectBoat: 'yellow',
-      otherBoat: 'blue',
-      findingType: 'keep_clear',
+    obligation: {
+      boatId: 'yellow',
+      owedToBoatId: 'blue',
+      type: 'keep-clear',
       ruleRef: 'RRS 11',
     },
     tackByBoat: { blue: 'starboard', yellow: 'starboard' },
@@ -48,7 +48,7 @@ test('lists every sailor-facing corpus scenario', async ({ page }) => {
 });
 
 for (const expectedScenario of expectedScenarios) {
-  test(`${expectedScenario.slug} renders the authored sailing semantics`, async ({
+  test(`${expectedScenario.slug} renders Scenario, Situation, and Ruling semantics`, async ({
     page,
   }) => {
     const runtimeErrors: string[] = [];
@@ -65,10 +65,24 @@ for (const expectedScenario of expectedScenarios) {
     await expect(page.getByTestId('verification-status')).toHaveText(
       'Unverified transcription',
     );
+    await expect(
+      page.getByText('Expected situation', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText('Expected ruling', { exact: true }),
+    ).toBeVisible();
 
     const jsonText = await page.getByTestId('scenario-json').textContent();
-    const scenario = JSON.parse(jsonText ?? '') as Scenario;
+    const evalCase = JSON.parse(jsonText ?? '') as ScenarioEvalCase;
+    const scenario = evalCase.input;
+    const situation = evalCase.expected.situation;
+    const ruling = evalCase.expected.ruling;
     const keyframe = scenario.keyframes[0];
+    const moment = situation.moments[0];
+
+    expect(scenario).not.toHaveProperty('ruling');
+    expect(scenario).not.toHaveProperty('facts');
+    expect(situation).not.toHaveProperty('sailingArea');
 
     await expect(page.locator('main')).toHaveAttribute(
       'data-scenario-id',
@@ -89,6 +103,11 @@ for (const expectedScenario of expectedScenarios) {
     );
 
     for (const state of keyframe.boatStates) {
+      const situationState = moment.boatStates.find(
+        (candidate) => candidate.boatId === state.boatId,
+      );
+      expect(situationState).toBeDefined();
+
       const renderedBoat = page.getByTestId(`boat-${state.boatId}`);
       const screenY = scenario.sailingArea.height - state.position.y;
       const labelOnLeft = state.position.x < scenario.sailingArea.width / 2;
@@ -112,20 +131,23 @@ for (const expectedScenario of expectedScenarios) {
       ).toHaveAttribute('text-anchor', labelOnLeft ? 'end' : 'start');
 
       const glyph = renderedBoat.getByTestId('boat-glyph');
-      await expect(glyph).toHaveAttribute('data-sail-side', state.sail.side);
+      await expect(glyph).toHaveAttribute(
+        'data-sail-side',
+        situationState!.sail.side,
+      );
       await expect(glyph).toHaveAttribute(
         'data-trim-degrees',
-        String(state.sail.trimDegrees),
+        String(situationState!.sail.trimDegrees),
       );
       await expect(glyph).toHaveAttribute(
         'data-luffing',
-        String(state.sail.luffing),
+        String(situationState!.sail.luffing),
       );
 
       const sailRotation =
-        state.sail.side === 'port'
-          ? state.sail.trimDegrees
-          : -state.sail.trimDegrees;
+        situationState!.sail.side === 'port'
+          ? situationState!.sail.trimDegrees
+          : -situationState!.sail.trimDegrees;
       await expect(glyph.getByTestId('boat-sail')).toHaveAttribute(
         'transform',
         `rotate(${sailRotation} 0 -3)`,
@@ -163,47 +185,56 @@ for (const expectedScenario of expectedScenarios) {
     for (const [boatId, expectedTack] of Object.entries(
       expectedScenario.tackByBoat,
     )) {
-      const tackFact = scenario.facts.find(
-        (fact) => fact.type === 'tack' && fact.boatId === boatId,
-      );
-      expect(tackFact?.type).toBe('tack');
-      if (!tackFact || tackFact.type !== 'tack') continue;
-
-      const state = keyframe.boatStates.find(
+      const scenarioState = keyframe.boatStates.find(
         (candidate) => candidate.boatId === boatId,
       );
-      expect(state, `missing rendered state for ${boatId}`).toBeDefined();
-      expect(tackFact.tack).toBe(expectedTack);
+      const situationState = moment.boatStates.find(
+        (candidate) => candidate.boatId === boatId,
+      );
+      expect(scenarioState).toBeDefined();
+      expect(situationState).toBeDefined();
+      expect(scenarioState!.tack).toBe(expectedTack);
+      expect(situationState!.tack).toBe(expectedTack);
       expect(
-        inferTackFromHeading(state!.headingDegrees, scenario.wind.fromDegrees),
+        inferTackFromHeading(
+          scenarioState!.headingDegrees,
+          scenario.wind.fromDegrees,
+        ),
       ).toBe(expectedTack);
       await expect(
-        page.locator(`[data-fact-type="tack"][data-boat-id="${boatId}"]`),
+        page.locator(`[data-situation-type="tack"][data-boat-id="${boatId}"]`),
       ).toContainText(new RegExp(`${expectedTack} tack`, 'i'));
     }
 
-    const finding = scenario.ruling.findings[0];
-    expect(finding.subjectBoat).toBe(expectedScenario.finding.subjectBoat);
-    expect(finding.otherBoat).toBe(expectedScenario.finding.otherBoat);
-    expect(finding.findingType).toBe(expectedScenario.finding.findingType);
-    expect(finding.ruleRefs).toContain(expectedScenario.finding.ruleRef);
-    await expect(page.getByTestId(`finding-${finding.id}`)).toHaveAttribute(
-      'data-finding-type',
-      expectedScenario.finding.findingType,
+    const obligation = ruling.obligations[0];
+    expect(obligation.boatId).toBe(expectedScenario.obligation.boatId);
+    expect(obligation.owedToBoatId).toBe(
+      expectedScenario.obligation.owedToBoatId,
     );
-    await expect(page.getByTestId(`finding-${finding.id}`)).toContainText(
-      expectedScenario.finding.ruleRef,
+    expect(obligation.type).toBe(expectedScenario.obligation.type);
+    expect(obligation.ruleRefs).toContain(expectedScenario.obligation.ruleRef);
+    await expect(
+      page.getByTestId(`obligation-${obligation.id}`),
+    ).toHaveAttribute('data-obligation-type', expectedScenario.obligation.type);
+    await expect(page.getByTestId(`obligation-${obligation.id}`)).toContainText(
+      expectedScenario.obligation.ruleRef,
     );
 
-    const overlapFacts = scenario.facts.filter(
-      (fact) => fact.type === 'overlap',
+    const overlapRelationships = moment.relationships.filter(
+      (relationship) =>
+        relationship.type === 'relative-position' &&
+        relationship.relationship === 'overlapped',
     );
-    expect(overlapFacts.length > 0).toBe(expectedScenario.overlap);
-    await expect(page.locator('[data-fact-type="overlap"]')).toHaveCount(
-      expectedScenario.overlap ? 1 : 0,
-    );
+    expect(overlapRelationships.length > 0).toBe(expectedScenario.overlap);
+    await expect(
+      page.locator('[data-situation-type="relative-position"]'),
+    ).toHaveCount(expectedScenario.overlap ? 1 : 0);
 
     if (expectedScenario.slug === 'windward-leeward') {
+      await expect(
+        page.locator('[data-situation-type="windward-leeward"]'),
+      ).toContainText('Yellow is windward of Blue');
+
       const yellowBox = await page
         .getByTestId('boat-yellow')
         .getByTestId('boat-glyph')

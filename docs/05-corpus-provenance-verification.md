@@ -2,24 +2,42 @@
 
 ## Authoritative Sources
 
-Official World Sailing material is authoritative for rules content:
+Official World Sailing material is authoritative for rules content: the Racing
+Rules of Sailing, definitions, official cases, interpretations, relevant
+appendices, and Appendix E for radio sailing.
 
-- Racing Rules of Sailing
-- definitions
-- official cases
-- interpretations
-- relevant appendices
-- Appendix E for radio sailing
+Club material, race incidents, community explanations, competitors, images,
+sketches, and videos may help discovery but do not override official sources.
 
-Other material may help discovery:
+## Corpus Shape
 
-- club training material
-- race incident examples
-- community explanations
-- competitor apps
-- images, diagrams, sketches, videos
+Scenario eval files contain only domain input and expected output:
 
-Secondary material must not override official sources.
+```ts
+type ScenarioEvalCase = {
+  input: Scenario;
+  expected: {
+    situation: Situation;
+    ruling: Ruling;
+  };
+};
+```
+
+This shape keeps teaching, source tracking, and review status out of the domain
+pipeline. Required sidecar metadata is keyed by `scenarioId`:
+
+```ts
+type CorpusMetadata = {
+  scenarioId: string;
+  teachingText?: string;
+  provenance: Provenance[];
+  verification: Verification;
+};
+```
+
+Corpus validation requires exactly one metadata sidecar for every eval and no
+orphan metadata. The deployed viewer may compose them for presentation without
+making metadata part of Scenario, Situation, or Ruling.
 
 ## Corpus Pipeline
 
@@ -27,80 +45,76 @@ Use this lifecycle:
 
 1. raw source
 2. extracted draft
-3. normalized scenario
-4. agent-reviewed scenario
-5. human-verified scenario
-6. canonical scenario, if accepted for trusted use
+3. normalized Scenario plus expected Situation and Ruling
+4. agent-reviewed transcription
+5. human-verified transcription
+6. canonical eval, if accepted for trusted use
 
-Release 1 can include unverified development fixtures, but the UI and docs must not imply they are human-verified canonical scenarios.
+Release 1 can include unverified development evals, but the UI and docs must not
+imply that they are human-verified canonical records.
 
 ## Provenance Is Required
 
-Every scenario needs source metadata:
+Every eval needs source metadata:
 
 ```ts
 type Provenance = {
-  sourceId: string
+  sourceId: string;
   sourceType:
-    | "world_sailing_rule"
-    | "world_sailing_case"
-    | "official_interpretation"
-    | "club_training"
-    | "competitor_reference"
-    | "user_report"
-    | "image"
-    | "video"
-    | "other"
-  title?: string
-  publisher?: string
-  url?: string
-  documentVersion?: string
-  publicationDate?: string
-  accessedAt?: string
-  pageOrSection?: string
+    | 'world_sailing_rule'
+    | 'world_sailing_case'
+    | 'official_interpretation'
+    | 'club_training'
+    | 'competitor_reference'
+    | 'user_report'
+    | 'image'
+    | 'video'
+    | 'other';
+  title?: string;
+  publisher?: string;
+  url?: string;
+  documentVersion?: string;
+  publicationDate?: string;
+  accessedAt?: string;
+  pageOrSection?: string;
   extractionMethod:
-    | "manual"
-    | "agent_assisted"
-    | "ocr"
-    | "image_reconstruction"
-    | "video_reconstruction"
-  notes?: string
-}
+    | 'manual'
+    | 'agent_assisted'
+    | 'ocr'
+    | 'image_reconstruction'
+    | 'video_reconstruction';
+  notes?: string;
+};
 ```
 
 ## Verification Is Separate
 
-A scenario can come from an official source and still have an unverified MarkRoom transcription.
-
-Use a separate verification record. Reviewed records require both reviewer
-identity and timestamp; unverified records must not imply either kind of review:
+An official source can still have an unverified MarkRoom Scenario, Situation,
+or Ruling transcription. Reviewed records require reviewer identity and time;
+unverified records must not imply either:
 
 ```ts
 type Verification =
+  | { status: 'unverified'; notes?: string }
   | {
-      status: "unverified"
-      notes?: string
-    }
-  | {
-      status: "agent-reviewed" | "human-verified"
-      verifiedBy: string
-      verifiedAt: string
-      notes?: string
-    }
+      status: 'agent-reviewed' | 'human-verified';
+      verifiedBy: string;
+      verifiedAt: string;
+      notes?: string;
+    };
 ```
 
 ## Licensing Guardrails
 
-Application code should be Apache-2.0.
+Application code should be Apache-2.0. Corpus licensing is separate:
 
-Corpus licensing is separate:
-
-- do not copy large portions of copyrighted source text without permission or a documented basis
+- do not copy large portions of copyrighted source text without permission or a
+  documented basis
 - link to authoritative originals where possible
 - store factual normalized data separately from copied source material
-- preserve enough reference detail to audit the scenario
-- investigate World Sailing licensing before committing substantial official text or reproduced diagrams
+- preserve enough reference detail to audit every expected output
+- investigate World Sailing licensing before committing substantial official
+  text or reproduced diagrams
 
-## Quality Principle
-
-MarkRoom should do better than visually polished but inaccurate scenario libraries. Correctness, provenance, and verification are part of the product, not internal chores.
+Correctness, provenance, and verification are part of the product, not internal
+chores.

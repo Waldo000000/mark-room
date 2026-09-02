@@ -37,10 +37,14 @@ export default function ScenariosPage() {
           className="mt-9 grid gap-4 sm:grid-cols-2"
           aria-label="Scenarios"
         >
-          {scenarioEntries.map(({ slug, scenario }) => {
+          {scenarioEntries.map(({ slug, evalCase }) => {
+            const scenario = evalCase.input;
             const ruleRefs = [
               ...new Set(
-                scenario.ruling.findings.flatMap((finding) => finding.ruleRefs),
+                [
+                  ...evalCase.expected.ruling.obligations,
+                  ...evalCase.expected.ruling.outcomes,
+                ].flatMap((statement) => statement.ruleRefs),
               ),
             ];
 

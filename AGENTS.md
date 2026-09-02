@@ -41,15 +41,16 @@ This repository is designed for parallel coding agents. Treat Git as the project
 
 Every substantive PR should include appropriate verification:
 
-- unit tests for schema validation, geometry, findings, quiz scoring, and pure rules helpers
+- unit tests for each domain schema, Scenario-to-Situation geometry, Situation-to-Ruling logic, quiz scoring, and pure rules helpers
 - Playwright tests for mobile-first user flows and scenario viewer behavior
 - accessibility checks for core screens where possible
 - visual or screenshot inspection for diagram changes
 - corpus validation for any data changes
 
 For scenario diagrams, verify domain semantics as well as pixels: rendered wind
-direction, headings, tack, positions, labels, and findings must agree with the
-validated scenario record. A nonblank, responsive screenshot is not sufficient.
+direction, headings, explicit tack, positions, labels, expected Situation, and
+expected Ruling must agree with the validated eval record. A nonblank,
+responsive screenshot is not sufficient.
 Use browser assertions for machine-checkable geometry and inspect the result at
 phone and desktop sizes with sailing meaning in mind.
 

@@ -2,134 +2,85 @@
 
 MarkRoom should be built so agents can verify their own work in background loops.
 
-## Test Pyramid
+## Boundary Tests
 
 Use focused unit tests for:
 
-- scenario schema validation
-- geometry helpers
-- keyframe interpolation
-- finding normalization
-- quiz generation and scoring
-- provenance and verification rules
-- corpus validation
+- Scenario, Situation, Ruling, eval, provenance, and verification schemas
+- Scenario-to-Situation geometry and temporal derivation
+- Situation-to-Ruling rules helpers
+- each boundary independently using checked-in expected data
+- selected composed Scenario-to-Ruling behavior
+- keyframe interpolation, quiz scoring, and corpus validation
 
-Use integration tests for:
+Situation-to-Ruling tests should accept authored Situation fixtures directly;
+they must not require Scenario geometry. Scenario-to-Situation tests should stop
+at Situation and make no rules assertions.
 
-- loading corpus records
-- deriving quiz questions from structured findings
-- rendering scenarios from fixtures
-- validating source-to-scenario links
+Use integration tests for loading corpus records, composing evals with sidecar
+metadata, rendering Scenario geometry with expected Situation state, deriving
+quiz questions from expected Rulings, and validating source links.
 
-Use Playwright for:
-
-- core mobile flows
-- rules explorer navigation
-- scenario viewer interaction
-- quiz flows
-- visual regressions around diagrams
-- PR smoke tests
+Use Playwright for core mobile flows, scenario viewer interaction, quiz flows,
+diagram regressions, and PR smoke tests.
 
 ## Domain-Semantic Diagram Checks
 
-Scenario checks must prove more than successful rendering. For every changed
-diagram or renderer, compare the validated scenario record with the visible
-output and assert machine-checkable geometry in Playwright:
+For every changed diagram or renderer, compare the visible result with the
+validated eval and assert:
 
-- wind source direction and arrow flow
-- boat positions and headings
-- standard hull silhouette plus sail side, trim angle, and luffing shape
-- tack facts implied by non-ambiguous heading and wind geometry
-- visible labels, findings, and rule references
+- wind source direction and arrow flow from Scenario
+- boat positions, headings, and explicit tack from Scenario
+- standard hull silhouette from versioned app code
+- sail side, trim, point of sail, and luffing from expected Situation
+- visible RRS relationships, obligations, and rule references
+- labels that do not obscure any hull or sail
 
-Run those checks at phone and desktop sizes, retain screenshots on failure, and
-visually inspect the diagram with its sailing meaning in mind. A nonblank SVG,
-valid DOM, and lack of horizontal overflow do not establish domain correctness.
+Run checks at phone and desktop sizes, retain screenshots on failure, and inspect
+the diagram with sailing meaning in mind. A nonblank SVG, valid DOM, and no
+horizontal overflow do not establish domain correctness.
 
-During rapid schema iteration, the deployed scenario view should expose the
-exact validated JSON driving the render so a reviewer can compare model and
-output directly.
+During schema iteration, the deployed scenario view must expose the exact
+validated eval JSON so a reviewer can compare Scenario, expected Situation, and
+expected Ruling directly.
 
-Commit a focused Playwright screenshot baseline when boat, sail, mark, or zone
+Commit focused Playwright screenshot baselines when boat, sail, mark, or zone
 glyph geometry changes. Semantic assertions remain required because an approved
 pixel baseline can still encode a sailing mistake.
 
-Playwright runs against a production build, rather than the development server,
-so framework development controls and stale dev output cannot enter committed
-baselines. Run `npm run test:e2e -- --update-snapshots` deliberately when the
-reviewed diagram geometry changes, then inspect both phone and desktop images.
+Playwright runs against a production build. Run
+`npm run test:e2e -- --update-snapshots` deliberately when reviewed geometry
+changes, then inspect phone and desktop images.
 
 ## Required Checks
 
-Each PR should run:
-
-- type check
-- lint
-- unit tests
-- corpus validation
-- Playwright smoke tests
-- build
-
-UI PRs should include screenshots or recordings, especially for mobile viewports.
+Each PR should run type checking, linting, unit tests, corpus validation,
+Playwright smoke tests, and a production build. UI PRs should include screenshots
+or recordings, especially for mobile viewports.
 
 ## Mobile Viewports
 
-Test at least:
-
-- narrow phone portrait
-- larger phone portrait
-- phone landscape if scenario controls are affected
-- desktop
-
-Scenario viewer/editor work must verify that:
-
-- controls are reachable by touch
-- labels do not overlap important geometry
-- hit targets are large enough
-- timeline/keyframe controls are usable
-- pan/zoom or scrub interactions do not hide essential UI
-
-## Agent Self-Validation
-
-Agents should fix their own failures before opening or updating a PR.
-
-Every PR description should include:
-
-- tests run
-- known gaps
-- screenshots for UI
-- corpus validation notes for data changes
+Test narrow phone portrait, larger phone portrait, phone landscape when controls
+are affected, and desktop. Verify touch reachability, label clearance, hit target
+size, usable moment controls, and that pan, zoom, or scrubbing does not hide
+essential UI.
 
 ## Sailor-Facing Definition Of Done
 
-Every feature slice must expose a minimal, honest path in the deployed app that
-a sailor can use to assess the domain behavior and product direction. Internal
-schemas, infrastructure, and developer-only validators are necessary building
-blocks, but they are not done until the slice has a relevant user-facing proof.
-
-Development or unverified content must remain clearly labelled and must not be
-presented as canonical merely to satisfy this requirement.
+Every feature slice must expose a minimal honest path in the deployed app that a
+sailor can use to assess domain behavior and product direction. Internal schemas
+and validators are not done by themselves. Development or unverified content
+must remain clearly labelled.
 
 ## Corpus Validation
 
-Run `npm run validate:corpus` locally. The same command is a named CI step and
-validates every JSON record in `corpus/scenarios`.
-
-Corpus checks should fail CI when:
-
-- scenario JSON does not match schema
-- source provenance is missing
-- verification status is invalid
-- rule references are malformed
-- a canonical scenario lacks required verification
-- schema version migration is missing
+`npm run validate:corpus` validates every eval in `corpus/scenarios` and every
+sidecar in `corpus/metadata`. CI fails for schema errors, missing or orphaned
+metadata, invalid cross-boundary references, mismatched explicit tack, missing
+verification, malformed rule references, or missing schema migrations.
 
 ## AI Feature Testing
 
-When AI features arrive:
-
-- keep prompt tests fixture-based
-- validate structured output
-- test refusal/caveat behavior
-- test retrieval citations
-- never use model confidence alone as a pass condition
+When AI assistance arrives, keep prompt tests fixture-based, validate structured
+output, test retrieval citations, and prove that AI output cannot bypass either
+deterministic transform or corpus verification.

@@ -1,21 +1,27 @@
+import portStarboardMetadataDocument from '@/corpus/metadata/port-starboard.json';
+import windwardLeewardMetadataDocument from '@/corpus/metadata/windward-leeward.json';
 import portStarboardDocument from '@/corpus/scenarios/port-starboard.json';
 import windwardLeewardDocument from '@/corpus/scenarios/windward-leeward.json';
 
-import { scenarioSchema, type Scenario } from '../scenario/schema';
+import { scenarioEvalCaseSchema, type ScenarioEvalCase } from '../eval/schema';
+import { corpusMetadataSchema, type CorpusMetadata } from './schema';
 
 export type ScenarioEntry = {
   slug: string;
-  scenario: Scenario;
+  evalCase: ScenarioEvalCase;
+  metadata: CorpusMetadata;
 };
 
 export const scenarioEntries: ScenarioEntry[] = [
   {
     slug: 'port-starboard',
-    scenario: scenarioSchema.parse(portStarboardDocument),
+    evalCase: scenarioEvalCaseSchema.parse(portStarboardDocument),
+    metadata: corpusMetadataSchema.parse(portStarboardMetadataDocument),
   },
   {
     slug: 'windward-leeward',
-    scenario: scenarioSchema.parse(windwardLeewardDocument),
+    evalCase: scenarioEvalCaseSchema.parse(windwardLeewardDocument),
+    metadata: corpusMetadataSchema.parse(windwardLeewardMetadataDocument),
   },
 ];
 

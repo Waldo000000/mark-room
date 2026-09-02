@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 const nextSteps = [
   'Add keyframe switching to the reusable scenario viewer.',
-  'Test the schema against a broader set of racing situations.',
-  'Generate deterministic quiz questions from authored findings.',
+  'Build the first Scenario-to-Situation geometry derivations.',
+  'Generate deterministic quiz questions from expected Rulings.',
 ];
 
 export default function Home() {
@@ -27,7 +27,7 @@ export default function Home() {
           <div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-xl text-sm leading-6 text-muted-foreground">
               Compare two right-of-way situations rendered from validated,
-              provenance-aware scenario records.
+              provenance-aware pipeline evals.
             </p>
             <Link
               href="/scenarios"

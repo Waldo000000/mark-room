@@ -4,7 +4,9 @@
 
 MarkRoom should prefer a small number of excellent, verified scenarios over a large library of plausible but inaccurate examples.
 
-A polished diagram is not enough. The scenario geometry, facts, rule references, and ruling must be correct or clearly marked as unverified.
+A polished diagram is not enough. The Scenario geometry, expected Situation,
+rule references, and expected Ruling must be correct or clearly marked as
+unverified.
 
 ## Prefer Authoritative Sources
 
@@ -22,11 +24,16 @@ Community material, competitor products, race anecdotes, and generated explanati
 
 The app should show:
 
-- what facts matter
+- which editor inputs matter
+- which RRS-language Situation was derived
 - which rules apply
 - which boat has which obligation
-- whether the conclusion is definite, conditional, or not determinable
+- which deterministic obligations and outcomes follow
 - how the user can see the same pattern next time
+
+Incomplete or invalid input should produce clear validation errors. Supported,
+valid input should produce a deterministic result rather than an uncertainty
+score.
 
 ## Mobile First Means Actually Mobile First
 

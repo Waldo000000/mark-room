@@ -1,156 +1,150 @@
-# Scenario Model
+# Domain Pipeline
 
 ## Model Goal
 
-Every scenario should normalize into a typed, keyframe-based 2D representation.
+MarkRoom uses three models with one-way deterministic transforms:
 
-This applies to:
+```text
+Scenario -> deriveSituation -> Situation -> determineRuling -> Ruling
+```
 
-- hand-authored examples
-- official cases
-- reconstructed diagrams
-- imported images
-- user-created incidents
-- future video-derived incidents
+Each model is optimized for one bounded context. No transform should need to
+reach back to an earlier model after its input has been produced.
 
-Animation is derived from the model. Legal/rules reasoning operates on explicit scenario facts and keyframes, not on rendered pixels.
+## Scenario: Editor Language
 
-## Initial Implementation
+`Scenario` is the complete input to geometry interpretation and maps one-to-one
+to controls in the future scenario editor. It contains:
 
-The provisional `0.1.0` Zod schema lives in
-[`src/domain/scenario/schema.ts`](../src/domain/scenario/schema.ts). TypeScript
-types are inferred from that schema so runtime validation and application types
-cannot drift apart.
+- wind direction and sailing-area dimensions
+- boat identities, positions, headings, and explicit tack at each keyframe
+- physical course objects such as marks, lines, and boundaries
+- directly observed actions that geometry cannot derive, such as hails or a
+  penalty taken
 
-Sailor-facing development records live in [`corpus/scenarios`](../corpus/scenarios).
-They are unverified and are not canonical merely because they validate. Rich
-and intentionally invalid test-only fixtures remain beside the schema tests.
-`npm run validate:corpus` parses every checked-in corpus scenario and rejects
-schema failures or duplicate scenario IDs.
+Tack is explicit because heading and wind do not identify tack when a boat is
+head to wind or running square. A future editor may default tack as heading
+changes, but the sailor remains able to set it. Away from the two ambiguous
+headings, validation rejects a tack that is physically inconsistent with wind
+and heading.
 
-The app exposes a catalog at `/scenarios` and statically generates a route for
-each registered corpus record. The shared viewer renders directly from the
-validated record so a domain user can assess the diagram, authored findings,
-rule references, provenance, verification treatment, and exact JSON in each
-deployed preview.
+Scenario does not contain sail trim, luffing, hull polygons, overlap, contact,
+zone membership, windward/leeward relationships, room assessments, obligations,
+breaches, or penalties imposed by a ruling.
 
-Coordinates use abstract scenario units with the origin at the bottom-left.
-Positive `x` points right, positive `y` points up, and headings are degrees
-clockwise from north in the range `0 <= heading < 360`. Renderers are responsible
-for adapting that convention to their own coordinate systems.
+The provisional Scenario schema is version `0.2.0` and lives in
+[`src/domain/scenario/schema.ts`](../src/domain/scenario/schema.ts).
 
-`wind.fromDegrees` uses the same compass convention and records the direction
-the wind comes from. A north wind is therefore `0`, while its flow arrow points
-south. Away from head-to-wind and dead-downwind ambiguity, tack facts are
-validated against each boat's heading and the wind direction.
+## App-Wide Physical Constants
 
-Each boat state also carries explicit sail state:
+Values that a sailor does not edit belong in versioned domain code, not in each
+Scenario. Examples include:
 
-- `side` is the side of the hull on which the sail lies
-- `trimDegrees` is the angle between the sail and the hull centreline, from
-  sheeted-in `0` to fully eased `90`
-- `luffing` selects a visibly wavy sail instead of a smooth loaded curve
+- standard hull length, beam, and collision shape
+- the no-go/luffing angle relative to the wind
+- point-of-sail and sail-trim curves
+- zone construction in hull lengths
 
-Sail state is explicit because trim depends on the actual moment being depicted,
-and because the sail side resolves tack when heading and wind alone are
-ambiguous. A port-tack fact requires the sail to lie to starboard, and a
-starboard-tack fact requires it to lie to port.
+Renderers may use the standard hull silhouette, but hull polygons are an
+implementation detail. They may be used while deriving contact, separation,
+overlap, and zone membership; they are never persisted in Situation.
 
-## Key Concepts
+## Situation: RRS Language
 
-A scenario contains:
+`Situation` is the self-contained output of geometry interpretation and the
+complete input to rules reasoning. It discards editor coordinates and describes
+what is happening in Racing Rules of Sailing language:
 
-- stable scenario ID and schema version
-- title and short prompt/question
-- sailing context, such as radio sailing or general RRS
-- 2D sailing area
-- wind direction
-- boats with stable identities
-- discrete keyframes such as Position 1, 2, 3, 4
-- boat positions and headings at each keyframe
-- sail side, trim, and luffing state at each keyframe
-- optional course features: marks, zones, lines, boundaries, laylines
-- explicit physical or asserted facts: tack, overlap, zone entry, contact, course changes, hail events, penalties
-- structured ruling/findings
-- explanatory teaching text
-- source provenance
-- verification status
+- tack, point of sail, and luffing/sail state
+- overlap or clear-ahead/clear-astern relationships
+- windward and leeward boats
+- contact
+- proximity measured in hull lengths
+- zone membership
+- whether relevant room is physically available
+- directly observed RRS actions copied from Scenario
 
-## Rulings And Findings
+Situation contains boat and mark identities, but not coordinates or hull
+polygons. The provisional schema is version `0.1.0` and lives in
+[`src/domain/situation/schema.ts`](../src/domain/situation/schema.ts).
 
-Avoid a single free-text `answer` field as the canonical result.
+### Time
 
-Use structured findings:
+A single snapshot is not sufficient for many rules. Situation therefore has:
+
+- ordered `moments`, each holding the RRS state at a point in time
+- `transitions` between moments, recording changes such as alteration of
+  course, overlap establishment or breakage, zone crossing, and contact
+  starting or ending
+
+The temporal vocabulary is deliberately provisional. Corpus discovery must
+test it against rules that depend on when a relationship began, who reached a
+zone first, and whether room was provided through a manoeuvre. We should extend
+RRS-language transitions rather than leak editor geometry into Situation.
+
+## Ruling: Obligations And Outcomes
+
+`Ruling` is the deterministic output of rules reasoning. It contains:
+
+- obligations such as keep clear, give room, give mark-room, and avoid contact
+- outcomes such as breach, exoneration, penalty, and no breach
+- applicable rule references and a concise conclusion
+
+Ruling contains no geometry. The engine does not report model confidence or
+uncertainty. A Scenario that is incomplete or invalid must fail validation
+before analysis; a valid supported Situation produces one deterministic Ruling.
+Unsupported rule coverage is an explicit engine capability error, not a
+probabilistic ruling.
+
+The provisional schema is version `0.1.0` and lives in
+[`src/domain/ruling/schema.ts`](../src/domain/ruling/schema.ts).
+
+## Evaluation Cases
+
+The checked-in corpus uses the generic shape:
 
 ```ts
-type ScenarioFinding = {
-  id: string;
-  atKeyframe?: string;
-  subjectBoat: string;
-  findingType:
-    | 'right_of_way'
-    | 'keep_clear'
-    | 'entitled_to_room'
-    | 'entitled_to_mark_room'
-    | 'must_give_room'
-    | 'must_avoid_contact'
-    | 'rule_applies'
-    | 'rule_breached'
-    | 'exonerated'
-    | 'penalty'
-    | 'no_breach';
-  otherBoat?: string;
-  ruleRefs: string[];
-  status: 'definite' | 'conditional' | 'not_determinable';
-  explanation?: string;
-  provenanceRefs?: string[];
-};
-
-type ScenarioRuling = {
-  findings: ScenarioFinding[];
-  conclusion: string;
+type EvalCase<Input, Expected> = {
+  input: Input;
+  expected: Expected;
 };
 ```
 
-This list is a hypothesis, not a frozen ontology. The corpus discovery process must test and refine it.
+The current end-to-end record is:
 
-## Three Layers
+```ts
+type ScenarioEvalCase = EvalCase<
+  Scenario,
+  { situation: Situation; ruling: Ruling }
+>;
+```
 
-Keep these separate:
+That one record supports independent boundary checks:
 
-- facts: what physically happened or was asserted
-- findings: structured rules conclusions
-- explanation: human-readable teaching material
+- compare `deriveSituation(input)` with `expected.situation`
+- compare `determineRuling(expected.situation)` with `expected.ruling`
+- occasionally run the composed pipeline end to end
 
-Legal conclusions such as entitlement to mark-room belong in findings, not in
-the physical facts layer.
+The expected Situation is intentionally reusable as direct rules-engine input.
+This is eval data at a bounded-context boundary, not production state duplicated
+alongside Scenario.
 
-Do not infer stronger findings than the authoritative source supports.
+Eval JSON contains only `input` and `expected`. Teaching copy, provenance, and
+verification are corpus concerns stored in sidecar metadata keyed by Scenario
+ID. The deployed viewer shows the exact eval JSON so a sailor and developer can
+compare geometry, RRS observations, and obligations while the schemas evolve.
 
-## Schema Discovery Requirement
+## Coordinate Convention
 
-Before declaring the v1 schema stable, sample a broad set of scenarios:
+Scenario coordinates use abstract units with the origin at bottom-left.
+Positive `x` points right, positive `y` points up, and headings are degrees
+clockwise from north in the range `0 <= heading < 360`.
+`wind.fromDegrees` records the direction the wind comes from.
 
-- starts
-- marks
-- obstructions
-- penalties
-- protests
-- changing rights and obligations
-- contact and avoiding contact
-- exoneration
-- Appendix E radio sailing cases
-- ordinary Part 2 right-of-way situations
+## Discovery Requirement
 
-The Release 1 product may be narrow. The schema discovery corpus must not be narrow.
-
-## Model Adequacy Tests
-
-Maintain a fixture suite of representative scenarios that the schema must encode cleanly without awkward free-text escape hatches.
-
-When a scenario does not fit:
-
-- record the failure
-- revise the schema deliberately
-- add a migration if existing data changes
-- document significant decisions in ADRs
+Before any model is stable, test the pipeline against starts, marks,
+obstructions, contact, changing rights, room, exoneration, penalties, protests,
+Appendix E, and ordinary Part 2 situations. When a case does not fit, identify
+which boundary lacks vocabulary, revise that schema deliberately, and add a
+migration and boundary eval.

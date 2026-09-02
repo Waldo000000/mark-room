@@ -1,16 +1,17 @@
 import Link from 'next/link';
 
+import type { CorpusMetadata } from '@/src/domain/corpus/schema';
+import type { ScenarioEvalCase } from '@/src/domain/eval/schema';
+import type { Obligation } from '@/src/domain/ruling/schema';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
-import type {
-  Scenario,
-  ScenarioFact,
-  ScenarioFinding,
-} from '@/src/domain/scenario/schema';
+import type { Scenario } from '@/src/domain/scenario/schema';
+import type { SituationRelationship } from '@/src/domain/situation/schema';
 
 import { BoatGlyph } from './boat-glyph';
 
 type ScenarioDetailProps = {
-  scenario: Scenario;
+  evalCase: ScenarioEvalCase;
+  metadata: CorpusMetadata;
 };
 
 function boatLabel(scenario: Scenario, boatId: string | undefined): string {
@@ -18,49 +19,43 @@ function boatLabel(scenario: Scenario, boatId: string | undefined): string {
   return scenario.boats.find((boat) => boat.id === boatId)?.label ?? boatId;
 }
 
-function findingLabel(scenario: Scenario, finding: ScenarioFinding): string {
-  const subject = boatLabel(scenario, finding.subjectBoat);
-  const other = boatLabel(scenario, finding.otherBoat);
+function obligationLabel(scenario: Scenario, obligation: Obligation): string {
+  const subject = boatLabel(scenario, obligation.boatId);
+  const other = boatLabel(scenario, obligation.owedToBoatId);
 
-  switch (finding.findingType) {
-    case 'keep_clear':
+  switch (obligation.type) {
+    case 'keep-clear':
       return `${subject} must keep clear of ${other}.`;
-    case 'right_of_way':
-      return `${subject} has right of way over ${other}.`;
-    case 'must_give_room':
+    case 'give-room':
       return `${subject} must give room to ${other}.`;
-    case 'entitled_to_room':
-      return `${subject} is entitled to room from ${other}.`;
-    case 'entitled_to_mark_room':
-      return `${subject} is entitled to mark-room from ${other}.`;
-    case 'must_avoid_contact':
+    case 'give-mark-room':
+      return `${subject} must give mark-room to ${other}.`;
+    case 'avoid-contact':
       return `${subject} must avoid contact.`;
-    case 'rule_applies':
-      return `A rule applies to ${subject}.`;
-    case 'rule_breached':
-      return `${subject} broke a rule.`;
-    case 'exonerated':
-      return `${subject} is exonerated.`;
-    case 'penalty':
-      return `${subject} takes a penalty.`;
-    case 'no_breach':
-      return `${subject} did not break a rule.`;
   }
 }
 
-function factLabel(scenario: Scenario, fact: ScenarioFact): string | null {
-  if (fact.type === 'tack') {
-    return `${boatLabel(scenario, fact.boatId)} is on ${fact.tack} tack.`;
+function relationshipLabel(
+  scenario: Scenario,
+  relationship: SituationRelationship,
+): string | null {
+  switch (relationship.type) {
+    case 'relative-position':
+      return `${boatLabel(scenario, relationship.subjectBoatId)} and ${boatLabel(scenario, relationship.otherBoatId)} are ${relationship.relationship}.`;
+    case 'windward-leeward':
+      return `${boatLabel(scenario, relationship.windwardBoatId)} is windward of ${boatLabel(scenario, relationship.leewardBoatId)}.`;
+    case 'contact':
+      return `${relationship.boatIds.map((boatId) => boatLabel(scenario, boatId)).join(' and ')} made contact.`;
+    case 'proximity':
+      return `${boatLabel(scenario, relationship.subjectBoatId)} is ${relationship.separationHullLengths} hull lengths from ${boatLabel(scenario, relationship.otherBoatId)}.`;
+    case 'available-room':
+      return `${boatLabel(scenario, relationship.boatId)} ${relationship.available ? 'has' : 'does not have'} room for ${relationship.purpose}.`;
   }
-
-  if (fact.type === 'overlap') {
-    return `${boatLabel(scenario, fact.subjectBoat)} and ${boatLabel(scenario, fact.otherBoat)} are ${fact.relationship}.`;
-  }
-
-  return null;
 }
 
-function verificationLabel(status: Scenario['verification']['status']): string {
+function verificationLabel(
+  status: CorpusMetadata['verification']['status'],
+): string {
   return status === 'human-verified'
     ? 'Human verified'
     : status === 'agent-reviewed'
@@ -68,21 +63,22 @@ function verificationLabel(status: Scenario['verification']['status']): string {
       : 'Unverified transcription';
 }
 
-export function ScenarioDetail({ scenario }: ScenarioDetailProps) {
+export function ScenarioDetail({ evalCase, metadata }: ScenarioDetailProps) {
+  const scenario = evalCase.input;
+  const situation = evalCase.expected.situation;
+  const ruling = evalCase.expected.ruling;
   const keyframe = scenario.keyframes[0];
-  const keyframeFacts = scenario.facts.filter(
-    (fact) => fact.atKeyframe === keyframe.id,
+  const moment = situation.moments.find(
+    (candidate) => candidate.id === keyframe.id,
   );
-  const visibleFacts = keyframeFacts
-    .map((fact) => ({ fact, label: factLabel(scenario, fact) }))
-    .filter((item): item is { fact: ScenarioFact; label: string } =>
-      Boolean(item.label),
-    );
+  if (!moment) throw new Error(`Missing Situation moment: ${keyframe.id}`);
+
   const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
-  const scenarioJson = JSON.stringify(scenario, null, 2);
-  const tackDescription = keyframeFacts
-    .filter((fact) => fact.type === 'tack')
-    .map((fact) => `${boatLabel(scenario, fact.boatId)} on ${fact.tack} tack`)
+  const evalJson = JSON.stringify(evalCase, null, 2);
+  const tackDescription = moment.boatStates
+    .map(
+      (state) => `${boatLabel(scenario, state.boatId)} on ${state.tack} tack`,
+    )
     .join(' and ');
   const diagramTitle = `${tackDescription} in wind from ${windDirection}`;
 
@@ -108,7 +104,7 @@ export function ScenarioDetail({ scenario }: ScenarioDetailProps) {
               className="rounded-sm border border-amber-600 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-900"
               data-testid="verification-status"
             >
-              {verificationLabel(scenario.verification.status)}
+              {verificationLabel(metadata.verification.status)}
             </span>
           </div>
           <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">
@@ -174,7 +170,10 @@ export function ScenarioDetail({ scenario }: ScenarioDetailProps) {
                   const boat = scenario.boats.find(
                     (candidate) => candidate.id === state.boatId,
                   );
-                  if (!boat) return null;
+                  const situationState = moment.boatStates.find(
+                    (candidate) => candidate.boatId === state.boatId,
+                  );
+                  if (!boat || !situationState) return null;
 
                   const screenY =
                     scenario.sailingArea.height - state.position.y;
@@ -193,7 +192,7 @@ export function ScenarioDetail({ scenario }: ScenarioDetailProps) {
                       >
                         <BoatGlyph
                           color={boat.color ?? '#0f766e'}
-                          sail={state.sail}
+                          sail={situationState.sail}
                         />
                       </g>
                       <text
@@ -213,52 +212,70 @@ export function ScenarioDetail({ scenario }: ScenarioDetailProps) {
               </svg>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {visibleFacts.map(({ fact, label }) => (
-                <div
-                  key={fact.id}
-                  className="border-l-4 border-primary pl-3 text-sm leading-6 text-muted-foreground"
-                  data-boat-id={'boatId' in fact ? fact.boatId : undefined}
-                  data-fact-type={fact.type}
-                >
-                  {label}
-                </div>
-              ))}
-            </div>
+            <section className="mt-5" aria-labelledby="situation-heading">
+              <p className="text-sm font-semibold uppercase text-muted-foreground">
+                Expected situation
+              </p>
+              <h2 id="situation-heading" className="mt-1 text-lg font-semibold">
+                RRS-language observations at {moment.label}
+              </h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {moment.boatStates.map((state) => (
+                  <div
+                    key={state.boatId}
+                    className="border-l-4 border-primary pl-3 text-sm leading-6 text-muted-foreground"
+                    data-boat-id={state.boatId}
+                    data-situation-type="tack"
+                  >
+                    {boatLabel(scenario, state.boatId)} is on {state.tack} tack
+                    and {state.pointOfSail}.
+                  </div>
+                ))}
+                {moment.relationships.map((relationship, index) => (
+                  <div
+                    key={`${relationship.type}-${index}`}
+                    className="border-l-4 border-primary pl-3 text-sm leading-6 text-muted-foreground"
+                    data-situation-type={relationship.type}
+                  >
+                    {relationshipLabel(scenario, relationship)}
+                  </div>
+                ))}
+              </div>
+            </section>
           </section>
 
           <aside className="min-w-0 border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
             <section>
               <p className="text-sm font-semibold uppercase text-muted-foreground">
-                Authored ruling
+                Expected ruling
               </p>
               <h2 className="mt-2 text-xl font-semibold">
-                {scenario.ruling.conclusion}
+                {ruling.conclusion}
               </h2>
               <div className="mt-5 space-y-5">
-                {scenario.ruling.findings.map((finding) => (
+                {ruling.obligations.map((obligation) => (
                   <article
-                    key={finding.id}
-                    data-finding-type={finding.findingType}
-                    data-testid={`finding-${finding.id}`}
+                    key={obligation.id}
+                    data-obligation-type={obligation.type}
+                    data-testid={`obligation-${obligation.id}`}
                   >
                     <h3 className="font-semibold">
-                      {findingLabel(scenario, finding)}
+                      {obligationLabel(scenario, obligation)}
                     </h3>
                     <p className="mt-1 text-sm font-semibold text-primary">
-                      {finding.ruleRefs.join(', ')}
+                      {obligation.ruleRefs.join(', ')}
                     </p>
-                    {finding.explanation ? (
+                    {obligation.explanation ? (
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        {finding.explanation}
+                        {obligation.explanation}
                       </p>
                     ) : null}
                   </article>
                 ))}
               </div>
-              {scenario.teachingText ? (
+              {metadata.teachingText ? (
                 <p className="mt-5 border-l-4 border-accent pl-3 text-sm leading-6">
-                  {scenario.teachingText}
+                  {metadata.teachingText}
                 </p>
               ) : null}
             </section>
@@ -276,7 +293,7 @@ export function ScenarioDetail({ scenario }: ScenarioDetailProps) {
 
             <section className="mt-7 border-t border-border pt-6">
               <h2 className="text-base font-semibold">Source</h2>
-              {scenario.provenance.map((source) => (
+              {metadata.provenance.map((source) => (
                 <div key={source.sourceId} className="mt-3 text-sm leading-6">
                   <p className="font-semibold">{source.title}</p>
                   <p className="text-muted-foreground">
@@ -301,17 +318,17 @@ export function ScenarioDetail({ scenario }: ScenarioDetailProps) {
         <section className="mt-10 border-t border-border pt-8">
           <details open>
             <summary className="cursor-pointer text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-4">
-              Scenario JSON
+              Pipeline eval JSON
             </summary>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-              This is the exact validated scenario record driving the diagram
-              and authored ruling above.
+              This exact validated record keeps the editable Scenario, expected
+              Situation, and expected Ruling visibly separate.
             </p>
             <pre
               className="mt-4 max-h-[42rem] overflow-auto rounded-md border border-border bg-slate-950 p-4 text-xs leading-5 text-slate-100"
               data-testid="scenario-json"
             >
-              {scenarioJson}
+              {evalJson}
             </pre>
           </details>
         </section>

@@ -1,78 +1,52 @@
 import { describe, expect, it } from 'vitest';
 
-import invalidDanglingBoatReference from './__fixtures__/invalid-dangling-boat-reference.json';
-import invalidMissingProvenance from './__fixtures__/invalid-missing-provenance.json';
-import validDevelopmentScenario from '../../../corpus/scenarios/port-starboard.json';
-import validRichDevelopmentScenario from './__fixtures__/valid-rich-development-scenario.json';
+import portStarboardEval from '../../../corpus/scenarios/port-starboard.json';
 import { scenarioSchema, type Scenario } from './schema';
 
-const cloneValidFixture = (): unknown =>
-  structuredClone(validDevelopmentScenario);
+const cloneScenario = (): Scenario =>
+  structuredClone(portStarboardEval.input) as Scenario;
 
 describe('scenarioSchema', () => {
-  it('validates a provenance-aware development scenario', () => {
-    const scenario: Scenario = scenarioSchema.parse(validDevelopmentScenario);
+  it('contains only editor-controlled state and explicit tack', () => {
+    const scenario = scenarioSchema.parse(portStarboardEval.input);
 
     expect(scenario.id).toBe('development-port-starboard-crossing');
-    expect(scenario.verification.status).toBe('unverified');
+    expect(scenario.keyframes[0].boatStates[0].tack).toBe('starboard');
+    expect(scenario).not.toHaveProperty('facts');
+    expect(scenario).not.toHaveProperty('ruling');
+    expect(scenario).not.toHaveProperty('provenance');
+    expect(scenario.keyframes[0].boatStates[0]).not.toHaveProperty('sail');
   });
 
-  it('validates representative features, facts, references, and reviewed metadata', () => {
-    const scenario = scenarioSchema.parse(validRichDevelopmentScenario);
+  it('allows either explicit tack while running square', () => {
+    const scenario = cloneScenario();
+    scenario.keyframes[0].boatStates[0].headingDegrees = 180;
+    scenario.keyframes[0].boatStates[0].tack = 'port';
+    expect(scenarioSchema.safeParse(scenario).success).toBe(true);
 
-    expect(scenario.courseFeatures.map((feature) => feature.type)).toEqual([
-      'mark',
-      'zone',
-      'line',
-      'boundary',
-      'layline',
-    ]);
-    expect(scenario.facts).toHaveLength(7);
-    expect(scenario.verification.status).toBe('agent-reviewed');
+    scenario.keyframes[0].boatStates[0].tack = 'starboard';
+    expect(scenarioSchema.safeParse(scenario).success).toBe(true);
   });
 
-  it('rejects a scenario without provenance', () => {
-    expect(scenarioSchema.safeParse(invalidMissingProvenance).success).toBe(
-      false,
-    );
-  });
-
-  it('rejects a dangling boat reference', () => {
-    const result = scenarioSchema.safeParse(invalidDanglingBoatReference);
-
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(
-        result.error.issues.some((issue) =>
-          issue.message.includes('Unknown boat ID'),
-        ),
-      ).toBe(true);
-    }
-  });
-
-  it('rejects duplicate entity IDs', () => {
-    const scenario = cloneValidFixture() as typeof validDevelopmentScenario;
-    scenario.boats[1].id = scenario.boats[0].id;
+  it('rejects explicit tack that conflicts with unambiguous geometry', () => {
+    const scenario = cloneScenario();
+    scenario.keyframes[0].boatStates[0].headingDegrees = 45;
 
     const result = scenarioSchema.safeParse(scenario);
-
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(
-        result.error.issues.some(
-          (issue) => issue.message === 'Duplicate ID: blue',
-        ),
-      ).toBe(true);
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        'Tack conflicts with heading and wind: expected port',
+      );
     }
   });
 
   it('rejects incomplete keyframes and out-of-bounds positions', () => {
-    const scenario = cloneValidFixture() as typeof validDevelopmentScenario;
+    const scenario = cloneScenario();
     scenario.keyframes[0].boatStates.pop();
     scenario.keyframes[0].boatStates[0].position.x = 101;
 
     const result = scenarioSchema.safeParse(scenario);
-
     expect(result.success).toBe(false);
     if (!result.success) {
       const messages = result.error.issues.map((issue) => issue.message);
@@ -81,74 +55,13 @@ describe('scenarioSchema', () => {
     }
   });
 
-  it('rejects verified records without reviewer metadata', () => {
-    const scenario = cloneValidFixture() as Record<string, unknown>;
-    scenario.verification = { status: 'human-verified' };
+  it('rejects dangling boat references and unknown derived properties', () => {
+    const dangling = cloneScenario();
+    dangling.keyframes[0].boatStates[0].boatId = 'missing';
+    expect(scenarioSchema.safeParse(dangling).success).toBe(false);
 
-    expect(scenarioSchema.safeParse(scenario).success).toBe(false);
-  });
-
-  it('requires explanations for uncertain findings', () => {
-    const scenario = cloneValidFixture() as typeof validDevelopmentScenario;
-    const finding = scenario.ruling.findings[0] as unknown as Record<
-      string,
-      unknown
-    >;
-    finding.status = 'conditional';
-    delete finding.explanation;
-
-    const result = scenarioSchema.safeParse(scenario);
-
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(
-        result.error.issues.some((issue) =>
-          issue.message.includes('conditional findings require an explanation'),
-        ),
-      ).toBe(true);
-    }
-  });
-
-  it('rejects unknown properties instead of silently accepting typos', () => {
-    const scenario = cloneValidFixture() as Record<string, unknown>;
-    scenario.canonical = true;
-
-    expect(scenarioSchema.safeParse(scenario).success).toBe(false);
-  });
-
-  it('rejects a tack fact that conflicts with heading and wind', () => {
-    const scenario = cloneValidFixture() as typeof validDevelopmentScenario;
-    scenario.keyframes[0].boatStates[0].headingDegrees = 45;
-
-    const result = scenarioSchema.safeParse(scenario);
-
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(
-        result.error.issues.some(
-          (issue) =>
-            issue.message ===
-            'Tack conflicts with heading and wind: expected port',
-        ),
-      ).toBe(true);
-    }
-  });
-
-  it('rejects a sail drawn on the windward side for its tack', () => {
-    const scenario = cloneValidFixture() as typeof validDevelopmentScenario;
-    scenario.keyframes[0].boatStates[0].sail.side = 'starboard';
-
-    const result = scenarioSchema.safeParse(scenario);
-
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(
-        result.error.issues.some(
-          (issue) =>
-            issue.message ===
-            'starboard tack requires the sail to lie on the port side',
-        ),
-      ).toBe(true);
-    }
+    const polluted = cloneScenario() as unknown as Record<string, unknown>;
+    polluted.facts = [];
+    expect(scenarioSchema.safeParse(polluted).success).toBe(false);
   });
 });
