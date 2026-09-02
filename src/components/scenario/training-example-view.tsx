@@ -1,87 +1,83 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import portStarboardMetadata from '@/corpus/metadata/port-starboard.json';
-import portStarboardTrainingExample from '@/corpus/training-examples/port-starboard.json';
 import {
   BoatGlyph,
   deriveSailPresentation,
 } from '@/src/components/scenario/boat-glyph';
-import { corpusMetadataSchema } from '@/src/domain/corpus/schema';
+import type { CorpusMetadata } from '@/src/domain/corpus/schema';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
-import { trainingExampleSchema } from '@/src/domain/training-example/schema';
+import type { TrainingExample } from '@/src/domain/training-example/schema';
 
 const DIAGRAM_FONT_SIZE = 0.24;
 const BOAT_LABEL_X_OFFSET = 0.66;
 const BOAT_LABEL_Y_OFFSET = 0.3;
 
-export const metadata: Metadata = {
-  title: 'Port meets starboard | MarkRoom',
-  description:
-    'An unverified MarkRoom scenario illustrating a port-starboard crossing.',
+type TrainingExampleViewProps = {
+  corpusMetadata: CorpusMetadata;
+  trainingExample: TrainingExample;
 };
 
-const trainingExample = trainingExampleSchema.parse(
-  portStarboardTrainingExample,
-);
-const { rulings, scenario, situation } = trainingExample;
-const corpusMetadata = corpusMetadataSchema.parse(portStarboardMetadata);
-
-if (corpusMetadata.scenarioId !== scenario.id) {
-  throw new Error(
-    `Corpus metadata references ${corpusMetadata.scenarioId}, expected ${scenario.id}`,
+export function TrainingExampleView({
+  corpusMetadata,
+  trainingExample,
+}: TrainingExampleViewProps) {
+  const { rulings, scenario, situation } = trainingExample;
+  const verificationLabel = {
+    unverified: 'Unverified transcription',
+    'agent-reviewed': 'Agent-reviewed transcription',
+    'human-verified': 'Human-verified transcription',
+  }[corpusMetadata.verification.status];
+  const keyframe = scenario.keyframes[0];
+  const situationMoment = situation.moments[0];
+  const obligation = rulings.obligations[0];
+  const subjectBoat = scenario.boats.find(
+    (boat) => boat.id === obligation.boatId,
   );
-}
-if (
-  situation.scenarioId !== scenario.id ||
-  JSON.stringify(situation.context) !== JSON.stringify(scenario.context)
-) {
-  throw new Error('Situation does not match the Scenario');
-}
+  const otherBoat = scenario.boats.find(
+    (boat) => boat.id === obligation.owedToBoatId,
+  );
+  const subjectState = situationMoment.boatStates.find(
+    (state) => state.boatId === obligation.boatId,
+  );
+  const otherState = situationMoment.boatStates.find(
+    (state) => state.boatId === obligation.owedToBoatId,
+  );
+  const windwardLeeward = situationMoment.relationships.find(
+    (relationship) => relationship.type === 'windward-leeward',
+  );
+  const windwardBoat = situation.boats.find(
+    (boat) => boat.id === windwardLeeward?.windwardBoatId,
+  );
+  const leewardBoat = situation.boats.find(
+    (boat) => boat.id === windwardLeeward?.leewardBoatId,
+  );
+  const overlap = situationMoment.relationships.find(
+    (relationship) =>
+      relationship.type === 'relative-position' &&
+      relationship.relationship === 'overlapped',
+  );
+  const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
+  const scenarioJson = JSON.stringify(scenario, null, 2);
+  const situationJson = JSON.stringify(situation, null, 2);
+  const rulingsJson = JSON.stringify(rulings, null, 2);
+  const trainingExampleJson = JSON.stringify(trainingExample, null, 2);
+  const diagramTitle = `${keyframe.boatStates
+    .map((state) => {
+      const boat = scenario.boats.find(
+        (candidate) => candidate.id === state.boatId,
+      );
+      return `${boat?.label} on ${state.tack} tack`;
+    })
+    .join(' and ')} approaching each other in wind from ${windDirection}`;
 
-const verificationLabel = {
-  unverified: 'Unverified transcription',
-  'agent-reviewed': 'Agent-reviewed transcription',
-  'human-verified': 'Human-verified transcription',
-}[corpusMetadata.verification.status];
-const keyframe = scenario.keyframes[0];
-const situationMoment = situation.moments[0];
-const obligation = rulings.obligations[0];
-const subjectBoat = scenario.boats.find(
-  (boat) => boat.id === obligation.boatId,
-);
-const otherBoat = scenario.boats.find(
-  (boat) => boat.id === obligation.owedToBoatId,
-);
-const subjectState = situationMoment.boatStates.find(
-  (state) => state.boatId === obligation.boatId,
-);
-const otherState = situationMoment.boatStates.find(
-  (state) => state.boatId === obligation.owedToBoatId,
-);
-const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
-const scenarioJson = JSON.stringify(scenario, null, 2);
-const situationJson = JSON.stringify(situation, null, 2);
-const rulingsJson = JSON.stringify(rulings, null, 2);
-const trainingExampleJson = JSON.stringify(trainingExample, null, 2);
-const diagramTitle = `${keyframe.boatStates
-  .map((state) => {
-    const boat = scenario.boats.find(
-      (candidate) => candidate.id === state.boatId,
-    );
-    return `${boat?.label} on ${state.tack} tack`;
-  })
-  .join(' and ')} approaching each other in wind from ${windDirection}`;
-
-export default function PortStarboardScenarioPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
         <Link
-          href="/"
+          href="/scenarios"
           className="text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
         >
-          Back to MarkRoom
+          Back to scenarios
         </Link>
 
         <header className="mt-7 border-b border-border pb-6">
@@ -267,10 +263,23 @@ export default function PortStarboardScenarioPage() {
               <h2 className="mt-2 text-xl font-semibold">
                 {subjectBoat?.label} must keep clear of {otherBoat?.label}.
               </h2>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                {subjectBoat?.label} is on {subjectState?.tack} tack and{' '}
-                {otherBoat?.label} is on {otherState?.tack} tack. The structured
-                obligation cites {obligation.ruleRefs.join(', ')}.
+              <p
+                className="mt-3 text-sm leading-6 text-muted-foreground"
+                data-testid="ruling-basis"
+              >
+                {windwardLeeward && overlap ? (
+                  <>
+                    {windwardBoat?.label} is windward of {leewardBoat?.label},
+                    and the boats are overlapped.
+                  </>
+                ) : (
+                  <>
+                    {subjectBoat?.label} is on {subjectState?.tack} tack and{' '}
+                    {otherBoat?.label} is on {otherState?.tack} tack.
+                  </>
+                )}{' '}
+                The structured obligation cites {obligation.ruleRefs.join(', ')}
+                .
               </p>
               {corpusMetadata.teachingText ? (
                 <p className="mt-3 border-l-4 border-primary pl-3 text-sm leading-6">

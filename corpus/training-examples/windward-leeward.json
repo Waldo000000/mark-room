@@ -1,0 +1,128 @@
+{
+  "scenario": {
+    "schemaVersion": "0.3.0",
+    "id": "development-windward-leeward-overlap",
+    "title": "Windward meets leeward",
+    "context": {
+      "discipline": "radio_sailing",
+      "ruleSetVersion": "2025-2028"
+    },
+    "sailingArea": {
+      "width": 6,
+      "height": 6
+    },
+    "wind": {
+      "fromDegrees": 0
+    },
+    "boats": [
+      {
+        "id": "blue",
+        "label": "Blue",
+        "sailNumber": "01",
+        "color": "#2563EB"
+      },
+      {
+        "id": "red",
+        "label": "Red",
+        "sailNumber": "02",
+        "color": "#DC2626"
+      }
+    ],
+    "keyframes": [
+      {
+        "id": "position-1",
+        "label": "Position 1",
+        "boatStates": [
+          {
+            "boatId": "blue",
+            "position": {
+              "x": 2.6,
+              "y": 2.4
+            },
+            "headingDegrees": 315,
+            "tack": "starboard"
+          },
+          {
+            "boatId": "red",
+            "position": {
+              "x": 3.4,
+              "y": 3.3
+            },
+            "headingDegrees": 315,
+            "tack": "starboard"
+          }
+        ]
+      }
+    ],
+    "courseFeatures": [],
+    "observedEvents": []
+  },
+  "situation": {
+    "schemaVersion": "0.1.0",
+    "scenarioId": "development-windward-leeward-overlap",
+    "context": {
+      "discipline": "radio_sailing",
+      "ruleSetVersion": "2025-2028"
+    },
+    "boats": [
+      {
+        "id": "blue",
+        "label": "Blue"
+      },
+      {
+        "id": "red",
+        "label": "Red"
+      }
+    ],
+    "marks": [],
+    "moments": [
+      {
+        "id": "position-1",
+        "label": "Position 1",
+        "boatStates": [
+          {
+            "boatId": "blue",
+            "tack": "starboard",
+            "pointOfSail": "close-hauled",
+            "sailLuffing": false,
+            "inZoneOfMarks": []
+          },
+          {
+            "boatId": "red",
+            "tack": "starboard",
+            "pointOfSail": "close-hauled",
+            "sailLuffing": false,
+            "inZoneOfMarks": []
+          }
+        ],
+        "relationships": [
+          {
+            "type": "relative-position",
+            "subjectBoatId": "red",
+            "otherBoatId": "blue",
+            "relationship": "overlapped"
+          },
+          {
+            "type": "windward-leeward",
+            "windwardBoatId": "red",
+            "leewardBoatId": "blue"
+          }
+        ],
+        "actions": []
+      }
+    ]
+  },
+  "rulings": {
+    "schemaVersion": "0.1.0",
+    "obligations": [
+      {
+        "atMoment": "position-1",
+        "boatId": "red",
+        "type": "keep-clear",
+        "owedToBoatId": "blue",
+        "ruleRefs": ["RRS 11"]
+      }
+    ],
+    "outcomes": []
+  }
+}
