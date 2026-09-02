@@ -13,7 +13,8 @@ This applies to:
 - user-created incidents
 - future video-derived incidents
 
-Animation is derived from the model. Legal/rules reasoning operates on explicit scenario facts and keyframes, not on rendered pixels.
+Animation and RRS-language observations are derived from the model, not from
+rendered pixels.
 
 ## Initial Implementation
 
@@ -69,8 +70,7 @@ A scenario contains:
 - discrete keyframes such as Position 1, 2, 3, 4
 - boat positions, headings, and explicit tack at each keyframe
 - optional course features: marks, zones, lines, boundaries, laylines
-- explicit physical or asserted facts: overlap, zone entry, contact, course changes, hail events, penalties
-- structured ruling/findings
+- user-observed events that geometry cannot reveal, currently hails and penalties taken
 
 Corpus records associate this model with separate metadata containing teaching
 text, source provenance, and verification status. Those fields describe the
@@ -81,7 +81,7 @@ record and its stewardship, not the sailing scenario itself.
 MarkRoom uses three bounded models:
 
 1. `Scenario` is editor-controlled geometry, identity, wind, course features,
-   and observed events.
+   and observed events. It contains no derived facts or ruling output.
 2. `Situation` is a self-contained RRS-language interpretation derived from a
    Scenario. It contains tack, point of sail, luffing, mark-zone membership,
    contact, relative position, windward/leeward relationships, proximity in

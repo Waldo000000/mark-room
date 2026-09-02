@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.3.0",
   "id": "development-schema-coverage",
   "title": "Development fixture: schema coverage",
   "context": {
@@ -170,36 +170,7 @@
       "markId": "windward-mark"
     }
   ],
-  "facts": [
-    {
-      "id": "alpha-bravo-overlap",
-      "type": "overlap",
-      "atKeyframe": "position-1",
-      "subjectBoat": "alpha",
-      "otherBoat": "bravo",
-      "relationship": "overlapped"
-    },
-    {
-      "id": "alpha-zone-entry",
-      "type": "zone-entry",
-      "atKeyframe": "position-2",
-      "boatId": "alpha",
-      "zoneId": "windward-zone"
-    },
-    {
-      "id": "three-boat-contact",
-      "type": "contact",
-      "atKeyframe": "position-2",
-      "boatIds": ["alpha", "bravo", "charlie"]
-    },
-    {
-      "id": "bravo-course-change",
-      "type": "course-change",
-      "atKeyframe": "position-2",
-      "boatId": "bravo",
-      "fromHeadingDegrees": 340,
-      "toHeadingDegrees": 15
-    },
+  "observedEvents": [
     {
       "id": "charlie-hail",
       "type": "hail",
@@ -214,20 +185,5 @@
       "boatId": "charlie",
       "penaltyType": "one-turn"
     }
-  ],
-  "ruling": {
-    "findings": [
-      {
-        "id": "coverage-finding",
-        "atKeyframe": "position-2",
-        "subjectBoat": "alpha",
-        "findingType": "entitled_to_mark_room",
-        "otherBoat": "bravo",
-        "ruleRefs": ["RRS development reference"],
-        "status": "conditional",
-        "explanation": "This synthetic finding exists only to exercise conditional validation behavior."
-      }
-    ],
-    "conclusion": "Development-only coverage fixture; not a canonical MarkRoom ruling."
-  }
+  ]
 }

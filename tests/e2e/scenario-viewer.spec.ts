@@ -37,6 +37,8 @@ test('renders Scenario, Situation, and Ruling consistently', async ({
   expect(scenario).not.toHaveProperty('provenance');
   expect(scenario).not.toHaveProperty('verification');
   expect(scenario).not.toHaveProperty('prompt');
+  expect(scenario).not.toHaveProperty('facts');
+  expect(scenario).not.toHaveProperty('ruling');
   expect(scenario.sailingArea).toEqual({ width: 6, height: 6 });
   for (const state of keyframe.boatStates) {
     expect(state).not.toHaveProperty('sail');

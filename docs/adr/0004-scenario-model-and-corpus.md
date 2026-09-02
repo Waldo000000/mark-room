@@ -31,6 +31,11 @@ Separate the reasoning pipeline into three bounded models: editor-controlled
 Situation excludes geometry and renderer details. Defer temporal transition
 types until multi-keyframe cases establish the required RRS vocabulary.
 
+Keep Scenario input-only. Geometry-derived facts such as overlap, contact,
+zone membership, and course change belong in Situation. Scenario retains only
+observed events that geometry cannot reveal, initially hails and penalties
+taken.
+
 Keep Ruling deterministic and structural. It contains obligations and outcomes
 with rule references, but no confidence status, statement IDs, authored
 explanations, or conclusion prose.

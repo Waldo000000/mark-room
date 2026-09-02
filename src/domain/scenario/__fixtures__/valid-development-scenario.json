@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.3.0",
   "id": "development-port-starboard-crossing",
   "title": "Port meets starboard",
   "context": {
@@ -54,20 +54,5 @@
     }
   ],
   "courseFeatures": [],
-  "facts": [],
-  "ruling": {
-    "findings": [
-      {
-        "id": "yellow-keeps-clear",
-        "atKeyframe": "position-1",
-        "subjectBoat": "yellow",
-        "findingType": "keep_clear",
-        "otherBoat": "blue",
-        "ruleRefs": ["RRS 10"],
-        "status": "definite",
-        "explanation": "Yellow is on port tack while Blue is on starboard tack."
-      }
-    ],
-    "conclusion": "Yellow, on port tack, must keep clear of Blue, on starboard tack."
-  }
+  "observedEvents": []
 }
