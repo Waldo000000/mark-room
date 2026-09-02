@@ -13,6 +13,7 @@
     "lint": "oxlint app scripts src tests playwright.config.ts vitest.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "validate:corpus": "vitest run src/domain/corpus/validate.test.ts",
     "test:e2e": "playwright test",
     "format": "oxfmt"
   },

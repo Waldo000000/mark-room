@@ -1,17 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import portStarboardRuling from '../ruling/__fixtures__/port-starboard-ruling.json';
-import portStarboardScenario from '../scenario/__fixtures__/valid-development-scenario.json';
-import portStarboardSituation from '../situation/__fixtures__/port-starboard-situation.json';
+import portStarboardEvalCase from '../../../corpus/eval-cases/port-starboard.json';
 import { scenarioEvalCaseSchema } from './schema';
 
-const validEvalCase = () => ({
-  input: structuredClone(portStarboardScenario),
-  expected: {
-    situation: structuredClone(portStarboardSituation),
-    ruling: structuredClone(portStarboardRuling),
-  },
-});
+const validEvalCase = () => structuredClone(portStarboardEvalCase);
 
 describe('scenarioEvalCaseSchema', () => {
   it('contains only pipeline input and expected outputs', () => {
