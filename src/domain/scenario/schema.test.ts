@@ -69,7 +69,8 @@ describe('scenarioSchema', () => {
   it('rejects incomplete keyframes and out-of-bounds positions', () => {
     const scenario = cloneValidFixture() as typeof validDevelopmentScenario;
     scenario.keyframes[0].boatStates.pop();
-    scenario.keyframes[0].boatStates[0].position.x = 101;
+    scenario.keyframes[0].boatStates[0].position.x =
+      scenario.sailingArea.width + 1;
 
     const result = scenarioSchema.safeParse(scenario);
 

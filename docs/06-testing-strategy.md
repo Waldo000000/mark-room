@@ -39,6 +39,7 @@ output and assert machine-checkable geometry in Playwright:
 - wind source direction and arrow flow
 - boat positions and headings
 - standard hull silhouette plus sail side, trim angle, and luffing shape
+- every hull spanning one Scenario unit and a visible one-hull-length scale
 - tack facts implied by non-ambiguous heading and wind geometry
 - visible labels, findings, and rule references
 

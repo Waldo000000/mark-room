@@ -31,10 +31,15 @@ The app exposes a minimal sailor-facing scenario at
 domain user can assess the diagram, finding, rule reference, provenance, and
 verification treatment in each deployed preview.
 
-Coordinates use abstract scenario units with the origin at the bottom-left.
-Positive `x` points right, positive `y` points up, and headings are degrees
-clockwise from north in the range `0 <= heading < 360`. Renderers are responsible
-for adapting that convention to their own coordinate systems.
+One coordinate unit is one hull length of the common boat class. The origin is
+at the bottom-left, positive `x` points right, positive `y` points up, and
+headings are degrees clockwise from north in the range
+`0 <= heading < 360`. The app supports no other linear unit, so Scenario JSON
+does not repeat a unit field.
+
+For the initial product, every boat is the same size and exactly one Scenario
+unit long. Supporting mixed fleets later requires a deliberate schema and
+geometry decision.
 
 `wind.fromDegrees` uses the same compass convention and records the direction
 the wind comes from. A north wind is therefore `0`, while its flow arrow points
@@ -60,7 +65,7 @@ A scenario contains:
 - stable scenario ID and schema version
 - title and short prompt/question
 - sailing context, such as radio sailing or general RRS
-- 2D sailing area
+- 2D sailing area measured in hull lengths
 - wind direction
 - boats with stable identities
 - discrete keyframes such as Position 1, 2, 3, 4

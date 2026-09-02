@@ -7,8 +7,8 @@
     "discipline": "general_rrs"
   },
   "sailingArea": {
-    "width": 10,
-    "height": 10
+    "width": 6,
+    "height": 6
   },
   "wind": {
     "fromDegrees": 0
@@ -27,8 +27,8 @@
         {
           "boatId": "test-boat",
           "position": {
-            "x": 5,
-            "y": 5
+            "x": 3,
+            "y": 3
           },
           "headingDegrees": 0,
           "sail": {
