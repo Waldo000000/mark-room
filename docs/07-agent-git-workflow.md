@@ -70,15 +70,20 @@ longer launch prompt or repeat the workflow back to the user.
 Before doing any work, ask exactly one question:
 
 ```text
-What maximum weekly Codex usage are you comfortable spending on this run?
+At what percentage of your weekly Codex allowance should this run stop?
 ```
 
-Treat the answer as the usage cap for the run. Do not ask further setup
-questions: use this workflow, the repository docs, GitHub Issues, and best
-judgment to proceed hands-free.
+Treat the answer as the run's usage-stop percentage. For example, `50%` means
+stop when the account's reported weekly usage is at or above 50%; it does not
+mean spend an additional 50 percentage points. Treat a plain number such as
+`50` as a percentage.
 
-The cap is a start-next-issue guardrail, not a real-time hard stop: an issue
-already in progress may take usage beyond the threshold before its next check.
+Do not ask further setup questions: use this workflow, the repository docs,
+GitHub Issues, and best judgment to proceed hands-free.
+
+Usage reporting is not a real-time token meter, so a check may observe the
+threshold shortly after it is crossed. Recheck at the defined checkpoints and
+do not begin another costly step after reaching it.
 
 ### Session Settings
 
@@ -88,9 +93,11 @@ default, and increase it only for ambiguous cross-cutting work.
 
 Delegate bounded, read-heavy, repeatable, or independent tasks to less costly
 subagents. Good examples are a targeted codebase scan, a test-gap review, a
-documentation check, or a narrow provenance search. Give every subagent a
-single question, the files or issue it concerns, an expected output, and a
-read-only sandbox unless it truly needs to edit.
+documentation check, a narrow provenance search, or implementation and tests in
+an isolated file boundary. Give every subagent a single question or deliverable,
+the files or issue it concerns, an expected output, and a read-only sandbox
+unless it truly needs to edit. The parent agent owns the plan, integration,
+verification, and final decisions.
 
 Keep concurrent subagents low. They reduce elapsed time but do not inherently
 reduce token use, because each receives its own context and tools. Prefer one
@@ -113,6 +120,7 @@ and open issues. Then:
 
 If no safe issue exists, record why on the relevant issue and stop. Waiting is
 better than fabricating parallelism or creating a conflict for the next agent.
+Do not classify ordinary ambiguity as unsafe before applying Decision Authority.
 
 ### Refining Larger Issues
 
@@ -127,8 +135,9 @@ Before coding a large or ambiguous issue:
 2. Create focused sub-issues for independently deliverable pieces, with clear
    dependencies and `ready` only where the scope is sufficient.
 3. Link the sub-issues to the parent and select one unblocked child.
-4. Stop after refinement if the split reveals a meaningful priority, product,
-   architecture, or source-authority choice that needs human direction.
+4. Apply Decision Authority to any priority, product, architecture, or
+   source-authority choice revealed by the split. Prefer a documented,
+   reversible decision that keeps work moving.
 
 The issue and its sub-issues, rather than a repository status document, are the
 durable record of the plan.
@@ -147,22 +156,28 @@ safe, well-documented implementation choice.
 
 ### Per-Issue Loop
 
-1. Recheck usage. If the cap is reached or usage is unavailable, do not start
-   the issue.
+1. Recheck weekly usage. If it is at or above the user-selected usage-stop
+   percentage, or usage is unavailable, do not start the issue.
 2. Claim the selected issue in a comment with the branch name, intended
    outcome, and conflict scan.
 3. Read its owner docs and ADRs. Restate the smallest PR outcome, sailor-facing
-   review path, and verification plan in the issue.
+   review path, concise implementation plan, delegation boundaries, and
+   verification plan in the issue before delegating or editing.
 4. Create an isolated branch or worktree. Delegate only bounded supporting work
    that materially reduces uncertainty.
-5. Implement the smallest complete slice. Run targeted checks while developing.
-6. Push the exact commit and open a pull request that closes the issue. Include
+5. Before spawning subagents or beginning another costly phase, recheck usage.
+   If the stop percentage has been reached, preserve and push a clear,
+   recoverable checkpoint, record the handoff on the issue, and stop.
+6. Implement the smallest complete slice. Run targeted checks while developing.
+7. Push the exact commit and open a pull request that closes the issue. Include
    tests, screenshots for UI work, documentation, and provenance notes as the
    normal workflow requires.
-7. When the exact pushed commit has all required checks green, no unresolved
+8. When the exact pushed commit has all required checks green, no unresolved
    blocking review or conflict, and a complete issue decision record, merge the
    agent's own pull request using the repository's configured merge method.
-8. Post the closing decision log on the issue, then return to issue selection.
+9. Post the closing decision log on the issue. Fetch the updated `main`, remove
+   or leave the completed worktree cleanly, and create the next issue's branch
+   from the new `main` before returning to issue selection.
 
 Never begin a second coding issue while the first has uncommitted work, an
 unexplained failure, or an unresolved decision.
@@ -190,9 +205,11 @@ without reconstructing them from chat history.
 
 Stop after recording a concise GitHub handoff when any of these applies:
 
-- the weekly usage cap has been reached before a new issue begins
+- reported weekly usage is at or above the percentage selected by the user at
+  the start of the run
 - usage cannot be inspected
-- no unblocked, low-conflict issue is available
+- no unblocked, low-conflict issue is available after attempting roadmap
+  refinement
 - credentials, source material, or an external service is needed
 - the next decision would be unsafe or expensive to reverse
 - an active pull request or branch creates a material conflict
@@ -200,7 +217,9 @@ Stop after recording a concise GitHub handoff when any of these applies:
 - branch protection or a required review prevents the agent's authorized merge
 
 Do not silently skip blocked issues. Record the blocker, its impact, and the
-next safe action on the issue or parent roadmap issue before stopping.
+next safe action on the issue or parent roadmap issue before stopping. If a
+stop occurs mid-issue, leave all useful work committed and pushed on its branch
+with a draft pull request when that makes the checkpoint easier to review.
 
 ## Branching
 

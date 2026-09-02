@@ -35,8 +35,8 @@ Use:
   lowest-numbered unblocked `ready` issue unless the user reprioritizes
 - an explicit hands-free "I'm Feeling Lucky" mode which extends that workflow,
   records decisions in GitHub issue comments, refines large issues before
-  coding, asks only for the user's usage cap at launch, and stops between
-  issues at that cap
+  coding, asks only for the user's weekly usage-stop percentage at launch, and
+  stops at defined checkpoints once reported usage reaches that percentage
 - a sailor-facing deployed proof as part of the definition of done for every feature slice
 - domain-semantic browser assertions for scenario diagram changes, alongside visual inspection
 
@@ -54,8 +54,8 @@ state into Markdown after each merge.
 
 Hands-free work remains bounded and reviewable: an agent takes one issue at a
 time, avoids known conflicts, and leaves its material choices in the selected
-issue. A usage cap prevents it from beginning further work, rather than trying
-to predict token consumption mid-issue.
+issue. A user-selected weekly usage-stop percentage prevents it from beginning
+further costly work after the account reports that threshold has been reached.
 
 An explicitly authorized hands-free run makes contained, reversible decisions
 using its best judgment and records them in the issue. It may merge its own pull
