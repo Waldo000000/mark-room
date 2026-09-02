@@ -58,6 +58,12 @@ export default async function ScenariosPage({
             Inspect the geometry, situation, rulings, and source record for each
             worked example.
           </p>
+          <Link
+            className="mt-4 inline-block text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+            href="/rules"
+          >
+            Explore referenced rules
+          </Link>
         </header>
 
         <section

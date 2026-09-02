@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { collectRuleReferences, filterCorpusEntriesByRule } from './library';
+import {
+  buildRuleIndex,
+  collectRuleReferences,
+  filterCorpusEntriesByRule,
+} from './library';
 
 function entry(
   slug: string,
@@ -42,5 +46,21 @@ describe('corpus library filters', () => {
 
   it('returns every entry when no reference is selected', () => {
     expect(filterCorpusEntriesByRule(entries)).toEqual(entries);
+  });
+
+  it('builds a stable index of matching entries for each reference', () => {
+    expect(
+      buildRuleIndex(entries).map(({ ruleReference, entries: matches }) => ({
+        ruleReference,
+        slugs: matches.map((item) => item.slug),
+      })),
+    ).toEqual([
+      { ruleReference: 'RRS 10', slugs: ['port-starboard'] },
+      { ruleReference: 'RRS 11', slugs: ['windward-leeward'] },
+      {
+        ruleReference: 'RRS 14',
+        slugs: ['windward-leeward', 'contact'],
+      },
+    ]);
   });
 });
