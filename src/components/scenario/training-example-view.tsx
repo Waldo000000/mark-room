@@ -4,6 +4,11 @@ import {
   BoatGlyph,
   deriveSailPresentation,
 } from '@/src/components/scenario/boat-glyph';
+import {
+  describeObligation,
+  describeOutcome,
+  selectRulingStatements,
+} from '@/src/components/scenario/ruling-presentation';
 import type { CorpusMetadata } from '@/src/domain/corpus/schema';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
 import type { TrainingExample } from '@/src/domain/training-example/schema';
@@ -38,34 +43,9 @@ export function TrainingExampleView({
   const situationMoment =
     situation.moments.find((candidate) => candidate.id === keyframe.id) ??
     situation.moments[0];
-  const obligation = rulings.obligations.find(
-    (candidate) => candidate.atMoment === situationMoment.id,
-  );
-  const subjectBoat = scenario.boats.find(
-    (boat) => boat.id === obligation?.boatId,
-  );
-  const otherBoat = scenario.boats.find(
-    (boat) => boat.id === obligation?.owedToBoatId,
-  );
-  const subjectState = situationMoment.boatStates.find(
-    (state) => state.boatId === obligation?.boatId,
-  );
-  const otherState = situationMoment.boatStates.find(
-    (state) => state.boatId === obligation?.owedToBoatId,
-  );
-  const windwardLeeward = situationMoment.relationships.find(
-    (relationship) => relationship.type === 'windward-leeward',
-  );
-  const windwardBoat = situation.boats.find(
-    (boat) => boat.id === windwardLeeward?.windwardBoatId,
-  );
-  const leewardBoat = situation.boats.find(
-    (boat) => boat.id === windwardLeeward?.leewardBoatId,
-  );
-  const overlap = situationMoment.relationships.find(
-    (relationship) =>
-      relationship.type === 'relative-position' &&
-      relationship.relationship === 'overlapped',
+  const selectedRulings = selectRulingStatements(rulings, situationMoment.id);
+  const boatLabels = new Map(
+    scenario.boats.map((boat) => [boat.id, boat.label]),
   );
   const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
   const scenarioJson = JSON.stringify(scenario, null, 2);
@@ -305,46 +285,101 @@ export function TrainingExampleView({
 
           <aside className="min-w-0 border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
             <section
-              data-ruling-moment-id={obligation?.atMoment ?? 'none'}
-              data-testid="ruling-finding"
+              data-ruling-moment-id={situationMoment.id}
+              data-testid="ruling-statements"
             >
               <p className="text-sm font-semibold uppercase text-muted-foreground">
-                Finding
+                Rulings
               </p>
               <h2 className="mt-2 text-xl font-semibold">
-                {obligation
-                  ? `${subjectBoat?.label} must keep clear of ${otherBoat?.label}.`
-                  : `No obligation recorded at ${situationMoment.label}.`}
+                Rulings at {situationMoment.label}
               </h2>
-              <p
-                className="mt-3 text-sm leading-6 text-muted-foreground"
-                data-testid="ruling-basis"
-              >
-                {!obligation ? (
-                  <>The structured ruling has no obligation at this moment.</>
-                ) : windwardLeeward && overlap ? (
-                  <>
-                    {windwardBoat?.label} is windward of {leewardBoat?.label},
-                    and the boats are overlapped.
-                  </>
+
+              <section className="mt-5" aria-labelledby="obligations-heading">
+                <h3
+                  id="obligations-heading"
+                  className="text-base font-semibold"
+                >
+                  Obligations
+                </h3>
+                {selectedRulings.obligations.length > 0 ? (
+                  <ul className="mt-3 space-y-4">
+                    {selectedRulings.obligations.map((obligation, index) => (
+                      <li
+                        key={`${obligation.atMoment}-${obligation.boatId}-${obligation.owedToBoatId}-${obligation.type}-${index}`}
+                        className="border-l-4 border-primary pl-3"
+                        data-statement-type={obligation.type}
+                        data-testid="ruling-obligation"
+                      >
+                        <p className="text-sm font-semibold leading-6">
+                          {describeObligation(obligation, boatLabels)}
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {obligation.ruleRefs.join(', ')}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
                 ) : (
-                  <>
-                    {subjectBoat?.label} is on {subjectState?.tack} tack and{' '}
-                    {otherBoat?.label} is on {otherState?.tack} tack.
-                  </>
-                )}{' '}
-                {obligation ? (
-                  <>
-                    {' '}
-                    The structured obligation cites{' '}
-                    {obligation.ruleRefs.join(', ')}.
-                  </>
-                ) : null}
-              </p>
+                  <p
+                    className="mt-3 text-sm leading-6 text-muted-foreground"
+                    data-testid="no-obligations"
+                  >
+                    No obligations recorded at this position.
+                  </p>
+                )}
+              </section>
+
+              <section
+                className="mt-6 border-t border-border pt-5"
+                aria-labelledby="outcomes-heading"
+              >
+                <h3 id="outcomes-heading" className="text-base font-semibold">
+                  Outcomes
+                </h3>
+                {selectedRulings.outcomes.length > 0 ? (
+                  <ul className="mt-3 space-y-4">
+                    {selectedRulings.outcomes.map((outcome, index) => (
+                      <li
+                        key={`${outcome.atMoment}-${outcome.boatId}-${outcome.type}-${index}`}
+                        className="border-l-4 border-accent pl-3"
+                        data-statement-type={outcome.type}
+                        data-testid="ruling-outcome"
+                      >
+                        <p className="text-sm font-semibold leading-6">
+                          {describeOutcome(outcome, boatLabels)}
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {outcome.ruleRefs.join(', ')}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p
+                    className="mt-3 text-sm leading-6 text-muted-foreground"
+                    data-testid="no-outcomes"
+                  >
+                    No outcomes recorded at this position.
+                  </p>
+                )}
+              </section>
+
               {corpusMetadata.teachingText ? (
-                <p className="mt-3 border-l-4 border-primary pl-3 text-sm leading-6">
-                  {corpusMetadata.teachingText}
-                </p>
+                <section
+                  className="mt-6 border-t border-border pt-5"
+                  aria-labelledby="teaching-note-heading"
+                >
+                  <h3
+                    id="teaching-note-heading"
+                    className="text-base font-semibold"
+                  >
+                    Teaching note
+                  </h3>
+                  <p className="mt-3 border-l-4 border-primary pl-3 text-sm leading-6">
+                    {corpusMetadata.teachingText}
+                  </p>
+                </section>
               ) : null}
             </section>
 

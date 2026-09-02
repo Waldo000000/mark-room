@@ -46,15 +46,15 @@ test('shows the windward boat keeping clear under Rule 11', async ({
     page.getByRole('heading', { level: 1, name: 'Windward meets leeward' }),
   ).toBeVisible();
   await expect(
-    page.getByRole('heading', {
-      level: 2,
-      name: 'Red must keep clear of Blue.',
-    }),
+    page.getByRole('heading', { level: 2, name: 'Rulings at Position 1' }),
   ).toBeVisible();
-  await expect(page.getByTestId('ruling-basis')).toContainText(
-    'Red is windward of Blue, and the boats are overlapped.',
+  await expect(page.getByTestId('ruling-obligation')).toContainText(
+    'Red must keep clear of Blue.',
   );
-  await expect(page.getByTestId('ruling-basis')).toContainText('RRS 11');
+  await expect(page.getByTestId('ruling-obligation')).toContainText('RRS 11');
+  await expect(page.getByTestId('no-outcomes')).toHaveText(
+    'No outcomes recorded at this position.',
+  );
 
   const scenario = JSON.parse(
     (await page.getByTestId('scenario-json').textContent()) ?? '',
@@ -133,7 +133,7 @@ test('switches keyframes, Situation moments, and Rulings together', async ({
     'data-moment-id',
     'position-2',
   );
-  await expect(page.getByTestId('ruling-finding')).toHaveAttribute(
+  await expect(page.getByTestId('ruling-statements')).toHaveAttribute(
     'data-ruling-moment-id',
     'position-2',
   );
@@ -337,11 +337,11 @@ test('renders Scenario, Situation, and Ruling consistently', async ({
   expect(obligation).not.toHaveProperty('explanation');
   expect(rulings).not.toHaveProperty('conclusion');
 
-  await expect(
-    page.getByRole('heading', {
-      name: `${subject?.label} must keep clear of ${other?.label}.`,
-    }),
-  ).toBeVisible();
+  await expect(page.getByTestId('ruling-obligation')).toContainText(
+    `${subject?.label} must keep clear of ${other?.label}.`,
+  );
+  await expect(page.getByTestId('ruling-obligation')).toContainText('RRS 10');
+  await expect(page.getByTestId('no-outcomes')).toBeVisible();
   await expect(page.locator('html')).toHaveJSProperty(
     'scrollWidth',
     await page.locator('html').evaluate((element) => element.clientWidth),
