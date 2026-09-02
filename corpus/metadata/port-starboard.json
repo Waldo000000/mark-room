@@ -12,11 +12,11 @@
       "accessedAt": "2026-08-31T00:00:00+10:00",
       "pageOrSection": "Part 2, Section A, Rule 10",
       "extractionMethod": "manual",
-      "notes": "The rule source is authoritative. The geometry and MarkRoom transcription remain unverified."
+      "notes": "The rule source is authoritative. The two-position geometry is an authored training illustration, and the MarkRoom transcription remains unverified."
     }
   ],
   "verification": {
     "status": "unverified",
-    "notes": "The World Sailing source is authoritative; this MarkRoom transcription has not been human-verified."
+    "notes": "The World Sailing source is authoritative; the authored two-position geometry and MarkRoom transcription have not been human-verified."
   }
 }

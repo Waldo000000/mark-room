@@ -14,11 +14,15 @@ const BOAT_LABEL_Y_OFFSET = 0.3;
 
 type TrainingExampleViewProps = {
   corpusMetadata: CorpusMetadata;
+  scenarioSlug: string;
+  selectedKeyframeId: string;
   trainingExample: TrainingExample;
 };
 
 export function TrainingExampleView({
   corpusMetadata,
+  scenarioSlug,
+  selectedKeyframeId,
   trainingExample,
 }: TrainingExampleViewProps) {
   const { rulings, scenario, situation } = trainingExample;
@@ -27,20 +31,27 @@ export function TrainingExampleView({
     'agent-reviewed': 'Agent-reviewed transcription',
     'human-verified': 'Human-verified transcription',
   }[corpusMetadata.verification.status];
-  const keyframe = scenario.keyframes[0];
-  const situationMoment = situation.moments[0];
-  const obligation = rulings.obligations[0];
+  const keyframe =
+    scenario.keyframes.find(
+      (candidate) => candidate.id === selectedKeyframeId,
+    ) ?? scenario.keyframes[0];
+  const situationMoment =
+    situation.moments.find((candidate) => candidate.id === keyframe.id) ??
+    situation.moments[0];
+  const obligation = rulings.obligations.find(
+    (candidate) => candidate.atMoment === situationMoment.id,
+  );
   const subjectBoat = scenario.boats.find(
-    (boat) => boat.id === obligation.boatId,
+    (boat) => boat.id === obligation?.boatId,
   );
   const otherBoat = scenario.boats.find(
-    (boat) => boat.id === obligation.owedToBoatId,
+    (boat) => boat.id === obligation?.owedToBoatId,
   );
   const subjectState = situationMoment.boatStates.find(
-    (state) => state.boatId === obligation.boatId,
+    (state) => state.boatId === obligation?.boatId,
   );
   const otherState = situationMoment.boatStates.find(
-    (state) => state.boatId === obligation.owedToBoatId,
+    (state) => state.boatId === obligation?.owedToBoatId,
   );
   const windwardLeeward = situationMoment.relationships.find(
     (relationship) => relationship.type === 'windward-leeward',
@@ -96,6 +107,37 @@ export function TrainingExampleView({
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
           <section className="min-w-0">
+            {scenario.keyframes.length > 1 ? (
+              <nav aria-label="Scenario position" className="mb-5">
+                <p className="text-sm font-semibold uppercase text-muted-foreground">
+                  Position
+                </p>
+                <div
+                  className="mt-2 flex gap-2 overflow-x-auto pb-1"
+                  data-testid="position-selector"
+                >
+                  {scenario.keyframes.map((candidate) => {
+                    const selected = candidate.id === keyframe.id;
+
+                    return (
+                      <Link
+                        key={candidate.id}
+                        aria-current={selected ? 'step' : undefined}
+                        className={`inline-flex min-h-11 min-w-24 shrink-0 items-center justify-center rounded-sm border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                          selected
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-border bg-background text-foreground hover:bg-muted'
+                        }`}
+                        href={`/scenarios/${scenarioSlug}?position=${encodeURIComponent(candidate.id)}`}
+                      >
+                        {candidate.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </nav>
+            ) : null}
+
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-base font-semibold">{keyframe.label}</h2>
               <p className="text-sm text-muted-foreground">
@@ -105,6 +147,7 @@ export function TrainingExampleView({
 
             <div
               className="mt-3 aspect-square w-full overflow-hidden rounded-md border border-border bg-cyan-50 p-3 sm:p-5"
+              data-keyframe-id={keyframe.id}
               data-testid="scenario-diagram"
             >
               <svg
@@ -231,43 +274,55 @@ export function TrainingExampleView({
               </svg>
             </div>
 
-            <p className="mt-5 text-sm font-semibold uppercase text-muted-foreground">
-              Situation
-            </p>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              {situationMoment.boatStates.map((state) => {
-                const boat = situation.boats.find(
-                  (candidate) => candidate.id === state.boatId,
-                );
+            <section
+              data-moment-id={situationMoment.id}
+              data-testid="situation-moment"
+            >
+              <p className="mt-5 text-sm font-semibold uppercase text-muted-foreground">
+                Situation
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {situationMoment.boatStates.map((state) => {
+                  const boat = situation.boats.find(
+                    (candidate) => candidate.id === state.boatId,
+                  );
 
-                return (
-                  <div
-                    key={state.boatId}
-                    className="border-l-4 border-primary pl-3 text-sm leading-6"
-                  >
-                    <span className="font-semibold">{boat?.label}</span>{' '}
-                    <span className="text-muted-foreground">
-                      is on {state.tack} tack and {state.pointOfSail}.
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+                  return (
+                    <div
+                      key={state.boatId}
+                      className="border-l-4 border-primary pl-3 text-sm leading-6"
+                    >
+                      <span className="font-semibold">{boat?.label}</span>{' '}
+                      <span className="text-muted-foreground">
+                        is on {state.tack} tack and {state.pointOfSail}.
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
           </section>
 
           <aside className="min-w-0 border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
-            <section>
+            <section
+              data-ruling-moment-id={obligation?.atMoment ?? 'none'}
+              data-testid="ruling-finding"
+            >
               <p className="text-sm font-semibold uppercase text-muted-foreground">
                 Finding
               </p>
               <h2 className="mt-2 text-xl font-semibold">
-                {subjectBoat?.label} must keep clear of {otherBoat?.label}.
+                {obligation
+                  ? `${subjectBoat?.label} must keep clear of ${otherBoat?.label}.`
+                  : `No obligation recorded at ${situationMoment.label}.`}
               </h2>
               <p
                 className="mt-3 text-sm leading-6 text-muted-foreground"
                 data-testid="ruling-basis"
               >
-                {windwardLeeward && overlap ? (
+                {!obligation ? (
+                  <>The structured ruling has no obligation at this moment.</>
+                ) : windwardLeeward && overlap ? (
                   <>
                     {windwardBoat?.label} is windward of {leewardBoat?.label},
                     and the boats are overlapped.
@@ -278,8 +333,13 @@ export function TrainingExampleView({
                     {otherBoat?.label} is on {otherState?.tack} tack.
                   </>
                 )}{' '}
-                The structured obligation cites {obligation.ruleRefs.join(', ')}
-                .
+                {obligation ? (
+                  <>
+                    {' '}
+                    The structured obligation cites{' '}
+                    {obligation.ruleRefs.join(', ')}.
+                  </>
+                ) : null}
               </p>
               {corpusMetadata.teachingText ? (
                 <p className="mt-3 border-l-4 border-primary pl-3 text-sm leading-6">
