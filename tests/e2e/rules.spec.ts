@@ -25,12 +25,25 @@ test('browses referenced rules and opens a matching example', async ({
 
   const ruleTen = page.locator('[data-rule-reference="RRS 10"]');
   const ruleEleven = page.locator('[data-rule-reference="RRS 11"]');
+  const ruleTwelve = page.locator('[data-rule-reference="RRS 12"]');
+  const ruleEighteenTwoA2 = page.locator(
+    '[data-rule-reference="RRS 18.2(a)(2)"]',
+  );
   await expect(ruleTen).toContainText('1 example in the current corpus');
-  await expect(ruleEleven).toContainText('3 examples in the current corpus');
-  await expect(ruleEleven.getByText('Unverified transcription')).toHaveCount(3);
+  await expect(ruleEleven).toContainText('4 examples in the current corpus');
+  await expect(ruleEleven.getByText('Unverified transcription')).toHaveCount(4);
   await expect(
     ruleEleven.getByRole('link', { name: 'Open authoritative source' }),
-  ).toHaveCount(3);
+  ).toHaveCount(4);
+  await expect(ruleTwelve).toContainText('1 example in the current corpus');
+  await expect(ruleEighteenTwoA2).toContainText(
+    '1 example in the current corpus',
+  );
+  await expect(
+    ruleEighteenTwoA2.getByRole('link', {
+      name: 'Clear ahead at a leeward mark',
+    }),
+  ).toBeVisible();
   await expect(
     ruleEleven.getByRole('link', { name: 'Windward meets leeward' }),
   ).toBeVisible();
