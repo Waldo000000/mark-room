@@ -81,9 +81,6 @@ export default function PortStarboardScenarioPage() {
           <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">
             {scenario.title}
           </h1>
-          <p className="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">
-            {scenario.prompt}
-          </p>
         </header>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">

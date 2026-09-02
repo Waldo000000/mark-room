@@ -2,7 +2,6 @@
   "schemaVersion": "0.2.0",
   "id": "development-schema-coverage",
   "title": "Development fixture: schema coverage",
-  "prompt": "Can the provisional model encode representative geometry, facts, and findings?",
   "context": {
     "discipline": "radio_sailing",
     "ruleSetVersion": "2025-2028"

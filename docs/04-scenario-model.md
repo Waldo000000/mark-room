@@ -61,7 +61,7 @@ data.
 A scenario contains:
 
 - stable scenario ID and schema version
-- title and short prompt/question
+- title
 - sailing context, such as radio sailing or general RRS
 - 2D sailing area measured in hull lengths
 - wind direction

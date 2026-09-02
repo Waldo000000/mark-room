@@ -41,4 +41,7 @@ references its paired scenario.
 Sail rendering remains consistent across scenarios without exposing drawing
 controls that a scenario editor should not ask sailors to manage.
 
+Teaching prompts and questions are presentation or corpus concerns, not
+Scenario data.
+
 The schema must be discovered and refined against a broad corpus before being treated as stable.
