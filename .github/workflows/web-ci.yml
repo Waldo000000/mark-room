@@ -35,6 +35,9 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
+      - name: Validate corpus
+        run: npm run validate:corpus
+
       - name: Unit tests
         run: npm test
 

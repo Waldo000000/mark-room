@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import portStarboardSituation from './__fixtures__/port-starboard-situation.json';
+import portStarboardEvalCase from '../../../corpus/eval-cases/port-starboard.json';
 import { situationSchema, type Situation } from './schema';
+
+const portStarboardSituation = portStarboardEvalCase.expected.situation;
 
 describe('situationSchema', () => {
   it('validates a self-contained RRS-language situation', () => {

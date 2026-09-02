@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import portStarboardEvalCase from '@/corpus/eval-cases/port-starboard.json';
 import portStarboardMetadata from '@/corpus/metadata/port-starboard.json';
 import {
   BoatGlyph,
@@ -8,10 +9,7 @@ import {
 } from '@/src/components/scenario/boat-glyph';
 import { corpusMetadataSchema } from '@/src/domain/corpus/schema';
 import { scenarioEvalCaseSchema } from '@/src/domain/eval/schema';
-import portStarboardRuling from '@/src/domain/ruling/__fixtures__/port-starboard-ruling.json';
-import validDevelopmentScenario from '@/src/domain/scenario/__fixtures__/valid-development-scenario.json';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
-import portStarboardSituation from '@/src/domain/situation/__fixtures__/port-starboard-situation.json';
 
 const DIAGRAM_FONT_SIZE = 0.24;
 const BOAT_LABEL_X_OFFSET = 0.66;
@@ -23,13 +21,7 @@ export const metadata: Metadata = {
     'An unverified MarkRoom scenario illustrating a port-starboard crossing.',
 };
 
-const evalCase = scenarioEvalCaseSchema.parse({
-  input: validDevelopmentScenario,
-  expected: {
-    situation: portStarboardSituation,
-    ruling: portStarboardRuling,
-  },
-});
+const evalCase = scenarioEvalCaseSchema.parse(portStarboardEvalCase);
 const scenario = evalCase.input;
 const { ruling, situation } = evalCase.expected;
 const corpusMetadata = corpusMetadataSchema.parse(portStarboardMetadata);
