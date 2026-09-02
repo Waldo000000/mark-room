@@ -18,6 +18,19 @@ export type KeepClearQuizResult = {
   ruleRefs: string[];
 };
 
+type KeepClearPracticeSource = {
+  slug: string;
+  trainingExample: TrainingExample;
+};
+
+export type KeepClearPracticeItem = {
+  slug: string;
+  scenarioTitle: string;
+  momentId: string;
+  momentLabel: string;
+  ruleRefs: string[];
+};
+
 export function deriveKeepClearQuestion(
   trainingExample: TrainingExample,
   momentId: string,
@@ -66,4 +79,25 @@ export function scoreKeepClearAnswer(
     explanation: question.answer.explanation,
     ruleRefs: [...question.answer.ruleRefs],
   };
+}
+
+export function listKeepClearPractice(
+  sources: readonly KeepClearPracticeSource[],
+): KeepClearPracticeItem[] {
+  return sources.flatMap(({ slug, trainingExample }) =>
+    trainingExample.situation.moments.flatMap((moment) => {
+      const question = deriveKeepClearQuestion(trainingExample, moment.id);
+      if (!question) return [];
+
+      return [
+        {
+          slug,
+          scenarioTitle: trainingExample.scenario.title,
+          momentId: moment.id,
+          momentLabel: moment.label,
+          ruleRefs: [...question.answer.ruleRefs],
+        },
+      ];
+    }),
+  );
 }

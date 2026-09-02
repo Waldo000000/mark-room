@@ -12,25 +12,35 @@ export default function Home() {
         </h1>
         <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
           MarkRoom is a mobile-first learning app for the Racing Rules of
-          Sailing. The first scenario slice is now live; the full viewer,
-          corpus, and quizzes will appear here as they become verified product
-          slices.
+          Sailing. Study provenance-aware scenarios, follow their authoritative
+          sources, and practise deterministic questions from structured rulings.
         </p>
 
         <section className="mt-10 border-y border-border py-6">
           <p className="text-sm font-semibold">Available now</p>
-          <div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="max-w-xl text-sm leading-6 text-muted-foreground">
-              Inspect a port/starboard crossing rendered from validated,
-              provenance-aware scenario data.
-            </p>
+          <nav
+            aria-label="Learning paths"
+            className="mt-4 grid gap-3 sm:grid-cols-3"
+          >
             <Link
               href="/scenarios"
               className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               Browse scenarios
             </Link>
-          </div>
+            <Link
+              href="/quiz"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Practice questions
+            </Link>
+            <Link
+              href="/rules"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Explore rules
+            </Link>
+          </nav>
         </section>
       </section>
     </main>
