@@ -2,6 +2,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import path from 'node:path';
 
+import {
+  collectRuleReferences,
+  filterCorpusEntriesByRule,
+} from '@/src/domain/corpus/library';
 import { validateCorpusDirectory } from '@/src/domain/corpus/validate';
 
 export const metadata: Metadata = {
@@ -15,10 +19,23 @@ const verificationLabels = {
   'human-verified': 'Human-verified transcription',
 } as const;
 
-export default async function ScenariosPage() {
-  const entries = await validateCorpusDirectory(
-    path.resolve(process.cwd(), 'corpus'),
-  );
+type ScenariosPageProps = {
+  searchParams: Promise<{ rule?: string | string[] }>;
+};
+
+export default async function ScenariosPage({
+  searchParams,
+}: ScenariosPageProps) {
+  const [entries, query] = await Promise.all([
+    validateCorpusDirectory(path.resolve(process.cwd(), 'corpus')),
+    searchParams,
+  ]);
+  const ruleReferences = collectRuleReferences(entries);
+  const requestedRule = Array.isArray(query.rule) ? query.rule[0] : query.rule;
+  const selectedRule = ruleReferences.includes(requestedRule ?? '')
+    ? requestedRule
+    : undefined;
+  const filteredEntries = filterCorpusEntriesByRule(entries, selectedRule);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -44,10 +61,64 @@ export default async function ScenariosPage() {
         </header>
 
         <section
+          className="border-b border-border py-6"
+          aria-label="Scenario filters"
+        >
+          <form
+            action="/scenarios"
+            className="grid gap-3 sm:grid-cols-[minmax(0,18rem)_auto_auto] sm:items-end sm:justify-start"
+            method="get"
+          >
+            <label
+              className="grid gap-2 text-sm font-semibold"
+              htmlFor="rule-filter"
+            >
+              Filter by rule
+              <select
+                className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                defaultValue={selectedRule ?? ''}
+                id="rule-filter"
+                key={selectedRule ?? 'all-rules'}
+                name="rule"
+              >
+                <option value="">All rules</option>
+                {ruleReferences.map((ruleReference) => (
+                  <option key={ruleReference} value={ruleReference}>
+                    {ruleReference}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
+              type="submit"
+            >
+              Apply filter
+            </button>
+            {selectedRule ? (
+              <Link
+                className="inline-flex min-h-11 items-center justify-center text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
+                href="/scenarios"
+              >
+                Clear filter
+              </Link>
+            ) : null}
+          </form>
+          <p
+            className="mt-4 text-sm text-muted-foreground"
+            data-testid="scenario-count"
+          >
+            {filteredEntries.length}{' '}
+            {filteredEntries.length === 1 ? 'scenario' : 'scenarios'}
+            {selectedRule ? ` citing ${selectedRule}` : ''}
+          </p>
+        </section>
+
+        <section
           aria-label="Available scenarios"
           className="divide-y divide-border"
         >
-          {entries.map(
+          {filteredEntries.map(
             ({ metadata: corpusMetadata, slug, trainingExample }) => {
               const ruleRefs = [
                 ...new Set(
