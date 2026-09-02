@@ -27,6 +27,7 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
   expect(scenario).not.toHaveProperty('teachingText');
   expect(scenario).not.toHaveProperty('provenance');
   expect(scenario).not.toHaveProperty('verification');
+  expect(scenario).not.toHaveProperty('prompt');
   expect(scenario.sailingArea).toEqual({ width: 6, height: 6 });
   for (const state of keyframe.boatStates) {
     expect(state).not.toHaveProperty('sail');

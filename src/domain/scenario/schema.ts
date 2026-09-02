@@ -223,7 +223,6 @@ export const scenarioSchema = z
     schemaVersion: z.literal(SCENARIO_SCHEMA_VERSION),
     id: entityIdSchema,
     title: shortTextSchema,
-    prompt: longTextSchema,
     context: z
       .object({
         discipline: z.enum(['radio_sailing', 'general_rrs']),

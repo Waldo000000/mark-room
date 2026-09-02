@@ -2,7 +2,6 @@
   "schemaVersion": "0.2.0",
   "id": "invalid-dangling-boat-reference",
   "title": "Invalid development fixture",
-  "prompt": "This fixture must fail because a keyframe references an unknown boat.",
   "context": {
     "discipline": "general_rrs"
   },
