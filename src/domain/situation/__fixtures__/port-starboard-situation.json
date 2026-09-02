@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "0.1.0",
+  "scenarioId": "development-port-starboard-crossing",
+  "context": {
+    "discipline": "radio_sailing",
+    "ruleSetVersion": "2025-2028"
+  },
+  "boats": [
+    { "id": "blue", "label": "Blue" },
+    { "id": "yellow", "label": "Yellow" }
+  ],
+  "marks": [],
+  "moments": [
+    {
+      "id": "position-1",
+      "label": "Position 1",
+      "boatStates": [
+        {
+          "boatId": "blue",
+          "tack": "starboard",
+          "pointOfSail": "close-hauled",
+          "sailLuffing": false,
+          "inZoneOfMarks": []
+        },
+        {
+          "boatId": "yellow",
+          "tack": "port",
+          "pointOfSail": "close-hauled",
+          "sailLuffing": false,
+          "inZoneOfMarks": []
+        }
+      ],
+      "relationships": [],
+      "actions": []
+    }
+  ]
+}

@@ -25,6 +25,12 @@ presentation values are not Scenario data.
 
 Use structured rulings and findings rather than a single `answer` field.
 
+Separate the reasoning pipeline into three bounded models: editor-controlled
+`Scenario`, self-contained RRS-language `Situation`, and obligations/outcomes
+`Ruling`. A rules engine consumes Situation without also needing Scenario.
+Situation excludes geometry and renderer details. Defer temporal transition
+types until multi-keyframe cases establish the required RRS vocabulary.
+
 Store initial corpus records as validated files in Git. Keep teaching text,
 source provenance, and verification in sidecar metadata keyed by scenario ID,
 not in the Scenario model itself. Every stored corpus scenario must have this

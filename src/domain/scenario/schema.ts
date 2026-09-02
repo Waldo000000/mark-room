@@ -3,7 +3,9 @@ import { z } from 'zod';
 import {
   entityIdSchema,
   longTextSchema,
+  rulesContextSchema,
   shortTextSchema,
+  tackSchema,
 } from '../shared/schema';
 import { inferTackFromHeading } from './geometry';
 
@@ -48,7 +50,7 @@ export const boatStateSchema = z
     boatId: entityIdSchema,
     position: coordinateSchema,
     headingDegrees: headingDegreesSchema,
-    tack: z.enum(['port', 'starboard']),
+    tack: tackSchema,
   })
   .strict();
 
@@ -223,12 +225,7 @@ export const scenarioSchema = z
     schemaVersion: z.literal(SCENARIO_SCHEMA_VERSION),
     id: entityIdSchema,
     title: shortTextSchema,
-    context: z
-      .object({
-        discipline: z.enum(['radio_sailing', 'general_rrs']),
-        ruleSetVersion: shortTextSchema.optional(),
-      })
-      .strict(),
+    context: rulesContextSchema,
     sailingArea: sailingAreaSchema,
     wind: windSchema,
     boats: z.array(boatSchema).min(1),
