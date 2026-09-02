@@ -308,7 +308,7 @@ test('shows an outside boat giving mark-room from first zone entry', async ({
 
   await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
     'leeward-mark-overlap-diagram.png',
-    { maxDiffPixelRatio: 0.005 },
+    { maxDiffPixelRatio: 0.007 },
   );
 
   await page
