@@ -268,14 +268,21 @@ test('scores a keep-clear answer without revealing the ruling first', async ({
   await expect(incorrectFeedback).toContainText(
     'On opposite tacks, identify the starboard-tack boat first',
   );
+  await page.getByRole('button', { name: 'Try again' }).click();
 
-  await page.goto('/scenarios/port-starboard?position=position-1&mode=quiz');
+  await expect(page.getByTestId('quiz-feedback')).toHaveCount(0);
+  await expect(page.getByRole('radio', { name: 'Blue' })).not.toBeChecked();
+  await expect(page.getByRole('radio', { name: 'Yellow' })).not.toBeChecked();
+  await expect(
+    page.getByRole('button', { name: 'Check answer' }),
+  ).toBeDisabled();
   await page.getByRole('radio', { name: 'Yellow' }).check();
   await page.getByRole('button', { name: 'Check answer' }).click();
 
   const correctFeedback = page.getByTestId('quiz-feedback');
   await expect(correctFeedback).toHaveAttribute('data-correct', 'true');
   await expect(correctFeedback).toContainText('Correct');
+  await expect(page.getByRole('button', { name: 'Try again' })).toHaveCount(0);
   await correctFeedback
     .getByRole('link', { name: 'Review the full ruling' })
     .click();
