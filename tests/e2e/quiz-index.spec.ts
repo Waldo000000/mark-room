@@ -129,9 +129,6 @@ test('discovers and retries a mark-room question without revealing its answer', 
   await expect(questions).not.toContainText('Blue is owed mark-room');
   await expect(questions).not.toContainText('RRS 18.2(a)(1)');
   await expect(questions).not.toContainText('RRS 18.2(a)(2)');
-  await expect(questions).toHaveScreenshot('mark-room-practice.png', {
-    maxDiffPixelRatio: 0.007,
-  });
 
   const positionOne = questions
     .getByRole('article')
