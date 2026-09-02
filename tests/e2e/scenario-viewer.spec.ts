@@ -7,6 +7,28 @@ import type { Scenario } from '../../src/domain/scenario/schema';
 import type { Situation } from '../../src/domain/situation/schema';
 import type { TrainingExample } from '../../src/domain/training-example/schema';
 
+test('browses the validated corpus and opens a scenario', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Browse scenarios' }).click();
+
+  await expect(page).toHaveURL('/scenarios');
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Racing rules scenarios' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Port meets starboard' }),
+  ).toBeVisible();
+  await expect(page.getByText('Unverified transcription')).toBeVisible();
+  await expect(page.getByText('RRS 10', { exact: true })).toBeVisible();
+
+  await page.getByRole('link', { name: 'Open scenario' }).click();
+
+  await expect(page).toHaveURL('/scenarios/port-starboard');
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Port meets starboard' }),
+  ).toBeVisible();
+});
+
 test('renders Scenario, Situation, and Ruling consistently', async ({
   page,
 }) => {
