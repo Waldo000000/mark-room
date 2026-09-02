@@ -21,9 +21,15 @@ test('browses the validated corpus and opens a scenario', async ({ page }) => {
   await expect(
     page.getByRole('heading', { level: 2, name: 'Windward meets leeward' }),
   ).toBeVisible();
-  await expect(page.getByText('Unverified transcription')).toHaveCount(2);
+  await expect(
+    page.getByRole('heading', {
+      level: 2,
+      name: 'Overlapped boats near a mark',
+    }),
+  ).toBeVisible();
+  await expect(page.getByText('Unverified transcription')).toHaveCount(3);
   await expect(page.getByText('RRS 10', { exact: true })).toBeVisible();
-  await expect(page.getByText('RRS 11', { exact: true })).toBeVisible();
+  await expect(page.getByText('RRS 11', { exact: true })).toHaveCount(2);
 
   await page
     .getByRole('article')
@@ -35,6 +41,122 @@ test('browses the validated corpus and opens a scenario', async ({ page }) => {
   await expect(
     page.getByRole('heading', { level: 1, name: 'Port meets starboard' }),
   ).toBeVisible();
+});
+
+test('renders mark and zone geometry from the validated Scenario', async ({
+  page,
+}) => {
+  await page.goto('/scenarios/windward-mark-zone');
+
+  await expect(
+    page.getByRole('heading', {
+      level: 1,
+      name: 'Overlapped boats near a mark',
+    }),
+  ).toBeVisible();
+
+  const scenario = JSON.parse(
+    (await page.getByTestId('scenario-json').textContent()) ?? '',
+  ) as Scenario;
+  const situation = JSON.parse(
+    (await page.getByTestId('situation-json').textContent()) ?? '',
+  ) as Situation;
+  const keyframe = scenario.keyframes[0];
+  const moment = situation.moments[0];
+  const mark = scenario.courseFeatures.find(
+    (feature) => feature.type === 'mark' && feature.id === 'windward-mark',
+  );
+  const zone = scenario.courseFeatures.find(
+    (feature) => feature.type === 'zone' && feature.id === 'windward-mark-zone',
+  );
+
+  expect(mark?.type).toBe('mark');
+  expect(zone?.type).toBe('zone');
+  if (!mark || mark.type !== 'mark' || !zone || zone.type !== 'zone') {
+    throw new Error('Expected windward mark and zone features');
+  }
+
+  expect(zone.markId).toBe(mark.id);
+  expect(zone.center).toEqual(mark.position);
+  expect(zone.radius).toBe(3);
+
+  const markGlyph = page.getByTestId(`mark-${mark.id}`);
+  const zoneGlyph = page.getByTestId(`zone-${zone.id}`);
+  const markScreenY = scenario.sailingArea.height - mark.position.y;
+  const zoneScreenY = scenario.sailingArea.height - zone.center.y;
+
+  await expect(markGlyph).toContainText('Windward mark');
+  await expect(markGlyph).toHaveAttribute(
+    'data-position-x',
+    String(mark.position.x),
+  );
+  await expect(markGlyph).toHaveAttribute(
+    'data-position-y',
+    String(mark.position.y),
+  );
+  await expect(markGlyph.locator('circle')).toHaveAttribute(
+    'cx',
+    String(mark.position.x),
+  );
+  await expect(markGlyph.locator('circle')).toHaveAttribute(
+    'cy',
+    String(markScreenY),
+  );
+  await expect(markGlyph.locator('circle')).toHaveAttribute(
+    'r',
+    String(mark.radius),
+  );
+
+  await expect(zoneGlyph).toContainText('3 hull length zone');
+  await expect(zoneGlyph).toHaveAttribute(
+    'data-center-x',
+    String(zone.center.x),
+  );
+  await expect(zoneGlyph).toHaveAttribute(
+    'data-center-y',
+    String(zone.center.y),
+  );
+  await expect(zoneGlyph).toHaveAttribute(
+    'data-radius-hull-lengths',
+    String(zone.radius),
+  );
+  await expect(zoneGlyph.locator('circle')).toHaveAttribute(
+    'cx',
+    String(zone.center.x),
+  );
+  await expect(zoneGlyph.locator('circle')).toHaveAttribute(
+    'cy',
+    String(zoneScreenY),
+  );
+  await expect(zoneGlyph.locator('circle')).toHaveAttribute(
+    'r',
+    String(zone.radius),
+  );
+
+  for (const state of keyframe.boatStates) {
+    const distanceFromMark = Math.hypot(
+      state.position.x - zone.center.x,
+      state.position.y - zone.center.y,
+    );
+    const situationState = moment.boatStates.find(
+      (candidate) => candidate.boatId === state.boatId,
+    );
+
+    expect(distanceFromMark).toBeLessThanOrEqual(zone.radius);
+    expect(situationState?.inZoneOfMarks).toContain(mark.id);
+  }
+
+  await expect(page.getByTestId('hull-length-scale')).toContainText(
+    '1 hull length',
+  );
+  await expect(page.locator('html')).toHaveJSProperty(
+    'scrollWidth',
+    await page.locator('html').evaluate((element) => element.clientWidth),
+  );
+  await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
+    'windward-mark-zone-diagram.png',
+    { maxDiffPixelRatio: 0.005 },
+  );
 });
 
 test('shows the windward boat keeping clear under Rule 11', async ({

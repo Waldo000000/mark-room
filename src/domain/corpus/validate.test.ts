@@ -15,6 +15,7 @@ describe('corpus validation', () => {
     expect(entries.map((entry) => entry.slug)).toEqual([
       'port-starboard',
       'windward-leeward',
+      'windward-mark-zone',
     ]);
     expect(entries[0].trainingExample.scenario.title).toBe(
       'Port meets starboard',
@@ -30,6 +31,23 @@ describe('corpus validation', () => {
       owedToBoatId: 'blue',
       ruleRefs: ['RRS 11'],
     });
+    const windwardMarkZone = entries[2].trainingExample;
+    expect(windwardMarkZone.scenario.courseFeatures).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'windward-mark', type: 'mark' }),
+        expect.objectContaining({
+          id: 'windward-mark-zone',
+          markId: 'windward-mark',
+          radius: 3,
+          type: 'zone',
+        }),
+      ]),
+    );
+    expect(
+      windwardMarkZone.situation.moments[0].boatStates.every((state) =>
+        state.inZoneOfMarks.includes('windward-mark'),
+      ),
+    ).toBe(true);
   });
 
   it('rejects a missing metadata sidecar', () => {
