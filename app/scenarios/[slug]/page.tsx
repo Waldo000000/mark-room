@@ -7,6 +7,7 @@ import { validateCorpusDirectory } from '@/src/domain/corpus/validate';
 
 type ScenarioPageProps = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ position?: string | string[] }>;
 };
 
 async function findTrainingExample(slug: string) {
@@ -39,15 +40,31 @@ export async function generateMetadata({
     : { title: 'Scenario not found | MarkRoom' };
 }
 
-export default async function ScenarioPage({ params }: ScenarioPageProps) {
-  const { slug } = await params;
+export default async function ScenarioPage({
+  params,
+  searchParams,
+}: ScenarioPageProps) {
+  const [{ slug }, query] = await Promise.all([params, searchParams]);
   const entry = await findTrainingExample(slug);
 
   if (!entry) notFound();
 
+  const requestedPosition = Array.isArray(query.position)
+    ? query.position[0]
+    : query.position;
+  const selectedKeyframeId =
+    requestedPosition &&
+    entry.trainingExample.scenario.keyframes.some(
+      (keyframe) => keyframe.id === requestedPosition,
+    )
+      ? requestedPosition
+      : entry.trainingExample.scenario.keyframes[0].id;
+
   return (
     <TrainingExampleView
       corpusMetadata={entry.metadata}
+      scenarioSlug={slug}
+      selectedKeyframeId={selectedKeyframeId}
       trainingExample={entry.trainingExample}
     />
   );

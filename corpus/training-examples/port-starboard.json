@@ -52,6 +52,30 @@
             "tack": "port"
           }
         ]
+      },
+      {
+        "id": "position-2",
+        "label": "Position 2",
+        "boatStates": [
+          {
+            "boatId": "blue",
+            "position": {
+              "x": 3.6,
+              "y": 3.3
+            },
+            "headingDegrees": 315,
+            "tack": "starboard"
+          },
+          {
+            "boatId": "yellow",
+            "position": {
+              "x": 2.4,
+              "y": 3.3
+            },
+            "headingDegrees": 45,
+            "tack": "port"
+          }
+        ]
       }
     ],
     "courseFeatures": [],
@@ -97,6 +121,28 @@
         ],
         "relationships": [],
         "actions": []
+      },
+      {
+        "id": "position-2",
+        "label": "Position 2",
+        "boatStates": [
+          {
+            "boatId": "blue",
+            "tack": "starboard",
+            "pointOfSail": "close-hauled",
+            "sailLuffing": false,
+            "inZoneOfMarks": []
+          },
+          {
+            "boatId": "yellow",
+            "tack": "port",
+            "pointOfSail": "close-hauled",
+            "sailLuffing": false,
+            "inZoneOfMarks": []
+          }
+        ],
+        "relationships": [],
+        "actions": []
       }
     ]
   },
@@ -105,6 +151,13 @@
     "obligations": [
       {
         "atMoment": "position-1",
+        "boatId": "yellow",
+        "type": "keep-clear",
+        "owedToBoatId": "blue",
+        "ruleRefs": ["RRS 10"]
+      },
+      {
+        "atMoment": "position-2",
         "boatId": "yellow",
         "type": "keep-clear",
         "owedToBoatId": "blue",

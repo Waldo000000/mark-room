@@ -99,6 +99,73 @@ test('shows the windward boat keeping clear under Rule 11', async ({
   );
 });
 
+test('switches keyframes, Situation moments, and Rulings together', async ({
+  page,
+}) => {
+  await page.goto('/scenarios/port-starboard');
+
+  const positionSelector = page.getByTestId('position-selector');
+  const positionOne = positionSelector.getByRole('link', {
+    name: 'Position 1',
+  });
+  const positionTwo = positionSelector.getByRole('link', {
+    name: 'Position 2',
+  });
+
+  await expect(positionSelector).toBeVisible();
+  await expect(positionOne).toHaveAttribute('aria-current', 'step');
+  await expect(positionTwo).not.toHaveAttribute('aria-current', 'step');
+  await expect(page.getByTestId('scenario-diagram')).toHaveAttribute(
+    'data-keyframe-id',
+    'position-1',
+  );
+
+  await positionTwo.click();
+
+  await expect(page).toHaveURL('/scenarios/port-starboard?position=position-2');
+  await expect(positionTwo).toHaveAttribute('aria-current', 'step');
+  await expect(positionOne).not.toHaveAttribute('aria-current', 'step');
+  await expect(page.getByTestId('scenario-diagram')).toHaveAttribute(
+    'data-keyframe-id',
+    'position-2',
+  );
+  await expect(page.getByTestId('situation-moment')).toHaveAttribute(
+    'data-moment-id',
+    'position-2',
+  );
+  await expect(page.getByTestId('ruling-finding')).toHaveAttribute(
+    'data-ruling-moment-id',
+    'position-2',
+  );
+
+  const scenario = JSON.parse(
+    (await page.getByTestId('scenario-json').textContent()) ?? '',
+  ) as Scenario;
+  const selectedKeyframe = scenario.keyframes.find(
+    (keyframe) => keyframe.id === 'position-2',
+  );
+  expect(selectedKeyframe).toBeDefined();
+
+  for (const state of selectedKeyframe?.boatStates ?? []) {
+    const screenY = scenario.sailingArea.height - state.position.y;
+    await expect(
+      page.getByTestId(`boat-${state.boatId}`).locator(':scope > g'),
+    ).toHaveAttribute(
+      'transform',
+      `translate(${state.position.x} ${screenY}) rotate(${state.headingDegrees})`,
+    );
+  }
+
+  await expect(page.locator('html')).toHaveJSProperty(
+    'scrollWidth',
+    await page.locator('html').evaluate((element) => element.clientWidth),
+  );
+  await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
+    'port-starboard-position-2-diagram.png',
+    { maxDiffPixelRatio: 0.005 },
+  );
+});
+
 test('renders Scenario, Situation, and Ruling consistently', async ({
   page,
 }) => {
