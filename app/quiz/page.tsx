@@ -6,6 +6,7 @@ import { collectRuleReferences } from '@/src/domain/corpus/library';
 import { validateCorpusDirectory } from '@/src/domain/corpus/validate';
 import { listApplicableRulePractice } from '@/src/domain/quiz/applicable-rule';
 import { listKeepClearPractice } from '@/src/domain/quiz/keep-clear';
+import { listMarkRoomPractice } from '@/src/domain/quiz/mark-room';
 
 export const metadata: Metadata = {
   title: 'Practice questions | MarkRoom',
@@ -24,6 +25,7 @@ export default async function QuizPage() {
     path.resolve(process.cwd(), 'corpus'),
   );
   const practiceItems = listKeepClearPractice(entries);
+  const markRoomPracticeItems = listMarkRoomPractice(entries);
   const ruleReferences = collectRuleReferences(entries);
   const rulePracticeItems = listApplicableRulePractice(entries, ruleReferences);
   const entriesBySlug = new Map(entries.map((entry) => [entry.slug, entry]));
@@ -90,6 +92,49 @@ export default async function QuizPage() {
                     href={`/scenarios/${item.slug}?position=${encodeURIComponent(item.momentId)}&mode=quiz`}
                   >
                     Start question
+                  </Link>
+                </article>
+              );
+            })}
+          </section>
+        </section>
+
+        <section
+          aria-labelledby="mark-room-practice"
+          className="mt-9 border-t border-border pt-7"
+        >
+          <h2 className="text-2xl font-semibold" id="mark-room-practice">
+            Who is owed mark-room?
+          </h2>
+          <section
+            aria-label="Available mark-room questions"
+            className="mt-3 divide-y divide-border"
+          >
+            {markRoomPracticeItems.map((item) => {
+              const entry = entriesBySlug.get(item.slug);
+              if (!entry) return null;
+
+              return (
+                <article
+                  className="grid gap-5 py-7 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                  key={`${item.slug}:${item.momentId}`}
+                >
+                  <div>
+                    <span className="rounded-sm border border-amber-600 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-900">
+                      {verificationLabels[entry.metadata.verification.status]}
+                    </span>
+                    <h3 className="mt-3 text-xl font-semibold">
+                      {item.scenarioTitle}
+                    </h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {item.momentLabel}
+                    </p>
+                  </div>
+                  <Link
+                    className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
+                    href={`/scenarios/${item.slug}?position=${encodeURIComponent(item.momentId)}&mode=quiz&question=mark-room`}
+                  >
+                    Start mark-room question
                   </Link>
                 </article>
               );

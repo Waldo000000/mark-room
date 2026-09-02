@@ -78,7 +78,11 @@ export default async function ScenarioPage({
       availableRuleReferences={collectRuleReferences(entries)}
       quizMode={requestedMode === 'quiz'}
       quizQuestionType={
-        requestedQuestion === 'rule' ? 'applicable-rule' : 'keep-clear'
+        requestedQuestion === 'rule'
+          ? 'applicable-rule'
+          : requestedQuestion === 'mark-room'
+            ? 'mark-room'
+            : 'keep-clear'
       }
       scenarioSlug={slug}
       selectedKeyframeId={selectedKeyframeId}

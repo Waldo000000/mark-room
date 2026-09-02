@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { ApplicableRuleQuiz } from '@/src/components/quiz/applicable-rule-quiz';
 import { KeepClearQuiz } from '@/src/components/quiz/keep-clear-quiz';
+import { MarkRoomQuiz } from '@/src/components/quiz/mark-room-quiz';
 import {
   BoatGlyph,
   deriveSailPresentation,
@@ -14,6 +15,7 @@ import {
 import type { CorpusMetadata } from '@/src/domain/corpus/schema';
 import { deriveApplicableRuleQuestion } from '@/src/domain/quiz/applicable-rule';
 import { deriveKeepClearQuestion } from '@/src/domain/quiz/keep-clear';
+import { deriveMarkRoomQuestion } from '@/src/domain/quiz/mark-room';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
 import { deriveMarkZones } from '@/src/domain/scenario/mark-zone';
 import type { TrainingExample } from '@/src/domain/training-example/schema';
@@ -26,7 +28,7 @@ type TrainingExampleViewProps = {
   availableRuleReferences: string[];
   corpusMetadata: CorpusMetadata;
   quizMode: boolean;
-  quizQuestionType: 'applicable-rule' | 'keep-clear';
+  quizQuestionType: 'applicable-rule' | 'keep-clear' | 'mark-room';
   scenarioSlug: string;
   selectedKeyframeId: string;
   trainingExample: TrainingExample;
@@ -67,6 +69,10 @@ export function TrainingExampleView({
     situationMoment.id,
     availableRuleReferences,
   );
+  const markRoomQuizQuestion = deriveMarkRoomQuestion(
+    trainingExample,
+    situationMoment.id,
+  );
   const boatLabels = new Map(
     scenario.boats.map((boat) => [boat.id, boat.label]),
   );
@@ -89,6 +95,11 @@ export function TrainingExampleView({
     .join(' and ')} approaching each other in wind from ${windDirection}`;
   const reviewHref = `/scenarios/${scenarioSlug}?position=${encodeURIComponent(keyframe.id)}`;
   const quizHref = `${reviewHref}&mode=quiz`;
+  const quizQuestionQuery = {
+    'applicable-rule': '&question=rule',
+    'keep-clear': '',
+    'mark-room': '&question=mark-room',
+  }[quizQuestionType];
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -137,7 +148,7 @@ export function TrainingExampleView({
                             ? 'border-primary bg-primary text-primary-foreground'
                             : 'border-border bg-background text-foreground hover:bg-muted'
                         }`}
-                        href={`/scenarios/${scenarioSlug}?position=${encodeURIComponent(candidate.id)}${quizMode ? `&mode=quiz${quizQuestionType === 'applicable-rule' ? '&question=rule' : ''}` : ''}`}
+                        href={`/scenarios/${scenarioSlug}?position=${encodeURIComponent(candidate.id)}${quizMode ? `&mode=quiz${quizQuestionQuery}` : ''}`}
                       >
                         {candidate.label}
                       </Link>
@@ -412,7 +423,13 @@ export function TrainingExampleView({
 
           <aside className="min-w-0 border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
             {quizMode ? (
-              quizQuestionType === 'applicable-rule' && ruleQuizQuestion ? (
+              quizQuestionType === 'mark-room' && markRoomQuizQuestion ? (
+                <MarkRoomQuiz
+                  question={markRoomQuizQuestion}
+                  reviewHref={reviewHref}
+                  teachingText={corpusMetadata.teachingText}
+                />
+              ) : quizQuestionType === 'applicable-rule' && ruleQuizQuestion ? (
                 <ApplicableRuleQuiz
                   question={ruleQuizQuestion}
                   reviewHref={reviewHref}
