@@ -88,12 +88,13 @@ Read these files first:
 
 - [AGENTS.md](AGENTS.md)
 - [docs/00-vision.md](docs/00-vision.md)
-- [docs/02-roadmap.md](docs/02-roadmap.md)
 - [docs/03-architecture.md](docs/03-architecture.md)
+- [docs/07-agent-git-workflow.md](docs/07-agent-git-workflow.md)
 - [docs/08-dev-setup-windows-wsl.md](docs/08-dev-setup-windows-wsl.md)
-- [docs/12-initial-backlog.md](docs/12-initial-backlog.md)
 - [docs/13-non-goals.md](docs/13-non-goals.md)
 - [docs/14-source-notes.md](docs/14-source-notes.md)
+- [GitHub Issues](https://github.com/Waldo000000/mark-room/issues) for live
+  delivery priorities and roadmap decomposition
 
 ## Naming
 

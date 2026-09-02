@@ -24,11 +24,9 @@ This repository is designed for parallel coding agents. Treat Git as the project
 
 1. Read [docs/00-vision.md](docs/00-vision.md).
 2. Read [docs/01-product-principles.md](docs/01-product-principles.md).
-3. Read [docs/15-delivery-handoff.md](docs/15-delivery-handoff.md) for the
-   current delivery sequence and exact resume steps.
+3. Check open pull requests and GitHub Issues to avoid duplicate work.
 4. Read the relevant architecture or workflow docs for your task.
-5. Check existing issues, branches, and pull requests to avoid duplicate work.
-6. Create or use a dedicated branch/worktree for your task.
+5. Create or use a dedicated branch/worktree for your task.
 
 ## Context Budget
 
@@ -42,6 +40,40 @@ This repository is designed for parallel coding agents. Treat Git as the project
 - Optimize for a fresh ChatGPT or Codex session for each pull request. Put
   durable state in Git instead of relying on conversation history.
 
+## Resuming Work
+
+GitHub owns live delivery state. Do not copy the current commit, merged pull
+request list, or next-work order into Markdown files.
+
+When asked what to implement next in a fresh session:
+
+1. Check open pull requests first. Continue or resolve relevant existing work
+   before opening a duplicate change.
+2. List open issues labelled `ready`. Select the lowest-numbered issue whose
+   documented dependencies are complete, unless the user gives another
+   priority.
+3. Read only the owner docs and ADRs relevant to that issue.
+4. Summarize the issue's outcome, sailor-facing review path, and one
+   title-sized pull-request scope before implementation.
+5. If no `ready` issue is suitable, use `roadmap` issues to propose the next
+   small issue.
+
+Pull requests should reference and close their issue. GitHub Issues own planned
+work and priority; pull requests and checks own work in progress; Git history
+owns what shipped.
+
+Use GitHub metadata consistently:
+
+- milestones preserve release scope and release order
+- `roadmap` marks broad outcomes that must be decomposed before implementation
+- `browse`, `quiz`, `editor`, `derive`, and other area labels group product
+  streams without implying delivery order
+- `ready` marks small, sufficiently defined issues suitable for one focused PR
+- sub-issues and dependencies express decomposition and blocking relationships
+
+See [docs/07-agent-git-workflow.md](docs/07-agent-git-workflow.md) for the full
+issue-selection and delivery workflow.
+
 ## Documentation Ownership
 
 - ADRs own durable decisions and their rationale.
@@ -51,13 +83,12 @@ This repository is designed for parallel coding agents. Treat Git as the project
   owns corpus provenance and verification policy.
 - [docs/06-testing-strategy.md](docs/06-testing-strategy.md) owns testing policy
   and the verification ladder.
-- [docs/15-delivery-handoff.md](docs/15-delivery-handoff.md) is the single owner
-  of the current pull-request sequence, delivery status, constraints, and
-  resume steps.
+- [docs/13-non-goals.md](docs/13-non-goals.md) owns deferred scope and initial
+  product limitations.
 
 Other docs should link to these owners instead of restating their content when
 practical. Update an owner document or create an ADR when its durable truth
-changes; do not create a second status ledger.
+changes. Do not create a delivery-status ledger in the repository.
 
 ## Development Expectations
 
@@ -141,6 +172,7 @@ visual or domain verification that remote checks cannot provide.
 
 PRs should include:
 
+- the GitHub issue they close
 - what changed
 - why it changed
 - screenshots or recordings for UI work
