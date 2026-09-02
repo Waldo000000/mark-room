@@ -117,6 +117,21 @@ Each pull request should deliver one title-sized outcome. Exploratory work may
 range broadly, but restack it into small, self-contained pull requests before
 review. Treat a title containing "and" as a scope warning, not an absolute ban.
 
+Use descriptive Conventional Commit-style PR titles in the form
+`type(scope): outcome`:
+
+- Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`.
+- Product scopes: `browse`, `quiz`, `editor`, `derive`, `model`, `corpus`,
+  `render`, `ci`, `deploy`, `workflow`.
+- Use one delivered outcome, written as a concise lowercase imperative.
+- Keep the title understandable without an issue ID or reading the diff; avoid
+  vague outcomes such as `updates`, `cleanup`, or `more work`.
+
+Examples: `feat(browse): list validated training examples`,
+`fix(render): offset sails to leeward`,
+`test(derive): cover same-tack overlap`, and
+`docs(model): define training example vocabulary`.
+
 Follow the verification ladder in
 [docs/06-testing-strategy.md](docs/06-testing-strategy.md): run targeted local
 checks while developing, then use the required GitHub and Vercel checks on the
