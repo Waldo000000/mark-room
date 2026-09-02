@@ -1,17 +1,20 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { scenarioEvalCaseSchema, type ScenarioEvalCase } from '../eval/schema';
 import { corpusMetadataSchema, type CorpusMetadata } from './schema';
+import {
+  trainingExampleSchema,
+  type TrainingExample,
+} from '../training-example/schema';
 
 type CorpusRecords = {
-  evalCases: Map<string, unknown>;
+  trainingExamples: Map<string, unknown>;
   metadata: Map<string, unknown>;
 };
 
 export type ValidatedCorpusEntry = {
   slug: string;
-  evalCase: ScenarioEvalCase;
+  trainingExample: TrainingExample;
   metadata: CorpusMetadata;
 };
 
@@ -26,35 +29,42 @@ function formatIssues(
 }
 
 export function validateCorpusRecords({
-  evalCases,
+  trainingExamples,
   metadata,
 }: CorpusRecords): ValidatedCorpusEntry[] {
   const errors: string[] = [];
   const entries: ValidatedCorpusEntry[] = [];
-  const slugs = [...new Set([...evalCases.keys(), ...metadata.keys()])].sort();
+  const slugs = [
+    ...new Set([...trainingExamples.keys(), ...metadata.keys()]),
+  ].sort();
   const scenarioIds = new Set<string>();
 
-  if (slugs.length === 0) errors.push('Corpus contains no EvalCases');
+  if (slugs.length === 0) errors.push('Corpus contains no training examples');
 
   for (const slug of slugs) {
-    const rawEvalCase = evalCases.get(slug);
+    const rawTrainingExample = trainingExamples.get(slug);
     const rawMetadata = metadata.get(slug);
 
-    if (rawEvalCase === undefined) {
-      errors.push(`metadata/${slug}.json has no matching EvalCase`);
+    if (rawTrainingExample === undefined) {
+      errors.push(`metadata/${slug}.json has no matching training example`);
       continue;
     }
     if (rawMetadata === undefined) {
-      errors.push(`eval-cases/${slug}.json has no matching metadata sidecar`);
+      errors.push(
+        `training-examples/${slug}.json has no matching metadata sidecar`,
+      );
       continue;
     }
 
-    const evalResult = scenarioEvalCaseSchema.safeParse(rawEvalCase);
+    const trainingResult = trainingExampleSchema.safeParse(rawTrainingExample);
     const metadataResult = corpusMetadataSchema.safeParse(rawMetadata);
 
-    if (!evalResult.success) {
+    if (!trainingResult.success) {
       errors.push(
-        ...formatIssues(`eval-cases/${slug}.json`, evalResult.error.issues),
+        ...formatIssues(
+          `training-examples/${slug}.json`,
+          trainingResult.error.issues,
+        ),
       );
     }
     if (!metadataResult.success) {
@@ -62,9 +72,9 @@ export function validateCorpusRecords({
         ...formatIssues(`metadata/${slug}.json`, metadataResult.error.issues),
       );
     }
-    if (!evalResult.success || !metadataResult.success) continue;
+    if (!trainingResult.success || !metadataResult.success) continue;
 
-    const scenarioId = evalResult.data.input.id;
+    const scenarioId = trainingResult.data.scenario.id;
     if (metadataResult.data.scenarioId !== scenarioId) {
       errors.push(
         `metadata/${slug}.json references ${metadataResult.data.scenarioId}, expected ${scenarioId}`,
@@ -77,7 +87,7 @@ export function validateCorpusRecords({
 
     entries.push({
       slug,
-      evalCase: evalResult.data,
+      trainingExample: trainingResult.data,
       metadata: metadataResult.data,
     });
   }
@@ -109,10 +119,10 @@ async function readJsonDirectory(
 export async function validateCorpusDirectory(
   corpusDirectory: string,
 ): Promise<ValidatedCorpusEntry[]> {
-  const [evalCases, metadata] = await Promise.all([
-    readJsonDirectory(path.join(corpusDirectory, 'eval-cases')),
+  const [trainingExamples, metadata] = await Promise.all([
+    readJsonDirectory(path.join(corpusDirectory, 'training-examples')),
     readJsonDirectory(path.join(corpusDirectory, 'metadata')),
   ]);
 
-  return validateCorpusRecords({ evalCases, metadata });
+  return validateCorpusRecords({ trainingExamples, metadata });
 }

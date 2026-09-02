@@ -102,19 +102,22 @@ identify the boat, moment, obligation type, boat owed the obligation,
 and applicable rule references. Outcomes identify breaches, exoneration,
 penalties, or no breach.
 
-Known examples are packaged as `EvalCase` records with exactly one Scenario
-input and expected Situation and Ruling outputs:
+Worked learning content is packaged as a `TrainingExample` that directly
+composes the three domain models:
 
 ```ts
-type ScenarioEvalCase = {
-  input: Scenario;
-  expected: { situation: Situation; ruling: Ruling };
+type TrainingExample = {
+  scenario: Scenario;
+  situation: Situation;
+  rulings: Ruling;
 };
 ```
 
-The eval boundary validates matching context, boats, and moments, plus every
-Ruling reference into Situation. It does not add teaching, provenance, or
-verification fields; those remain in corpus metadata.
+The training-example boundary validates matching context, boats, and moments,
+plus every Ruling reference into Situation. It does not claim that Situation or
+Rulings were automatically derived from Scenario. Engine evaluation cases can
+be introduced as a separate model once those transforms exist. Teaching,
+provenance, and verification fields remain in corpus metadata.
 
 ## Ruling Shape
 
