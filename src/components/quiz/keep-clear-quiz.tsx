@@ -29,6 +29,11 @@ export function KeepClearQuiz({
     setResult(scoreKeepClearAnswer(question, selectedBoatId));
   }
 
+  function retryAnswer() {
+    setSelectedBoatId('');
+    setResult(null);
+  }
+
   return (
     <section
       aria-labelledby="keep-clear-question"
@@ -111,6 +116,15 @@ export function KeepClearQuiz({
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               {teachingText}
             </p>
+          ) : null}
+          {!result.isCorrect ? (
+            <button
+              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-primary bg-background px-4 text-sm font-semibold text-primary transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
+              onClick={retryAnswer}
+              type="button"
+            >
+              Try again
+            </button>
           ) : null}
           <Link
             className="mt-4 inline-block text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
