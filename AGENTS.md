@@ -72,7 +72,8 @@ Use GitHub metadata consistently:
 - sub-issues and dependencies express decomposition and blocking relationships
 
 See [docs/07-agent-git-workflow.md](docs/07-agent-git-workflow.md) for the full
-issue-selection and delivery workflow.
+issue-selection and delivery workflow, including hands-free "I'm Feeling Lucky"
+mode when the user explicitly requests it.
 
 ## Documentation Ownership
 
