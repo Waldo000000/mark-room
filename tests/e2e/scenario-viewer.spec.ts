@@ -19,6 +19,12 @@ test('browses the validated corpus and opens a scenario', async ({ page }) => {
     page.getByRole('heading', { level: 2, name: 'Port meets starboard' }),
   ).toBeVisible();
   await expect(
+    page.getByRole('heading', {
+      level: 2,
+      name: 'Clear ahead at a leeward mark',
+    }),
+  ).toBeVisible();
+  await expect(
     page.getByRole('heading', { level: 2, name: 'Windward meets leeward' }),
   ).toBeVisible();
   await expect(
@@ -27,7 +33,7 @@ test('browses the validated corpus and opens a scenario', async ({ page }) => {
       name: 'Overlapped boats near a mark',
     }),
   ).toBeVisible();
-  await expect(page.getByText('Unverified transcription')).toHaveCount(4);
+  await expect(page.getByText('Unverified transcription')).toHaveCount(5);
   const availableScenarios = page.getByRole('region', {
     name: 'Available scenarios',
   });
@@ -36,7 +42,7 @@ test('browses the validated corpus and opens a scenario', async ({ page }) => {
   ).toBeVisible();
   await expect(
     availableScenarios.getByRole('article').filter({ hasText: 'RRS 11' }),
-  ).toHaveCount(3);
+  ).toHaveCount(4);
 
   await page
     .getByRole('article')
@@ -331,6 +337,126 @@ test('shows an outside boat giving mark-room from first zone entry', async ({
     constrainedByBoatId: 'yellow',
     purpose: 'mark-rounding',
     available: true,
+  });
+});
+
+test('preserves mark-room when a clear-astern boat later overlaps', async ({
+  page,
+}) => {
+  await page.goto('/scenarios/leeward-mark-clear-ahead');
+
+  const scenario = JSON.parse(
+    (await page.getByTestId('scenario-json').textContent()) ?? '',
+  ) as Scenario;
+  const situation = JSON.parse(
+    (await page.getByTestId('situation-json').textContent()) ?? '',
+  ) as Situation;
+  const rulings = JSON.parse(
+    (await page.getByTestId('rulings-json').textContent()) ?? '',
+  ) as Ruling;
+  const mark = scenario.courseFeatures.find(
+    (feature) => feature.type === 'mark' && feature.id === 'leeward-mark',
+  );
+  if (!mark || mark.type !== 'mark') {
+    throw new Error('Expected leeward mark');
+  }
+
+  expect(mark.requiredSide).toBe('port');
+  await expect(page.getByTestId('mark-leeward-mark')).toContainText(
+    'Leeward mark (leave to port)',
+  );
+  await expect(page.getByTestId('mark-position-leeward-mark')).toHaveCount(0);
+  await expect(page.getByTestId('zone-leeward-mark')).toHaveAttribute(
+    'data-radius-hull-lengths',
+    '4',
+  );
+
+  const firstMoment = situation.moments[0];
+  expect(firstMoment.relationships).toContainEqual({
+    type: 'relative-position',
+    subjectBoatId: 'blue',
+    otherBoatId: 'yellow',
+    relationship: 'clear-ahead',
+  });
+  expect(firstMoment.relationships).not.toContainEqual(
+    expect.objectContaining({ type: 'mark-position' }),
+  );
+  expect(firstMoment.boatStates[0].inZoneOfMarks).toContain('leeward-mark');
+  expect(firstMoment.boatStates[1].inZoneOfMarks).not.toContain('leeward-mark');
+
+  const firstKeyframe = scenario.keyframes[0];
+  const [blue, yellow] = firstKeyframe.boatStates;
+  const bowDistance = (state: (typeof firstKeyframe.boatStates)[number]) => {
+    const radians = (state.headingDegrees * Math.PI) / 180;
+    const bow = {
+      x: state.position.x + Math.sin(radians) * 0.5,
+      y: state.position.y + Math.cos(radians) * 0.5,
+    };
+    return Math.hypot(bow.x - mark.position.x, bow.y - mark.position.y);
+  };
+  expect(blue.position.y + 0.5).toBeLessThan(yellow.position.y - 0.5);
+  expect(bowDistance(blue)).toBeLessThanOrEqual(4);
+  expect(bowDistance(yellow)).toBeGreaterThan(4);
+  expect(rulings.obligations).toEqual(
+    expect.arrayContaining([
+      {
+        atMoment: 'position-1',
+        boatId: 'yellow',
+        type: 'keep-clear',
+        owedToBoatId: 'blue',
+        ruleRefs: ['RRS 12'],
+      },
+      {
+        atMoment: 'position-1',
+        boatId: 'yellow',
+        type: 'give-mark-room',
+        owedToBoatId: 'blue',
+        ruleRefs: ['RRS 18.2(a)(2)'],
+      },
+    ]),
+  );
+
+  await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
+    'leeward-mark-clear-ahead-diagram.png',
+    { maxDiffPixelRatio: 0.007 },
+  );
+
+  await page
+    .getByTestId('position-selector')
+    .getByRole('link', { name: 'Later overlap' })
+    .click();
+
+  await expect(page.getByTestId('mark-position-leeward-mark')).toHaveText(
+    'Blue is inside Yellow at Leeward mark.',
+  );
+  expect(situation.moments[1].relationships).toEqual(
+    expect.arrayContaining([
+      {
+        type: 'relative-position',
+        subjectBoatId: 'blue',
+        otherBoatId: 'yellow',
+        relationship: 'overlapped',
+      },
+      {
+        type: 'mark-position',
+        markId: 'leeward-mark',
+        insideBoatId: 'blue',
+        outsideBoatId: 'yellow',
+      },
+    ]),
+  );
+  await expect(page.getByTestId('ruling-statements')).toContainText(
+    'Yellow must give mark-room to Blue.',
+  );
+  await expect(page.getByTestId('ruling-statements')).toContainText(
+    'RRS 18.2(a)(2)',
+  );
+  expect(rulings.obligations).toContainEqual({
+    atMoment: 'position-2',
+    boatId: 'yellow',
+    type: 'give-mark-room',
+    owedToBoatId: 'blue',
+    ruleRefs: ['RRS 18.2(a)(2)'],
   });
 });
 
