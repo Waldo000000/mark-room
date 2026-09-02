@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { ApplicableRuleQuiz } from '@/src/components/quiz/applicable-rule-quiz';
 import { KeepClearQuiz } from '@/src/components/quiz/keep-clear-quiz';
 import {
   BoatGlyph,
@@ -11,6 +12,7 @@ import {
   selectRulingStatements,
 } from '@/src/components/scenario/ruling-presentation';
 import type { CorpusMetadata } from '@/src/domain/corpus/schema';
+import { deriveApplicableRuleQuestion } from '@/src/domain/quiz/applicable-rule';
 import { deriveKeepClearQuestion } from '@/src/domain/quiz/keep-clear';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
 import type { TrainingExample } from '@/src/domain/training-example/schema';
@@ -20,16 +22,20 @@ const BOAT_LABEL_X_OFFSET = 0.66;
 const BOAT_LABEL_Y_OFFSET = 0.3;
 
 type TrainingExampleViewProps = {
+  availableRuleReferences: string[];
   corpusMetadata: CorpusMetadata;
   quizMode: boolean;
+  quizQuestionType: 'applicable-rule' | 'keep-clear';
   scenarioSlug: string;
   selectedKeyframeId: string;
   trainingExample: TrainingExample;
 };
 
 export function TrainingExampleView({
+  availableRuleReferences,
   corpusMetadata,
   quizMode,
+  quizQuestionType,
   scenarioSlug,
   selectedKeyframeId,
   trainingExample,
@@ -51,6 +57,11 @@ export function TrainingExampleView({
   const quizQuestion = deriveKeepClearQuestion(
     trainingExample,
     situationMoment.id,
+  );
+  const ruleQuizQuestion = deriveApplicableRuleQuestion(
+    trainingExample,
+    situationMoment.id,
+    availableRuleReferences,
   );
   const boatLabels = new Map(
     scenario.boats.map((boat) => [boat.id, boat.label]),
@@ -124,7 +135,7 @@ export function TrainingExampleView({
                             ? 'border-primary bg-primary text-primary-foreground'
                             : 'border-border bg-background text-foreground hover:bg-muted'
                         }`}
-                        href={`/scenarios/${scenarioSlug}?position=${encodeURIComponent(candidate.id)}${quizMode ? '&mode=quiz' : ''}`}
+                        href={`/scenarios/${scenarioSlug}?position=${encodeURIComponent(candidate.id)}${quizMode ? `&mode=quiz${quizQuestionType === 'applicable-rule' ? '&question=rule' : ''}` : ''}`}
                       >
                         {candidate.label}
                       </Link>
@@ -367,7 +378,13 @@ export function TrainingExampleView({
 
           <aside className="min-w-0 border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
             {quizMode ? (
-              quizQuestion ? (
+              quizQuestionType === 'applicable-rule' && ruleQuizQuestion ? (
+                <ApplicableRuleQuiz
+                  question={ruleQuizQuestion}
+                  reviewHref={reviewHref}
+                  teachingText={corpusMetadata.teachingText}
+                />
+              ) : quizQuestionType === 'keep-clear' && quizQuestion ? (
                 <KeepClearQuiz
                   question={quizQuestion}
                   reviewHref={reviewHref}
@@ -382,7 +399,7 @@ export function TrainingExampleView({
                     className="mt-2 text-xl font-semibold"
                     id="quiz-unavailable-heading"
                   >
-                    No keep-clear question at this position
+                    No question at this position
                   </h2>
                   <Link
                     className="mt-4 inline-block text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
