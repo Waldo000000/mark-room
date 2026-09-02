@@ -1,0 +1,22 @@
+{
+  "scenarioId": "development-windward-leeward-overlap",
+  "teachingText": "When boats on the same tack are overlapped, the windward boat must keep clear of the leeward boat.",
+  "provenance": [
+    {
+      "sourceId": "world-sailing-rrs-2025-2028",
+      "sourceType": "world_sailing_rule",
+      "title": "Racing Rules of Sailing 2025-2028",
+      "publisher": "World Sailing",
+      "url": "https://www.sailing.org/inside-world-sailing/rules-regulations/racingrules/",
+      "documentVersion": "2025-2028",
+      "accessedAt": "2026-09-02T00:00:00+10:00",
+      "pageOrSection": "Part 2, Section A, Rule 11",
+      "extractionMethod": "manual",
+      "notes": "The rule source is authoritative. The geometry and MarkRoom transcription remain unverified."
+    }
+  ],
+  "verification": {
+    "status": "unverified",
+    "notes": "The World Sailing source is authoritative; this MarkRoom transcription has not been human-verified."
+  }
+}

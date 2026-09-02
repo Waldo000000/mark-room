@@ -18,15 +18,85 @@ test('browses the validated corpus and opens a scenario', async ({ page }) => {
   await expect(
     page.getByRole('heading', { level: 2, name: 'Port meets starboard' }),
   ).toBeVisible();
-  await expect(page.getByText('Unverified transcription')).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Windward meets leeward' }),
+  ).toBeVisible();
+  await expect(page.getByText('Unverified transcription')).toHaveCount(2);
   await expect(page.getByText('RRS 10', { exact: true })).toBeVisible();
+  await expect(page.getByText('RRS 11', { exact: true })).toBeVisible();
 
-  await page.getByRole('link', { name: 'Open scenario' }).click();
+  await page
+    .getByRole('article')
+    .filter({ hasText: 'Port meets starboard' })
+    .getByRole('link', { name: 'Open scenario' })
+    .click();
 
   await expect(page).toHaveURL('/scenarios/port-starboard');
   await expect(
     page.getByRole('heading', { level: 1, name: 'Port meets starboard' }),
   ).toBeVisible();
+});
+
+test('shows the windward boat keeping clear under Rule 11', async ({
+  page,
+}) => {
+  await page.goto('/scenarios/windward-leeward');
+
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Windward meets leeward' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', {
+      level: 2,
+      name: 'Red must keep clear of Blue.',
+    }),
+  ).toBeVisible();
+  await expect(page.getByTestId('ruling-basis')).toContainText(
+    'Red is windward of Blue, and the boats are overlapped.',
+  );
+  await expect(page.getByTestId('ruling-basis')).toContainText('RRS 11');
+
+  const scenario = JSON.parse(
+    (await page.getByTestId('scenario-json').textContent()) ?? '',
+  ) as Scenario;
+  const situation = JSON.parse(
+    (await page.getByTestId('situation-json').textContent()) ?? '',
+  ) as Situation;
+  const rulings = JSON.parse(
+    (await page.getByTestId('rulings-json').textContent()) ?? '',
+  ) as Ruling;
+  const redState = scenario.keyframes[0].boatStates.find(
+    (state) => state.boatId === 'red',
+  );
+  const blueState = scenario.keyframes[0].boatStates.find(
+    (state) => state.boatId === 'blue',
+  );
+
+  expect(redState?.position.y).toBeGreaterThan(blueState?.position.y ?? 0);
+  expect(redState?.headingDegrees).toBe(blueState?.headingDegrees);
+  expect(redState?.tack).toBe('starboard');
+  expect(blueState?.tack).toBe('starboard');
+  expect(situation.moments[0].relationships).toContainEqual({
+    type: 'windward-leeward',
+    windwardBoatId: 'red',
+    leewardBoatId: 'blue',
+  });
+  expect(situation.moments[0].relationships).toContainEqual({
+    type: 'relative-position',
+    subjectBoatId: 'red',
+    otherBoatId: 'blue',
+    relationship: 'overlapped',
+  });
+  expect(rulings.obligations[0]).toMatchObject({
+    boatId: 'red',
+    owedToBoatId: 'blue',
+    ruleRefs: ['RRS 11'],
+  });
+
+  await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
+    'windward-leeward-diagram.png',
+    { maxDiffPixelRatio: 0.005 },
+  );
 });
 
 test('renders Scenario, Situation, and Ruling consistently', async ({

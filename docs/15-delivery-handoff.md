@@ -7,8 +7,8 @@ Last updated: 2026-09-02
 
 ## Current Main
 
-`origin/main` is `e8cb0a4` from
-[PR #19](https://github.com/Waldo000000/mark-room/pull/19). The latest merged
+`origin/main` is `dee3ec9` from
+[PR #18](https://github.com/Waldo000000/mark-room/pull/18). The latest merged
 sequence is:
 
 1. [PR #8: Move corpus metadata out of Scenario](https://github.com/Waldo000000/mark-room/pull/8)
@@ -21,11 +21,11 @@ sequence is:
 8. [PR #16: Compose Scenario, Situation, and Ruling as an EvalCase](https://github.com/Waldo000000/mark-room/pull/16)
 9. [PR #17: Validate scenario evals and metadata in CI](https://github.com/Waldo000000/mark-room/pull/17)
 10. [PR #19: Replace EvalCase with TrainingExample](https://github.com/Waldo000000/mark-room/pull/19)
+11. [PR #18: Browse validated scenarios from the corpus](https://github.com/Waldo000000/mark-room/pull/18)
 
 ## Ordered Next Pull Requests
 
-1. Browse validated scenarios from the corpus
-2. Add a windward-leeward Rule 11 scenario
+1. Add a windward-leeward Rule 11 scenario
 
 ## Durable Decisions
 

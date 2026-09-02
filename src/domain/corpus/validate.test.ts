@@ -12,10 +12,24 @@ describe('corpus validation', () => {
       path.resolve(process.cwd(), 'corpus'),
     );
 
-    expect(entries.map((entry) => entry.slug)).toEqual(['port-starboard']);
+    expect(entries.map((entry) => entry.slug)).toEqual([
+      'port-starboard',
+      'windward-leeward',
+    ]);
     expect(entries[0].trainingExample.scenario.title).toBe(
       'Port meets starboard',
     );
+    const windwardLeeward = entries[1].trainingExample;
+    expect(windwardLeeward.situation.moments[0].relationships).toContainEqual({
+      type: 'windward-leeward',
+      windwardBoatId: 'red',
+      leewardBoatId: 'blue',
+    });
+    expect(windwardLeeward.rulings.obligations[0]).toMatchObject({
+      boatId: 'red',
+      owedToBoatId: 'blue',
+      ruleRefs: ['RRS 11'],
+    });
   });
 
   it('rejects a missing metadata sidecar', () => {
