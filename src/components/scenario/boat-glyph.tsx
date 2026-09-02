@@ -1,11 +1,45 @@
-import type { SailState } from '@/src/domain/scenario/schema';
+import { normalizeDegrees, type Tack } from '../../domain/scenario/geometry';
 
 export const BOAT_HULL_PATH =
   'M 0 -9 C 2.3 -6.8 3.2 -2.7 3.1 3.4 L 2.2 7.2 Q 0 8.2 -2.2 7.2 L -3.1 3.4 C -3.2 -2.7 -2.3 -6.8 0 -9 Z';
 export const BOAT_GLYPH_INTERNAL_HULL_LENGTH = 16.7;
 export const BOAT_GLYPH_SCALE = 1 / BOAT_GLYPH_INTERNAL_HULL_LENGTH;
+export const LUFFING_ANGLE_DEGREES = 15;
 
-export function getSailPath(luffing: boolean, side: SailState['side']): string {
+export type SailPresentation = {
+  side: 'port' | 'starboard';
+  trimDegrees: number;
+  luffing: boolean;
+};
+
+export function deriveSailPresentation(
+  headingDegrees: number,
+  windFromDegrees: number,
+  tack: Tack,
+): SailPresentation {
+  const relativeWind = normalizeDegrees(headingDegrees - windFromDegrees);
+  const angleFromWind = Math.min(relativeWind, 360 - relativeWind);
+  const luffing = angleFromWind <= LUFFING_ANGLE_DEGREES;
+
+  const trimDegrees = luffing
+    ? 0
+    : angleFromWind <= 60
+      ? 16
+      : angleFromWind <= 120
+        ? 45
+        : 75;
+
+  return {
+    side: tack === 'port' ? 'starboard' : 'port',
+    trimDegrees,
+    luffing,
+  };
+}
+
+export function getSailPath(
+  luffing: boolean,
+  side: SailPresentation['side'],
+): string {
   const sideSign = side === 'starboard' ? 1 : -1;
 
   if (luffing) {
@@ -17,7 +51,7 @@ export function getSailPath(luffing: boolean, side: SailState['side']): string {
 
 type BoatGlyphProps = {
   color: string;
-  sail: SailState;
+  sail: SailPresentation;
 };
 
 export function BoatGlyph({ color, sail }: BoatGlyphProps) {

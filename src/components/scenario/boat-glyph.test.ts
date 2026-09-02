@@ -4,6 +4,7 @@ import {
   BOAT_GLYPH_INTERNAL_HULL_LENGTH,
   BOAT_GLYPH_SCALE,
   BOAT_HULL_PATH,
+  deriveSailPresentation,
   getSailPath,
 } from './boat-glyph';
 
@@ -29,5 +30,19 @@ describe('BoatGlyph geometry', () => {
     expect(luffingPath.match(/C/g)).toHaveLength(2);
     expect(luffingPath).toContain('-0.8');
     expect(luffingPath).toContain('0.7');
+  });
+
+  it('derives sail side from explicit tack', () => {
+    expect(deriveSailPresentation(45, 0, 'port').side).toBe('starboard');
+    expect(deriveSailPresentation(315, 0, 'starboard').side).toBe('port');
+  });
+
+  it('luffs head to wind and eases the sail as the boat bears away', () => {
+    expect(deriveSailPresentation(0, 0, 'port')).toMatchObject({
+      trimDegrees: 0,
+      luffing: true,
+    });
+    expect(deriveSailPresentation(90, 0, 'port').trimDegrees).toBe(45);
+    expect(deriveSailPresentation(180, 0, 'starboard').trimDegrees).toBe(75);
   });
 });

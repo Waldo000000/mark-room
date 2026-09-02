@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "id": "development-port-starboard-crossing",
   "title": "Port meets starboard",
   "prompt": "Which boat must keep clear at Position 1?",
@@ -40,11 +40,7 @@
             "y": 2.7
           },
           "headingDegrees": 315,
-          "sail": {
-            "side": "port",
-            "trimDegrees": 16,
-            "luffing": false
-          }
+          "tack": "starboard"
         },
         {
           "boatId": "yellow",
@@ -53,32 +49,13 @@
             "y": 2.7
           },
           "headingDegrees": 45,
-          "sail": {
-            "side": "starboard",
-            "trimDegrees": 16,
-            "luffing": false
-          }
+          "tack": "port"
         }
       ]
     }
   ],
   "courseFeatures": [],
-  "facts": [
-    {
-      "id": "blue-tack",
-      "type": "tack",
-      "atKeyframe": "position-1",
-      "boatId": "blue",
-      "tack": "starboard"
-    },
-    {
-      "id": "yellow-tack",
-      "type": "tack",
-      "atKeyframe": "position-1",
-      "boatId": "yellow",
-      "tack": "port"
-    }
-  ],
+  "facts": [],
   "ruling": {
     "findings": [
       {

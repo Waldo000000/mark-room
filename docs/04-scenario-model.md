@@ -44,20 +44,17 @@ geometry decision.
 
 `wind.fromDegrees` uses the same compass convention and records the direction
 the wind comes from. A north wind is therefore `0`, while its flow arrow points
-south. Away from head-to-wind and dead-downwind ambiguity, tack facts are
-validated against each boat's heading and the wind direction.
+south.
 
-Each boat state also carries explicit sail state:
+Each boat state records tack explicitly because heading cannot resolve it when
+the boat is head to wind or running square. Away from those ambiguous headings,
+tack is validated against heading and wind direction.
 
-- `side` is the side of the hull on which the sail lies
-- `trimDegrees` is the angle between the sail and the hull centreline, from
-  sheeted-in `0` to fully eased `90`
-- `luffing` selects a visibly wavy sail instead of a smooth loaded curve
-
-Sail state is explicit because trim depends on the actual moment being depicted,
-and because the sail side resolves tack when heading and wind alone are
-ambiguous. A port-tack fact requires the sail to lie to starboard, and a
-starboard-tack fact requires it to lie to port.
+Sail side, trim, and luffing are deterministic presentation derived from tack,
+heading, and wind. The renderer puts the sail to leeward, luffs it within 15
+degrees of head to wind, and eases it progressively from upwind to reaching to
+downwind. These drawing choices are app conventions, not user-editable Scenario
+data.
 
 ## Key Concepts
 
@@ -70,10 +67,9 @@ A scenario contains:
 - wind direction
 - boats with stable identities
 - discrete keyframes such as Position 1, 2, 3, 4
-- boat positions and headings at each keyframe
-- sail side, trim, and luffing state at each keyframe
+- boat positions, headings, and explicit tack at each keyframe
 - optional course features: marks, zones, lines, boundaries, laylines
-- explicit physical or asserted facts: tack, overlap, zone entry, contact, course changes, hail events, penalties
+- explicit physical or asserted facts: overlap, zone entry, contact, course changes, hail events, penalties
 - structured ruling/findings
 
 Corpus records associate this model with separate metadata containing teaching

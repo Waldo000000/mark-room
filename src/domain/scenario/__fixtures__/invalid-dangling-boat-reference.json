@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "id": "invalid-dangling-boat-reference",
   "title": "Invalid development fixture",
   "prompt": "This fixture must fail because a keyframe references an unknown boat.",
@@ -31,11 +31,7 @@
             "y": 3
           },
           "headingDegrees": 0,
-          "sail": {
-            "side": "starboard",
-            "trimDegrees": 0,
-            "luffing": true
-          }
+          "tack": "port"
         }
       ]
     }

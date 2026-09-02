@@ -7,7 +7,7 @@ import {
 } from '../shared/schema';
 import { inferTackFromHeading } from './geometry';
 
-export const SCENARIO_SCHEMA_VERSION = '0.1.0' as const;
+export const SCENARIO_SCHEMA_VERSION = '0.2.0' as const;
 
 const coordinateSchema = z
   .object({
@@ -43,20 +43,12 @@ export const boatSchema = z
   })
   .strict();
 
-export const sailStateSchema = z
-  .object({
-    side: z.enum(['port', 'starboard']),
-    trimDegrees: z.number().gte(0).lte(90),
-    luffing: z.boolean(),
-  })
-  .strict();
-
 export const boatStateSchema = z
   .object({
     boatId: entityIdSchema,
     position: coordinateSchema,
     headingDegrees: headingDegreesSchema,
-    sail: sailStateSchema,
+    tack: z.enum(['port', 'starboard']),
   })
   .strict();
 
@@ -132,14 +124,6 @@ const factBaseSchema = z.object({
   atKeyframe: entityIdSchema,
 });
 
-const tackFactSchema = factBaseSchema
-  .extend({
-    type: z.literal('tack'),
-    boatId: entityIdSchema,
-    tack: z.enum(['port', 'starboard']),
-  })
-  .strict();
-
 const overlapFactSchema = factBaseSchema
   .extend({
     type: z.literal('overlap'),
@@ -192,7 +176,6 @@ const penaltyTakenFactSchema = factBaseSchema
   .strict();
 
 export const scenarioFactSchema = z.discriminatedUnion('type', [
-  tackFactSchema,
   overlapFactSchema,
   zoneEntryFactSchema,
   contactFactSchema,
@@ -391,6 +374,24 @@ export const scenarioSchema = z
           stateIndex,
           'position',
         ]);
+
+        const inferredTack = inferTackFromHeading(
+          state.headingDegrees,
+          scenario.wind.fromDegrees,
+        );
+        if (inferredTack && inferredTack !== state.tack) {
+          context.addIssue({
+            code: 'custom',
+            path: [
+              'keyframes',
+              keyframeIndex,
+              'boatStates',
+              stateIndex,
+              'tack',
+            ],
+            message: `Tack conflicts with heading and wind: expected ${inferredTack}`,
+          });
+        }
       });
     });
 
@@ -503,50 +504,6 @@ export const scenarioSchema = z
       } else {
         requireBoat(fact.boatId, 'boatId');
       }
-
-      if (fact.type === 'tack') {
-        const keyframeIndex = scenario.keyframes.findIndex(
-          (candidate) => candidate.id === fact.atKeyframe,
-        );
-        const keyframe = scenario.keyframes[keyframeIndex];
-        const boatStateIndex = keyframe?.boatStates.findIndex(
-          (state) => state.boatId === fact.boatId,
-        );
-        const boatState =
-          boatStateIndex === undefined || boatStateIndex < 0
-            ? undefined
-            : keyframe.boatStates[boatStateIndex];
-        const inferredTack = boatState
-          ? inferTackFromHeading(
-              boatState.headingDegrees,
-              scenario.wind.fromDegrees,
-            )
-          : null;
-
-        if (inferredTack && inferredTack !== fact.tack) {
-          context.addIssue({
-            code: 'custom',
-            path: ['facts', factIndex, 'tack'],
-            message: `Tack conflicts with heading and wind: expected ${inferredTack}`,
-          });
-        }
-
-        const expectedSailSide = fact.tack === 'port' ? 'starboard' : 'port';
-        if (boatState && boatState.sail.side !== expectedSailSide) {
-          context.addIssue({
-            code: 'custom',
-            path: [
-              'keyframes',
-              keyframeIndex,
-              'boatStates',
-              boatStateIndex,
-              'sail',
-              'side',
-            ],
-            message: `${fact.tack} tack requires the sail to lie on the ${expectedSailSide} side`,
-          });
-        }
-      }
     });
 
     scenario.ruling.findings.forEach((finding, findingIndex) => {
@@ -603,7 +560,6 @@ export const scenarioSchema = z
 export type SailingArea = z.infer<typeof sailingAreaSchema>;
 export type Wind = z.infer<typeof windSchema>;
 export type Boat = z.infer<typeof boatSchema>;
-export type SailState = z.infer<typeof sailStateSchema>;
 export type BoatState = z.infer<typeof boatStateSchema>;
 export type Keyframe = z.infer<typeof keyframeSchema>;
 export type CourseFeature = z.infer<typeof courseFeatureSchema>;

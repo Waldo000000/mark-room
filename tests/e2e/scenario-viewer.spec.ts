@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { deriveSailPresentation } from '../../src/components/scenario/boat-glyph';
 import { inferTackFromHeading } from '../../src/domain/scenario/geometry';
 import type { Scenario } from '../../src/domain/scenario/schema';
 
@@ -27,6 +28,9 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
   expect(scenario).not.toHaveProperty('provenance');
   expect(scenario).not.toHaveProperty('verification');
   expect(scenario.sailingArea).toEqual({ width: 6, height: 6 });
+  for (const state of keyframe.boatStates) {
+    expect(state).not.toHaveProperty('sail');
+  }
 
   await expect(page.getByText('Unverified transcription')).toBeVisible();
   await expect(
@@ -66,21 +70,21 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
     );
 
     const glyph = renderedBoat.getByTestId('boat-glyph');
+    const sail = deriveSailPresentation(
+      state.headingDegrees,
+      scenario.wind.fromDegrees,
+      state.tack,
+    );
     await expect(glyph).toHaveAttribute('data-hull-length', '1');
-    await expect(glyph).toHaveAttribute('data-sail-side', state.sail.side);
+    await expect(glyph).toHaveAttribute('data-sail-side', sail.side);
     await expect(glyph).toHaveAttribute(
       'data-trim-degrees',
-      String(state.sail.trimDegrees),
+      String(sail.trimDegrees),
     );
-    await expect(glyph).toHaveAttribute(
-      'data-luffing',
-      String(state.sail.luffing),
-    );
+    await expect(glyph).toHaveAttribute('data-luffing', String(sail.luffing));
 
     const sailRotation =
-      state.sail.side === 'port'
-        ? state.sail.trimDegrees
-        : -state.sail.trimDegrees;
+      sail.side === 'port' ? sail.trimDegrees : -sail.trimDegrees;
     await expect(glyph.getByTestId('boat-sail')).toHaveAttribute(
       'transform',
       `rotate(${sailRotation} 0 -3)`,
@@ -125,16 +129,10 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
   );
   await expect(page.getByTestId('hull-length-scale')).toBeVisible();
 
-  for (const fact of scenario.facts) {
-    if (fact.type !== 'tack') continue;
-
-    const state = keyframe.boatStates.find(
-      (candidate) => candidate.boatId === fact.boatId,
-    );
-    expect(state, `missing rendered state for ${fact.boatId}`).toBeDefined();
+  for (const state of keyframe.boatStates) {
     expect(
-      inferTackFromHeading(state!.headingDegrees, scenario.wind.fromDegrees),
-    ).toBe(fact.tack);
+      inferTackFromHeading(state.headingDegrees, scenario.wind.fromDegrees),
+    ).toBe(state.tack);
   }
 
   const finding = scenario.ruling.findings[0];
