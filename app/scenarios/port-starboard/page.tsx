@@ -10,6 +10,8 @@ import { corpusMetadataSchema } from '@/src/domain/corpus/schema';
 import validDevelopmentScenario from '@/src/domain/scenario/__fixtures__/valid-development-scenario.json';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
 import { scenarioSchema } from '@/src/domain/scenario/schema';
+import portStarboardSituation from '@/src/domain/situation/__fixtures__/port-starboard-situation.json';
+import { situationSchema } from '@/src/domain/situation/schema';
 
 const DIAGRAM_FONT_SIZE = 0.24;
 const BOAT_LABEL_X_OFFSET = 0.66;
@@ -22,12 +24,19 @@ export const metadata: Metadata = {
 };
 
 const scenario = scenarioSchema.parse(validDevelopmentScenario);
+const situation = situationSchema.parse(portStarboardSituation);
 const corpusMetadata = corpusMetadataSchema.parse(portStarboardMetadata);
 
 if (corpusMetadata.scenarioId !== scenario.id) {
   throw new Error(
     `Corpus metadata references ${corpusMetadata.scenarioId}, expected ${scenario.id}`,
   );
+}
+if (
+  situation.scenarioId !== scenario.id ||
+  JSON.stringify(situation.context) !== JSON.stringify(scenario.context)
+) {
+  throw new Error('Expected Situation does not match the Scenario');
 }
 
 const verificationLabel = {
@@ -36,19 +45,21 @@ const verificationLabel = {
   'human-verified': 'Human-verified transcription',
 }[corpusMetadata.verification.status];
 const keyframe = scenario.keyframes[0];
+const situationMoment = situation.moments[0];
 const finding = scenario.ruling.findings[0];
 const subjectBoat = scenario.boats.find(
   (boat) => boat.id === finding.subjectBoat,
 );
 const otherBoat = scenario.boats.find((boat) => boat.id === finding.otherBoat);
-const subjectState = keyframe.boatStates.find(
+const subjectState = situationMoment.boatStates.find(
   (state) => state.boatId === finding.subjectBoat,
 );
-const otherState = keyframe.boatStates.find(
+const otherState = situationMoment.boatStates.find(
   (state) => state.boatId === finding.otherBoat,
 );
 const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
 const scenarioJson = JSON.stringify(scenario, null, 2);
+const situationJson = JSON.stringify(situation, null, 2);
 const diagramTitle = `${keyframe.boatStates
   .map((state) => {
     const boat = scenario.boats.find(
@@ -220,9 +231,12 @@ export default function PortStarboardScenarioPage() {
               </svg>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {keyframe.boatStates.map((state) => {
-                const boat = scenario.boats.find(
+            <p className="mt-5 text-sm font-semibold uppercase text-muted-foreground">
+              Expected Situation
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {situationMoment.boatStates.map((state) => {
+                const boat = situation.boats.find(
                   (candidate) => candidate.id === state.boatId,
                 );
 
@@ -233,7 +247,7 @@ export default function PortStarboardScenarioPage() {
                   >
                     <span className="font-semibold">{boat?.label}</span>{' '}
                     <span className="text-muted-foreground">
-                      is on {state.tack} tack.
+                      is on {state.tack} tack and {state.pointOfSail}.
                     </span>
                   </div>
                 );
@@ -309,6 +323,22 @@ export default function PortStarboardScenarioPage() {
               data-testid="scenario-json"
             >
               {scenarioJson}
+            </pre>
+          </details>
+          <details className="mt-6" open>
+            <summary className="cursor-pointer text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-4">
+              Expected Situation JSON
+            </summary>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+              This authored expectation describes the same moment in RRS
+              language. A future deterministic geometry transform will produce
+              this model from Scenario.
+            </p>
+            <pre
+              className="mt-4 max-h-[42rem] overflow-auto rounded-md border border-border bg-slate-950 p-4 text-xs leading-5 text-slate-100"
+              data-testid="situation-json"
+            >
+              {situationJson}
             </pre>
           </details>
         </section>

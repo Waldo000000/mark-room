@@ -76,6 +76,25 @@ Corpus records associate this model with separate metadata containing teaching
 text, source provenance, and verification status. Those fields describe the
 record and its stewardship, not the sailing scenario itself.
 
+## Pipeline Models
+
+MarkRoom uses three bounded models:
+
+1. `Scenario` is editor-controlled geometry, identity, wind, course features,
+   and observed events.
+2. `Situation` is a self-contained RRS-language interpretation derived from a
+   Scenario. It contains tack, point of sail, luffing, mark-zone membership,
+   contact, relative position, windward/leeward relationships, proximity in
+   hull lengths, available room, and observed actions. It does not contain
+   positions, headings, hull polygons, or renderer-only sail trim.
+3. `Ruling` will contain obligations and outcomes derived from Situation
+   without needing Scenario geometry.
+
+The provisional Situation schema lives in
+[`src/domain/situation/schema.ts`](../src/domain/situation/schema.ts). Temporal
+transition vocabulary is deferred until a representative multi-keyframe rules
+case establishes what the model needs.
+
 ## Rulings And Findings
 
 Avoid a single free-text `answer` field as the canonical result.

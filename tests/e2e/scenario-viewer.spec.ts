@@ -3,8 +3,9 @@ import { expect, test } from '@playwright/test';
 import { deriveSailPresentation } from '../../src/components/scenario/boat-glyph';
 import { inferTackFromHeading } from '../../src/domain/scenario/geometry';
 import type { Scenario } from '../../src/domain/scenario/schema';
+import type { Situation } from '../../src/domain/situation/schema';
 
-test('renders geometry, facts, and finding from the same scenario JSON', async ({
+test('renders Scenario geometry and expected Situation consistently', async ({
   page,
 }) => {
   const runtimeErrors: string[] = [];
@@ -22,6 +23,11 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
   const jsonText = await page.getByTestId('scenario-json').textContent();
   const scenario = JSON.parse(jsonText ?? '') as Scenario;
   const keyframe = scenario.keyframes[0];
+  const situationJsonText = await page
+    .getByTestId('situation-json')
+    .textContent();
+  const situation = JSON.parse(situationJsonText ?? '') as Situation;
+  const situationMoment = situation.moments[0];
 
   expect(scenario).not.toHaveProperty('lengthUnit');
   expect(scenario).not.toHaveProperty('teachingText');
@@ -31,7 +37,17 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
   expect(scenario.sailingArea).toEqual({ width: 6, height: 6 });
   for (const state of keyframe.boatStates) {
     expect(state).not.toHaveProperty('sail');
+    const situationState = situationMoment.boatStates.find(
+      (candidate) => candidate.boatId === state.boatId,
+    );
+    expect(situationState?.tack).toBe(state.tack);
+    expect(situationState).not.toHaveProperty('position');
+    expect(situationState).not.toHaveProperty('headingDegrees');
   }
+  expect(situation.scenarioId).toBe(scenario.id);
+  await expect(
+    page.getByText('Expected Situation', { exact: true }),
+  ).toBeVisible();
 
   await expect(page.getByText('Unverified transcription')).toBeVisible();
   await expect(
