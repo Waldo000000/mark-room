@@ -24,9 +24,40 @@ This repository is designed for parallel coding agents. Treat Git as the project
 
 1. Read [docs/00-vision.md](docs/00-vision.md).
 2. Read [docs/01-product-principles.md](docs/01-product-principles.md).
-3. Read the relevant architecture or workflow docs for your task.
-4. Check existing issues, branches, and pull requests to avoid duplicate work.
-5. Create or use a dedicated branch/worktree for your task.
+3. Read [docs/15-delivery-handoff.md](docs/15-delivery-handoff.md) for the
+   current delivery sequence and exact resume steps.
+4. Read the relevant architecture or workflow docs for your task.
+5. Check existing issues, branches, and pull requests to avoid duplicate work.
+6. Create or use a dedicated branch/worktree for your task.
+
+## Context Budget
+
+- Read each authoritative owner document once at the start of a task. After
+  that, use `rg`, file lists, and narrow excerpts to recover specific facts.
+- Do not repeatedly dump whole files, long logs, or closed pull requests after
+  their relevant facts have been captured.
+- Prefer bounded command output when it preserves the evidence needed to act.
+  Do not spend time micro-optimizing output when the saving is speculative or
+  immaterial.
+- Optimize for a fresh ChatGPT or Codex session for each pull request. Put
+  durable state in Git instead of relying on conversation history.
+
+## Documentation Ownership
+
+- ADRs own durable decisions and their rationale.
+- [docs/04-scenario-model.md](docs/04-scenario-model.md) owns the current domain
+  vocabulary and model.
+- [docs/05-corpus-provenance-verification.md](docs/05-corpus-provenance-verification.md)
+  owns corpus provenance and verification policy.
+- [docs/06-testing-strategy.md](docs/06-testing-strategy.md) owns testing policy
+  and the verification ladder.
+- [docs/15-delivery-handoff.md](docs/15-delivery-handoff.md) is the single owner
+  of the current pull-request sequence, delivery status, constraints, and
+  resume steps.
+
+Other docs should link to these owners instead of restating their content when
+practical. Update an owner document or create an ADR when its durable truth
+changes; do not create a second status ledger.
 
 ## Development Expectations
 
@@ -44,14 +75,15 @@ Every substantive PR should include appropriate verification:
 - unit tests for schema validation, geometry, findings, quiz scoring, and pure rules helpers
 - Playwright tests for mobile-first user flows and scenario viewer behavior
 - accessibility checks for core screens where possible
-- visual or screenshot inspection for diagram changes
+- manual full-page visual inspection when visible layout changes
 - corpus validation for any data changes
 
 For scenario diagrams, verify domain semantics as well as pixels: rendered wind
 direction, headings, tack, positions, labels, and findings must agree with the
 validated scenario record. A nonblank, responsive screenshot is not sufficient.
-Use browser assertions for machine-checkable geometry and inspect the result at
-phone and desktop sizes with sailing meaning in mind.
+Use browser assertions for machine-checkable geometry. When visible scenario
+layout changes, also inspect the result at phone and desktop sizes with sailing
+meaning in mind.
 
 All linear Scenario dimensions use hull lengths. Until an accepted ADR changes
 the limitation, all boats are the same size and every rendered hull is exactly
@@ -80,6 +112,17 @@ If a test cannot be run, say so in the PR with the reason.
 - Never silently rewrite a source-derived ruling into a stronger claim than the source supports.
 
 ## Pull Request Rules
+
+Each pull request should deliver one title-sized outcome. Exploratory work may
+range broadly, but restack it into small, self-contained pull requests before
+review. Treat a title containing "and" as a scope warning, not an absolute ban.
+
+Follow the verification ladder in
+[docs/06-testing-strategy.md](docs/06-testing-strategy.md): run targeted local
+checks while developing, then use the required GitHub and Vercel checks on the
+exact pushed commit as the merge gate. Do not rerun an equivalent full local
+suite unless diagnosing a failure, handling a high-risk change, or covering
+visual or domain verification that remote checks cannot provide.
 
 PRs should include:
 

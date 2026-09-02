@@ -43,9 +43,10 @@ output and assert machine-checkable geometry in Playwright:
 - explicit tack state implied by non-ambiguous heading and wind geometry
 - visible labels, findings, and rule references
 
-Run those checks at phone and desktop sizes, retain screenshots on failure, and
-visually inspect the diagram with its sailing meaning in mind. A nonblank SVG,
-valid DOM, and lack of horizontal overflow do not establish domain correctness.
+Run those checks at phone and desktop sizes and retain screenshots on failure.
+When visible diagram layout changes, visually inspect it with its sailing
+meaning in mind. A nonblank SVG, valid DOM, and lack of horizontal overflow do
+not establish domain correctness.
 
 During rapid schema iteration, the deployed scenario view should expose the
 exact validated JSON driving the render so a reviewer can compare model and
@@ -67,6 +68,18 @@ Each PR should run:
 - build
 
 UI PRs should include screenshots or recordings, especially for mobile viewports.
+
+## Verification Ladder
+
+During development, run the smallest targeted local checks that give useful
+feedback for the files and behavior being changed. The required GitHub and
+Vercel pull-request checks on the exact pushed commit are the merge gate.
+
+Do not rerun a full local suite that CI already covers on that exact commit
+unless diagnosing a failure, the change is high-risk, or visual or domain
+verification cannot be covered remotely. Manual full-page visual inspection is
+needed only when visible layout changed. Keep semantic Playwright and domain
+checks whenever the affected behavior requires them.
 
 ## Mobile Viewports
 
