@@ -86,6 +86,22 @@ mean spend an additional 50 percentage points. Treat a plain number such as
 Do not ask further setup questions: use this workflow, the repository docs,
 GitHub Issues, and best judgment to proceed hands-free.
 
+The trigger is advance authorization for the run's normal GitHub delivery
+operations. For the duration of the multi-issue loop, Codex may push
+repository-scoped branches, commits, and ordinary pull-request evidence such as
+app screenshots to the Git remote already configured as `origin` when the run
+starts. That authorization applies to each successive issue and does not require
+confirmation before every push, pull-request update, or authorized merge.
+
+The authorization is destination- and content-bounded. It does not permit
+changing or adding a remote, pushing to a different repository, publishing
+credentials or secrets, uploading unrelated user files, or uploading files from
+outside the repository. Stop for explicit approval if the destination must
+change or a safeguard identifies specific sensitive content. Do not treat the
+repository's ordinary source code, generated app screenshots, or a normal push
+to its preconfigured origin as a blocker merely because the content originated
+in the local workspace.
+
 Usage reporting is not a real-time token meter, so a check may observe the
 threshold shortly after it is crossed. Recheck at the defined checkpoints and
 do not begin another costly step after reaching it.
@@ -236,7 +252,8 @@ Stop after recording a concise GitHub handoff when any of these applies:
 - usage cannot be inspected
 - no unblocked, low-conflict issue is available after attempting roadmap
   refinement
-- credentials, source material, or an external service is needed
+- credentials, unavailable authoritative source material, or an external
+  service is needed
 - the next decision would be unsafe or expensive to reverse
 - an active pull request or branch creates a material conflict
 - a pull request is failing and there is no safe, contained fix

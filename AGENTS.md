@@ -82,6 +82,15 @@ green pull request is merged, recheck usage and return to issue selection from
 updated `main`. Do not end the run merely because one issue or pull request is
 complete; continue until a stop condition in the workflow applies.
 
+Starting an "I'm Feeling Lucky" run also authorizes its normal repository
+delivery for the duration of the run. Push the run's repository-scoped branches,
+commits, and pull-request evidence to the Git remote already configured as
+`origin` when the run starts, across successive issues, without asking for
+confirmation before each push. This does not authorize changing the destination
+or uploading credentials, secrets, unrelated user files, or files outside the
+repository. A safeguard that identifies specific sensitive content remains a
+blocker; the ordinary configured-origin push is not one by itself.
+
 ## Documentation Ownership
 
 - ADRs own durable decisions and their rationale.
