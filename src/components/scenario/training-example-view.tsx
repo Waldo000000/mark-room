@@ -15,6 +15,7 @@ import type { CorpusMetadata } from '@/src/domain/corpus/schema';
 import { deriveApplicableRuleQuestion } from '@/src/domain/quiz/applicable-rule';
 import { deriveKeepClearQuestion } from '@/src/domain/quiz/keep-clear';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
+import { deriveMarkZones } from '@/src/domain/scenario/mark-zone';
 import type { TrainingExample } from '@/src/domain/training-example/schema';
 
 const DIAGRAM_FONT_SIZE = 0.24;
@@ -69,9 +70,7 @@ export function TrainingExampleView({
   const marks = scenario.courseFeatures.filter(
     (feature) => feature.type === 'mark',
   );
-  const zones = scenario.courseFeatures.filter(
-    (feature) => feature.type === 'zone',
-  );
+  const zones = deriveMarkZones(scenario);
   const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
   const scenarioJson = JSON.stringify(scenario, null, 2);
   const situationJson = JSON.stringify(situation, null, 2);
@@ -178,14 +177,16 @@ export function TrainingExampleView({
 
                 {zones.map((zone) => {
                   const screenY = scenario.sailingArea.height - zone.center.y;
+                  const labelY = Math.max(0.65, screenY - zone.radius + 0.65);
 
                   return (
                     <g
-                      key={zone.id}
+                      key={zone.markId}
                       data-center-x={zone.center.x}
                       data-center-y={zone.center.y}
+                      data-mark-id={zone.markId}
                       data-radius-hull-lengths={zone.radius}
-                      data-testid={`zone-${zone.id}`}
+                      data-testid={`zone-${zone.markId}`}
                     >
                       <circle
                         cx={zone.center.x}
@@ -203,7 +204,7 @@ export function TrainingExampleView({
                         fontWeight="600"
                         textAnchor="middle"
                         x={zone.center.x}
-                        y={screenY - zone.radius + 0.3}
+                        y={labelY}
                       >
                         {zone.label ?? `${zone.radius} hull length zone`}
                       </text>

@@ -8,7 +8,7 @@ import {
 } from '../shared/schema';
 import { inferTackFromHeading } from './geometry';
 
-export const SCENARIO_SCHEMA_VERSION = '0.3.0' as const;
+export const SCENARIO_SCHEMA_VERSION = '0.4.0' as const;
 
 const coordinateSchema = z
   .object({
@@ -71,17 +71,6 @@ const markFeatureSchema = z
   })
   .strict();
 
-const zoneFeatureSchema = z
-  .object({
-    type: z.literal('zone'),
-    id: entityIdSchema,
-    label: shortTextSchema.optional(),
-    center: coordinateSchema,
-    radius: z.number().positive(),
-    markId: entityIdSchema.optional(),
-  })
-  .strict();
-
 const lineFeatureSchema = z
   .object({
     type: z.literal('line'),
@@ -114,7 +103,6 @@ const laylineFeatureSchema = z
 
 export const courseFeatureSchema = z.discriminatedUnion('type', [
   markFeatureSchema,
-  zoneFeatureSchema,
   lineFeatureSchema,
   boundaryFeatureSchema,
   laylineFeatureSchema,
@@ -320,12 +308,6 @@ export const scenarioSchema = z
           'courseFeatures',
           featureIndex,
           'position',
-        ]);
-      } else if (feature.type === 'zone') {
-        checkPointBounds(feature.center, [
-          'courseFeatures',
-          featureIndex,
-          'center',
         ]);
       } else if (feature.type === 'boundary') {
         feature.points.forEach((point, pointIndex) => {

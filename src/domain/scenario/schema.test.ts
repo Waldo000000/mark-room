@@ -21,7 +21,6 @@ describe('scenarioSchema', () => {
 
     expect(scenario.courseFeatures.map((feature) => feature.type)).toEqual([
       'mark',
-      'zone',
       'line',
       'boundary',
       'layline',

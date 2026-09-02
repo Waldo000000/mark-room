@@ -4,6 +4,8 @@ Status: Accepted
 
 Date: 2026-08-30
 
+Amended: 2026-09-03
+
 ## Context
 
 MarkRoom needs scenarios that can be displayed, tested, imported, queried, and reasoned about. A free-text answer is not sufficient for deterministic quizzes or safe AI assistance.
@@ -36,6 +38,12 @@ zone membership, and course change belong in Situation. Scenario retains only
 observed events that geometry cannot reveal, initially hails and penalties
 taken.
 
+Store marks but not duplicate zone course features in Scenario. For the
+2025-2028 rules, derive each displayed zone from its mark and rules context:
+three hull lengths under general RRS and four hull lengths for radio sailing
+under Appendix E1.1. Keep `inZoneOfMarks` in Situation as the semantic record of
+membership until a deterministic geometry transform owns that derivation.
+
 Keep Ruling deterministic and structural. It contains obligations and outcomes
 with rule references, but no confidence status, statement IDs, authored
 explanations, or conclusion prose.
@@ -62,6 +70,10 @@ references its paired scenario.
 
 Sail rendering remains consistent across scenarios without exposing drawing
 controls that a scenario editor should not ask sailors to manage.
+
+Mark and zone geometry cannot drift independently. A future editor places the
+mark once, while the viewer applies the discipline-aware rules distance and
+Situation records which boats are in that mark's zone.
 
 Teaching prompts and questions are presentation or corpus concerns, not
 Scenario data.

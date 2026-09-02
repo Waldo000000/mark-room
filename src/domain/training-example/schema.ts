@@ -47,6 +47,24 @@ export const trainingExampleSchema = z
       });
     }
 
+    const scenarioMarks = new Map(
+      scenario.courseFeatures
+        .filter((feature) => feature.type === 'mark')
+        .map((mark) => [mark.id, mark.label ?? mark.id]),
+    );
+    const situationMarks = new Map(
+      situation.marks.map((mark) => [mark.id, mark.label ?? mark.id]),
+    );
+    if (
+      JSON.stringify([...situationMarks]) !== JSON.stringify([...scenarioMarks])
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['situation', 'marks'],
+        message: 'Situation marks must match the Scenario marks',
+      });
+    }
+
     const keyframeIds = scenario.keyframes.map((keyframe) => keyframe.id);
     const momentIds = situation.moments.map((moment) => moment.id);
     if (JSON.stringify(momentIds) !== JSON.stringify(keyframeIds)) {

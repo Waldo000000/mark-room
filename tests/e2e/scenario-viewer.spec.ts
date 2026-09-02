@@ -50,7 +50,7 @@ test('browses the validated corpus and opens a scenario', async ({ page }) => {
   ).toBeVisible();
 });
 
-test('renders mark and zone geometry from the validated Scenario', async ({
+test('derives mark-zone geometry from the mark and rules context', async ({
   page,
 }) => {
   await page.goto('/scenarios/windward-mark-zone');
@@ -73,24 +73,21 @@ test('renders mark and zone geometry from the validated Scenario', async ({
   const mark = scenario.courseFeatures.find(
     (feature) => feature.type === 'mark' && feature.id === 'windward-mark',
   );
-  const zone = scenario.courseFeatures.find(
-    (feature) => feature.type === 'zone' && feature.id === 'windward-mark-zone',
-  );
 
   expect(mark?.type).toBe('mark');
-  expect(zone?.type).toBe('zone');
-  if (!mark || mark.type !== 'mark' || !zone || zone.type !== 'zone') {
-    throw new Error('Expected windward mark and zone features');
+  expect(scenario.courseFeatures.map((feature) => feature.type)).not.toContain(
+    'zone',
+  );
+  if (!mark || mark.type !== 'mark') {
+    throw new Error('Expected windward mark feature');
   }
 
-  expect(zone.markId).toBe(mark.id);
-  expect(zone.center).toEqual(mark.position);
-  expect(zone.radius).toBe(3);
+  const zoneRadius = 4;
 
   const markGlyph = page.getByTestId(`mark-${mark.id}`);
-  const zoneGlyph = page.getByTestId(`zone-${zone.id}`);
+  const zoneGlyph = page.getByTestId(`zone-${mark.id}`);
   const markScreenY = scenario.sailingArea.height - mark.position.y;
-  const zoneScreenY = scenario.sailingArea.height - zone.center.y;
+  const zoneScreenY = markScreenY;
 
   await expect(markGlyph).toContainText('Windward mark');
   await expect(markGlyph).toHaveAttribute(
@@ -114,22 +111,23 @@ test('renders mark and zone geometry from the validated Scenario', async ({
     String(mark.radius),
   );
 
-  await expect(zoneGlyph).toContainText('3 hull length zone');
+  await expect(zoneGlyph).toContainText('4 hull length zone');
+  await expect(zoneGlyph).toHaveAttribute('data-mark-id', mark.id);
   await expect(zoneGlyph).toHaveAttribute(
     'data-center-x',
-    String(zone.center.x),
+    String(mark.position.x),
   );
   await expect(zoneGlyph).toHaveAttribute(
     'data-center-y',
-    String(zone.center.y),
+    String(mark.position.y),
   );
   await expect(zoneGlyph).toHaveAttribute(
     'data-radius-hull-lengths',
-    String(zone.radius),
+    String(zoneRadius),
   );
   await expect(zoneGlyph.locator('circle')).toHaveAttribute(
     'cx',
-    String(zone.center.x),
+    String(mark.position.x),
   );
   await expect(zoneGlyph.locator('circle')).toHaveAttribute(
     'cy',
@@ -137,19 +135,30 @@ test('renders mark and zone geometry from the validated Scenario', async ({
   );
   await expect(zoneGlyph.locator('circle')).toHaveAttribute(
     'r',
-    String(zone.radius),
+    String(zoneRadius),
+  );
+  const diagramBox = await page.getByTestId('scenario-diagram').boundingBox();
+  const zoneLabelBox = await zoneGlyph.locator('text').boundingBox();
+  expect(diagramBox).not.toBeNull();
+  expect(zoneLabelBox).not.toBeNull();
+  if (!diagramBox || !zoneLabelBox) {
+    throw new Error('Expected diagram and visible zone label bounds');
+  }
+  expect(zoneLabelBox.y).toBeGreaterThanOrEqual(diagramBox.y);
+  expect(zoneLabelBox.y + zoneLabelBox.height).toBeLessThanOrEqual(
+    diagramBox.y + diagramBox.height,
   );
 
   for (const state of keyframe.boatStates) {
     const distanceFromMark = Math.hypot(
-      state.position.x - zone.center.x,
-      state.position.y - zone.center.y,
+      state.position.x - mark.position.x,
+      state.position.y - mark.position.y,
     );
     const situationState = moment.boatStates.find(
       (candidate) => candidate.boatId === state.boatId,
     );
 
-    expect(distanceFromMark).toBeLessThanOrEqual(zone.radius);
+    expect(distanceFromMark).toBeLessThanOrEqual(zoneRadius);
     expect(situationState?.inZoneOfMarks).toContain(mark.id);
   }
 
