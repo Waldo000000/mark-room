@@ -37,6 +37,8 @@ Use:
   records decisions in GitHub issue comments, refines large issues before
   coding, asks only for the user's weekly usage-stop percentage at launch, and
   stops at defined checkpoints once reported usage reaches that percentage
+- a Sol High parent for hands-free orchestration, with explicit per-subagent
+  model and reasoning settings chosen from a conservative confidence ladder
 - a sailor-facing deployed proof as part of the definition of done for every feature slice
 - domain-semantic browser assertions for scenario diagram changes, alongside visual inspection
 
@@ -62,6 +64,11 @@ using its best judgment and records them in the issue. It may merge its own pull
 request when the required checks pass, the decision record is complete, and
 branch protection permits it; it cannot bypass protection or merge another
 agent's work.
+
+Subagents can protect the parent context from noisy intermediate work, but each
+also consumes its own context and tool calls. Delegation is therefore justified
+by context isolation, parallel progress, or a confidently cheaper model rather
+than an assumption that spawning always reduces total usage.
 
 A GitHub Project is deferred until custom priority fields, dates, iterations,
 or cross-repository planning would repay its additional maintenance. Milestones

@@ -87,21 +87,35 @@ do not begin another costly step after reaching it.
 
 ### Session Settings
 
-Use a strong parent agent for selecting work, making product or domain choices,
-integrating changes, and opening pull requests. Use `medium` reasoning as the
-default, and increase it only for ambiguous cross-cutting work.
+Before sending the trigger, start the parent task with `gpt-5.6-sol` at `high`
+reasoning. The parent owns issue selection, planning, product and domain
+decisions, integration, verification, pull requests, and merges. Do not assume
+the run can change its own parent model or reasoning effort after launch.
 
-Delegate bounded, read-heavy, repeatable, or independent tasks to less costly
-subagents. Good examples are a targeted codebase scan, a test-gap review, a
-documentation check, a narrow provenance search, or implementation and tests in
-an isolated file boundary. Give every subagent a single question or deliverable,
-the files or issue it concerns, an expected output, and a read-only sandbox
-unless it truly needs to edit. The parent agent owns the plan, integration,
-verification, and final decisions.
+Set the model and reasoning effort explicitly for every subagent; otherwise a
+subagent may inherit the parent's Sol High settings. Use this confidence ladder:
 
-Keep concurrent subagents low. They reduce elapsed time but do not inherently
-reduce token use, because each receives its own context and tools. Prefer one
-or two concise subagents only when their answers remove real uncertainty.
+- `gpt-5.6-sol` at `medium` for bounded implementation, debugging, or review
+  that still needs strong judgment
+- `gpt-5.6-terra` at `medium` for well-specified codebase scans, tests,
+  documentation, or isolated implementation with objective done criteria
+- `gpt-5.6-luna` at `low` only for mechanical, repetitive work whose output the
+  parent can verify cheaply
+
+Use a lower tier only when the parent can state the bounded task, write scope,
+expected output, and verification criteria with confidence. When uncertain,
+use Sol Medium or keep the work with the Sol High parent.
+
+Give every subagent one question or deliverable. When subagents edit, give them
+disjoint file boundaries. Use a read-only sandbox unless editing is necessary.
+Keep at most two subagents active concurrently.
+
+Delegation can keep raw exploration, logs, and intermediate work out of the
+parent thread and return a concise summary, reducing growth of the expensive
+parent context. It does not guarantee lower total token use: every subagent has
+its own context and tool calls. Delegate when context isolation, independent
+parallel progress, or a confidently lower model outweighs that overhead, not
+because spawning an agent is assumed to be cheaper.
 
 ### Issue Selection
 
