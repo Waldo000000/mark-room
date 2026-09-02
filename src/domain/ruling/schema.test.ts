@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import portStarboardEvalCase from '../../../corpus/eval-cases/port-starboard.json';
+import portStarboardTrainingExample from '../../../corpus/training-examples/port-starboard.json';
 import { rulingSchema, type Ruling } from './schema';
 
-const portStarboardRuling = portStarboardEvalCase.expected.ruling;
+const portStarboardRuling = portStarboardTrainingExample.rulings;
 
 describe('rulingSchema', () => {
   it('validates structured obligations without prose or statement IDs', () => {

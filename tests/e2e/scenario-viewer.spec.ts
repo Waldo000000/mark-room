@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
 
 import { deriveSailPresentation } from '../../src/components/scenario/boat-glyph';
-import type { ScenarioEvalCase } from '../../src/domain/eval/schema';
 import type { Ruling } from '../../src/domain/ruling/schema';
 import { inferTackFromHeading } from '../../src/domain/scenario/geometry';
 import type { Scenario } from '../../src/domain/scenario/schema';
 import type { Situation } from '../../src/domain/situation/schema';
+import type { TrainingExample } from '../../src/domain/training-example/schema';
 
 test('renders Scenario, Situation, and Ruling consistently', async ({
   page,
@@ -30,12 +30,14 @@ test('renders Scenario, Situation, and Ruling consistently', async ({
     .textContent();
   const situation = JSON.parse(situationJsonText ?? '') as Situation;
   const situationMoment = situation.moments[0];
-  const rulingJsonText = await page.getByTestId('ruling-json').textContent();
-  const ruling = JSON.parse(rulingJsonText ?? '') as Ruling;
-  const evalCaseJsonText = await page
-    .getByTestId('eval-case-json')
+  const rulingsJsonText = await page.getByTestId('rulings-json').textContent();
+  const rulings = JSON.parse(rulingsJsonText ?? '') as Ruling;
+  const trainingExampleJsonText = await page
+    .getByTestId('training-example-json')
     .textContent();
-  const evalCase = JSON.parse(evalCaseJsonText ?? '') as ScenarioEvalCase;
+  const trainingExample = JSON.parse(
+    trainingExampleJsonText ?? '',
+  ) as TrainingExample;
 
   expect(scenario).not.toHaveProperty('lengthUnit');
   expect(scenario).not.toHaveProperty('teachingText');
@@ -55,12 +57,13 @@ test('renders Scenario, Situation, and Ruling consistently', async ({
     expect(situationState).not.toHaveProperty('headingDegrees');
   }
   expect(situation.scenarioId).toBe(scenario.id);
-  expect(evalCase.input).toEqual(scenario);
-  expect(evalCase.expected).toEqual({ situation, ruling });
-  expect(Object.keys(evalCase)).toEqual(['input', 'expected']);
-  await expect(
-    page.getByText('Expected Situation', { exact: true }),
-  ).toBeVisible();
+  expect(trainingExample).toEqual({ scenario, situation, rulings });
+  expect(Object.keys(trainingExample)).toEqual([
+    'scenario',
+    'situation',
+    'rulings',
+  ]);
+  await expect(page.getByText('Situation', { exact: true })).toBeVisible();
 
   await expect(page.getByText('Unverified transcription')).toBeVisible();
   await expect(
@@ -165,7 +168,7 @@ test('renders Scenario, Situation, and Ruling consistently', async ({
     ).toBe(state.tack);
   }
 
-  const obligation = ruling.obligations[0];
+  const obligation = rulings.obligations[0];
   const subject = scenario.boats.find((boat) => boat.id === obligation.boatId);
   const other = scenario.boats.find(
     (boat) => boat.id === obligation.owedToBoatId,
@@ -173,7 +176,7 @@ test('renders Scenario, Situation, and Ruling consistently', async ({
 
   expect(obligation).not.toHaveProperty('id');
   expect(obligation).not.toHaveProperty('explanation');
-  expect(ruling).not.toHaveProperty('conclusion');
+  expect(rulings).not.toHaveProperty('conclusion');
 
   await expect(
     page.getByRole('heading', {

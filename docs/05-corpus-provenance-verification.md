@@ -41,10 +41,11 @@ Every stored corpus scenario has a sidecar metadata record keyed by
 verification. These stewardship concerns do not belong in the Scenario model,
 which remains usable as direct editor input.
 
-Stored examples use matching filenames under `corpus/eval-cases/` and
+Stored examples use matching filenames under `corpus/training-examples/` and
 `corpus/metadata/`. `npm run validate:corpus` validates both schemas, requires
-every EvalCase to have one metadata sidecar, and checks that their Scenario IDs
-agree. The deployed scenario viewer consumes the same validated corpus files.
+every TrainingExample to have one metadata sidecar, and checks that their
+Scenario IDs agree. The deployed scenario viewer consumes the same validated
+corpus files.
 
 ## Provenance Is Required
 

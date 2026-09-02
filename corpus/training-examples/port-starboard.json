@@ -1,0 +1,116 @@
+{
+  "scenario": {
+    "schemaVersion": "0.3.0",
+    "id": "development-port-starboard-crossing",
+    "title": "Port meets starboard",
+    "context": {
+      "discipline": "radio_sailing",
+      "ruleSetVersion": "2025-2028"
+    },
+    "sailingArea": {
+      "width": 6,
+      "height": 6
+    },
+    "wind": {
+      "fromDegrees": 0
+    },
+    "boats": [
+      {
+        "id": "blue",
+        "label": "Blue",
+        "sailNumber": "01",
+        "color": "#2563EB"
+      },
+      {
+        "id": "yellow",
+        "label": "Yellow",
+        "sailNumber": "02",
+        "color": "#EAB308"
+      }
+    ],
+    "keyframes": [
+      {
+        "id": "position-1",
+        "label": "Position 1",
+        "boatStates": [
+          {
+            "boatId": "blue",
+            "position": {
+              "x": 4.2,
+              "y": 2.7
+            },
+            "headingDegrees": 315,
+            "tack": "starboard"
+          },
+          {
+            "boatId": "yellow",
+            "position": {
+              "x": 1.8,
+              "y": 2.7
+            },
+            "headingDegrees": 45,
+            "tack": "port"
+          }
+        ]
+      }
+    ],
+    "courseFeatures": [],
+    "observedEvents": []
+  },
+  "situation": {
+    "schemaVersion": "0.1.0",
+    "scenarioId": "development-port-starboard-crossing",
+    "context": {
+      "discipline": "radio_sailing",
+      "ruleSetVersion": "2025-2028"
+    },
+    "boats": [
+      {
+        "id": "blue",
+        "label": "Blue"
+      },
+      {
+        "id": "yellow",
+        "label": "Yellow"
+      }
+    ],
+    "marks": [],
+    "moments": [
+      {
+        "id": "position-1",
+        "label": "Position 1",
+        "boatStates": [
+          {
+            "boatId": "blue",
+            "tack": "starboard",
+            "pointOfSail": "close-hauled",
+            "sailLuffing": false,
+            "inZoneOfMarks": []
+          },
+          {
+            "boatId": "yellow",
+            "tack": "port",
+            "pointOfSail": "close-hauled",
+            "sailLuffing": false,
+            "inZoneOfMarks": []
+          }
+        ],
+        "relationships": [],
+        "actions": []
+      }
+    ]
+  },
+  "rulings": {
+    "schemaVersion": "0.1.0",
+    "obligations": [
+      {
+        "atMoment": "position-1",
+        "boatId": "yellow",
+        "type": "keep-clear",
+        "owedToBoatId": "blue",
+        "ruleRefs": ["RRS 10"]
+      }
+    ],
+    "outcomes": []
+  }
+}

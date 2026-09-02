@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import portStarboardEvalCase from '../../../corpus/eval-cases/port-starboard.json';
+import portStarboardTrainingExample from '../../../corpus/training-examples/port-starboard.json';
 import invalidDanglingBoatReference from './__fixtures__/invalid-dangling-boat-reference.json';
 import validRichDevelopmentScenario from './__fixtures__/valid-rich-development-scenario.json';
 import { scenarioSchema, type Scenario } from './schema';
 
-const validDevelopmentScenario = portStarboardEvalCase.input;
+const validDevelopmentScenario = portStarboardTrainingExample.scenario;
 const cloneValidFixture = (): unknown =>
   structuredClone(validDevelopmentScenario);
 

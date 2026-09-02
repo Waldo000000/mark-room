@@ -40,9 +40,12 @@ Keep Ruling deterministic and structural. It contains obligations and outcomes
 with rule references, but no confidence status, statement IDs, authored
 explanations, or conclusion prose.
 
-Package known pipeline examples as `EvalCase` records containing only Scenario
-input and expected Situation and Ruling outputs. Validate references at each
-boundary. Keep corpus teaching, provenance, and verification outside EvalCase.
+Package worked learning content as `TrainingExample` records that directly
+compose `scenario`, `situation`, and `rulings`. A TrainingExample does not claim
+that Situation or Rulings were automatically derived from Scenario. Introduce
+a separate evaluation-case model later when deterministic transforms exist.
+Validate references between the composed models, and keep corpus teaching,
+provenance, and verification outside TrainingExample.
 
 Store initial corpus records as validated files in Git. Keep teaching text,
 source provenance, and verification in sidecar metadata keyed by scenario ID,
