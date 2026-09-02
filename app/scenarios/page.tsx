@@ -5,6 +5,7 @@ import path from 'node:path';
 import {
   collectRuleReferences,
   filterCorpusEntriesByRule,
+  searchCorpusEntries,
 } from '@/src/domain/corpus/library';
 import { validateCorpusDirectory } from '@/src/domain/corpus/validate';
 
@@ -20,7 +21,10 @@ const verificationLabels = {
 } as const;
 
 type ScenariosPageProps = {
-  searchParams: Promise<{ rule?: string | string[] }>;
+  searchParams: Promise<{
+    q?: string | string[];
+    rule?: string | string[];
+  }>;
 };
 
 export default async function ScenariosPage({
@@ -31,11 +35,16 @@ export default async function ScenariosPage({
     searchParams,
   ]);
   const ruleReferences = collectRuleReferences(entries);
+  const requestedSearch = Array.isArray(query.q) ? query.q[0] : query.q;
+  const searchQuery = requestedSearch?.trim() || undefined;
   const requestedRule = Array.isArray(query.rule) ? query.rule[0] : query.rule;
-  const selectedRule = ruleReferences.includes(requestedRule ?? '')
-    ? requestedRule
-    : undefined;
-  const filteredEntries = filterCorpusEntriesByRule(entries, selectedRule);
+  const selectedRule =
+    !searchQuery && ruleReferences.includes(requestedRule ?? '')
+      ? requestedRule
+      : undefined;
+  const filteredEntries = searchQuery
+    ? searchCorpusEntries(entries, searchQuery)
+    : filterCorpusEntriesByRule(entries, selectedRule);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -70,52 +79,76 @@ export default async function ScenariosPage({
           className="border-b border-border py-6"
           aria-label="Scenario filters"
         >
-          <form
-            action="/scenarios"
-            className="grid gap-3 sm:grid-cols-[minmax(0,18rem)_auto_auto] sm:items-end sm:justify-start"
-            method="get"
-          >
-            <label
-              className="grid gap-2 text-sm font-semibold"
-              htmlFor="rule-filter"
-            >
-              Filter by rule
-              <select
-                className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
-                defaultValue={selectedRule ?? ''}
-                id="rule-filter"
-                key={selectedRule ?? 'all-rules'}
-                name="rule"
+          <div className="grid gap-6 md:grid-cols-2">
+            <form action="/scenarios" className="grid gap-3" method="get">
+              <label
+                className="grid gap-2 text-sm font-semibold"
+                htmlFor="scenario-search"
               >
-                <option value="">All rules</option>
-                {ruleReferences.map((ruleReference) => (
-                  <option key={ruleReference} value={ruleReference}>
-                    {ruleReference}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
-              type="submit"
-            >
-              Apply filter
-            </button>
-            {selectedRule ? (
-              <Link
-                className="inline-flex min-h-11 items-center justify-center text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
-                href="/scenarios"
+                Search scenarios
+                <input
+                  className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                  defaultValue={searchQuery ?? ''}
+                  id="scenario-search"
+                  key={searchQuery ?? 'empty-search'}
+                  name="q"
+                  placeholder="Title or teaching note"
+                  type="search"
+                />
+              </label>
+              <button
+                className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
+                type="submit"
               >
-                Clear filter
-              </Link>
-            ) : null}
-          </form>
+                Search
+              </button>
+            </form>
+
+            <form action="/scenarios" className="grid gap-3" method="get">
+              <label
+                className="grid gap-2 text-sm font-semibold"
+                htmlFor="rule-filter"
+              >
+                Filter by rule
+                <select
+                  className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                  defaultValue={selectedRule ?? ''}
+                  id="rule-filter"
+                  key={selectedRule ?? 'all-rules'}
+                  name="rule"
+                >
+                  <option value="">All rules</option>
+                  {ruleReferences.map((ruleReference) => (
+                    <option key={ruleReference} value={ruleReference}>
+                      {ruleReference}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
+                type="submit"
+              >
+                Apply filter
+              </button>
+            </form>
+          </div>
+
+          {searchQuery || selectedRule ? (
+            <Link
+              className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
+              href="/scenarios"
+            >
+              {searchQuery ? 'Clear search' : 'Clear filter'}
+            </Link>
+          ) : null}
           <p
             className="mt-4 text-sm text-muted-foreground"
             data-testid="scenario-count"
           >
             {filteredEntries.length}{' '}
             {filteredEntries.length === 1 ? 'scenario' : 'scenarios'}
+            {searchQuery ? ` matching "${searchQuery}"` : ''}
             {selectedRule ? ` citing ${selectedRule}` : ''}
           </p>
         </section>
@@ -174,6 +207,22 @@ export default async function ScenariosPage({
               );
             },
           )}
+          {filteredEntries.length === 0 && searchQuery ? (
+            <div className="py-8">
+              <p className="text-base font-semibold">
+                No scenarios match &quot;{searchQuery}&quot;.
+              </p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Try a title or a phrase from a teaching note.
+              </p>
+              <Link
+                className="mt-3 inline-block text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+                href="/scenarios"
+              >
+                Show all scenarios
+              </Link>
+            </div>
+          ) : null}
         </section>
       </div>
     </main>
