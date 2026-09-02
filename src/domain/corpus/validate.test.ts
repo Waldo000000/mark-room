@@ -14,16 +14,31 @@ describe('corpus validation', () => {
     );
 
     expect(entries.map((entry) => entry.slug)).toEqual([
+      'clear-ahead',
       'leeward-mark-clear-ahead',
       'leeward-mark-overlap',
       'port-starboard',
       'windward-leeward',
       'windward-mark-zone',
     ]);
-    expect(entries[2].trainingExample.scenario.title).toBe(
+    expect(entries[3].trainingExample.scenario.title).toBe(
       'Port meets starboard',
     );
-    const leewardMarkClearAhead = entries[0].trainingExample;
+    const clearAhead = entries[0].trainingExample;
+    expect(clearAhead.situation.moments[0].relationships).toContainEqual({
+      type: 'relative-position',
+      subjectBoatId: 'blue',
+      otherBoatId: 'yellow',
+      relationship: 'clear-ahead',
+    });
+    expect(clearAhead.rulings.obligations).toContainEqual({
+      atMoment: 'position-1',
+      boatId: 'yellow',
+      owedToBoatId: 'blue',
+      ruleRefs: ['RRS 12'],
+      type: 'keep-clear',
+    });
+    const leewardMarkClearAhead = entries[1].trainingExample;
     expect(leewardMarkClearAhead.scenario.keyframes).toHaveLength(2);
     expect(leewardMarkClearAhead.scenario.courseFeatures[0]).toMatchObject({
       id: 'leeward-mark',
@@ -68,7 +83,7 @@ describe('corpus validation', () => {
         }),
       ]),
     );
-    const leewardMarkOverlap = entries[1].trainingExample;
+    const leewardMarkOverlap = entries[2].trainingExample;
     expect(leewardMarkOverlap.scenario.keyframes).toHaveLength(2);
     expect(leewardMarkOverlap.scenario.courseFeatures[0]).toMatchObject({
       id: 'leeward-mark',
@@ -82,7 +97,7 @@ describe('corpus validation', () => {
       ruleRefs: ['RRS 18.2(a)(1)'],
       type: 'give-mark-room',
     });
-    const windwardLeeward = entries[3].trainingExample;
+    const windwardLeeward = entries[4].trainingExample;
     expect(windwardLeeward.situation.moments[0].relationships).toContainEqual({
       type: 'windward-leeward',
       windwardBoatId: 'red',
@@ -93,7 +108,7 @@ describe('corpus validation', () => {
       owedToBoatId: 'blue',
       ruleRefs: ['RRS 11'],
     });
-    const windwardMarkZone = entries[4].trainingExample;
+    const windwardMarkZone = entries[5].trainingExample;
     expect(windwardMarkZone.scenario.courseFeatures).toEqual([
       expect.objectContaining({ id: 'windward-mark', type: 'mark' }),
     ]);

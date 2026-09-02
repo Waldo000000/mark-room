@@ -35,7 +35,10 @@ test('browses referenced rules and opens a matching example', async ({
   await expect(
     ruleEleven.getByRole('link', { name: 'Open authoritative source' }),
   ).toHaveCount(4);
-  await expect(ruleTwelve).toContainText('1 example in the current corpus');
+  await expect(ruleTwelve).toContainText('2 examples in the current corpus');
+  await expect(
+    ruleTwelve.getByRole('link', { name: 'Clear ahead on the same tack' }),
+  ).toBeVisible();
   await expect(ruleEighteenTwoA2).toContainText(
     '1 example in the current corpus',
   );
