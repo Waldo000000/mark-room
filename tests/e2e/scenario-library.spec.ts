@@ -8,7 +8,7 @@ test('filters and clears scenarios by rule reference', async ({ page }) => {
   page.on('pageerror', (error) => runtimeErrors.push(error.message));
 
   await page.goto('/scenarios');
-  await expect(page.getByTestId('scenario-count')).toHaveText('5 scenarios');
+  await expect(page.getByTestId('scenario-count')).toHaveText('6 scenarios');
 
   await page.getByLabel('Filter by rule').selectOption('RRS 11');
   await page.getByRole('button', { name: 'Apply filter' }).click();
@@ -49,7 +49,7 @@ test('filters and clears scenarios by rule reference', async ({ page }) => {
   await page.getByRole('link', { name: 'Clear filter' }).click();
 
   await expect(page).toHaveURL('/scenarios');
-  await expect(page.getByTestId('scenario-count')).toHaveText('5 scenarios');
+  await expect(page.getByTestId('scenario-count')).toHaveText('6 scenarios');
   await expect(page.getByLabel('Filter by rule')).toHaveValue('');
   await expect(page.locator('html')).toHaveJSProperty(
     'scrollWidth',
@@ -110,7 +110,7 @@ test('searches titles and teaching notes with an honest empty state', async ({
 
   await expect(page).toHaveURL('/scenarios');
   await expect(page.getByLabel('Search scenarios')).toHaveValue('');
-  await expect(page.getByTestId('scenario-count')).toHaveText('5 scenarios');
+  await expect(page.getByTestId('scenario-count')).toHaveText('6 scenarios');
   await expect(page.locator('html')).toHaveJSProperty(
     'scrollWidth',
     await page.locator('html').evaluate((element) => element.clientWidth),

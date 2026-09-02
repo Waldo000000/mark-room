@@ -21,6 +21,12 @@ test('browses the validated corpus and opens a scenario', async ({ page }) => {
   await expect(
     page.getByRole('heading', {
       level: 2,
+      name: 'Clear ahead on the same tack',
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', {
+      level: 2,
       name: 'Clear ahead at a leeward mark',
     }),
   ).toBeVisible();
@@ -33,7 +39,7 @@ test('browses the validated corpus and opens a scenario', async ({ page }) => {
       name: 'Overlapped boats near a mark',
     }),
   ).toBeVisible();
-  await expect(page.getByText('Unverified transcription')).toHaveCount(5);
+  await expect(page.getByText('Unverified transcription')).toHaveCount(6);
   const availableScenarios = page.getByRole('region', {
     name: 'Available scenarios',
   });
@@ -240,6 +246,76 @@ test('shows the windward boat keeping clear under Rule 11', async ({
   await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
     'windward-leeward-diagram.png',
     { maxDiffPixelRatio: 0.005 },
+  );
+});
+
+test('shows the clear-astern boat keeping clear under Rule 12', async ({
+  page,
+}) => {
+  await page.goto('/scenarios/clear-ahead');
+
+  await expect(
+    page.getByRole('heading', {
+      level: 1,
+      name: 'Clear ahead on the same tack',
+    }),
+  ).toBeVisible();
+  await expect(page.getByTestId('ruling-obligation')).toContainText(
+    'Yellow must keep clear of Blue.',
+  );
+  await expect(page.getByTestId('ruling-obligation')).toContainText('RRS 12');
+
+  const scenario = JSON.parse(
+    (await page.getByTestId('scenario-json').textContent()) ?? '',
+  ) as Scenario;
+  const situation = JSON.parse(
+    (await page.getByTestId('situation-json').textContent()) ?? '',
+  ) as Situation;
+  const rulings = JSON.parse(
+    (await page.getByTestId('rulings-json').textContent()) ?? '',
+  ) as Ruling;
+  const [blue, yellow] = scenario.keyframes[0].boatStates;
+  const headingRadians = (blue.headingDegrees * Math.PI) / 180;
+  const headingVector = {
+    x: Math.sin(headingRadians),
+    y: Math.cos(headingRadians),
+  };
+  const separation = {
+    x: blue.position.x - yellow.position.x,
+    y: blue.position.y - yellow.position.y,
+  };
+  const longitudinalSeparation =
+    separation.x * headingVector.x + separation.y * headingVector.y;
+  const crossTrackSeparation = Math.abs(
+    separation.x * headingVector.y - separation.y * headingVector.x,
+  );
+
+  expect(blue.headingDegrees).toBe(yellow.headingDegrees);
+  expect(blue.tack).toBe('starboard');
+  expect(yellow.tack).toBe('starboard');
+  expect(longitudinalSeparation).toBeGreaterThan(1);
+  expect(crossTrackSeparation).toBeLessThan(0.01);
+  expect(situation.moments[0].relationships).toContainEqual({
+    type: 'relative-position',
+    subjectBoatId: 'blue',
+    otherBoatId: 'yellow',
+    relationship: 'clear-ahead',
+  });
+  expect(rulings.obligations).toContainEqual({
+    atMoment: 'position-1',
+    boatId: 'yellow',
+    type: 'keep-clear',
+    owedToBoatId: 'blue',
+    ruleRefs: ['RRS 12'],
+  });
+
+  await expect(page.locator('html')).toHaveJSProperty(
+    'scrollWidth',
+    await page.locator('html').evaluate((element) => element.clientWidth),
+  );
+  await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
+    'clear-ahead-diagram.png',
+    { maxDiffPixelRatio: 0.007 },
   );
 });
 

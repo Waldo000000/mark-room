@@ -1,0 +1,123 @@
+{
+  "scenario": {
+    "schemaVersion": "0.5.0",
+    "id": "development-clear-ahead",
+    "title": "Clear ahead on the same tack",
+    "context": {
+      "discipline": "general_rrs",
+      "ruleSetVersion": "2025-2028"
+    },
+    "sailingArea": {
+      "width": 6,
+      "height": 6
+    },
+    "wind": {
+      "fromDegrees": 0
+    },
+    "boats": [
+      {
+        "id": "blue",
+        "label": "Blue",
+        "sailNumber": "01",
+        "color": "#2563EB"
+      },
+      {
+        "id": "yellow",
+        "label": "Yellow",
+        "sailNumber": "02",
+        "color": "#EAB308"
+      }
+    ],
+    "keyframes": [
+      {
+        "id": "position-1",
+        "label": "Position 1",
+        "boatStates": [
+          {
+            "boatId": "blue",
+            "position": {
+              "x": 2.8,
+              "y": 2.8
+            },
+            "headingDegrees": 225,
+            "tack": "starboard"
+          },
+          {
+            "boatId": "yellow",
+            "position": {
+              "x": 4.2,
+              "y": 4.2
+            },
+            "headingDegrees": 225,
+            "tack": "starboard"
+          }
+        ]
+      }
+    ],
+    "courseFeatures": [],
+    "observedEvents": []
+  },
+  "situation": {
+    "schemaVersion": "0.2.0",
+    "scenarioId": "development-clear-ahead",
+    "context": {
+      "discipline": "general_rrs",
+      "ruleSetVersion": "2025-2028"
+    },
+    "boats": [
+      {
+        "id": "blue",
+        "label": "Blue"
+      },
+      {
+        "id": "yellow",
+        "label": "Yellow"
+      }
+    ],
+    "marks": [],
+    "moments": [
+      {
+        "id": "position-1",
+        "label": "Position 1",
+        "boatStates": [
+          {
+            "boatId": "blue",
+            "tack": "starboard",
+            "pointOfSail": "reaching",
+            "sailLuffing": false,
+            "inZoneOfMarks": []
+          },
+          {
+            "boatId": "yellow",
+            "tack": "starboard",
+            "pointOfSail": "reaching",
+            "sailLuffing": false,
+            "inZoneOfMarks": []
+          }
+        ],
+        "relationships": [
+          {
+            "type": "relative-position",
+            "subjectBoatId": "blue",
+            "otherBoatId": "yellow",
+            "relationship": "clear-ahead"
+          }
+        ],
+        "actions": []
+      }
+    ]
+  },
+  "rulings": {
+    "schemaVersion": "0.1.0",
+    "obligations": [
+      {
+        "atMoment": "position-1",
+        "boatId": "yellow",
+        "type": "keep-clear",
+        "owedToBoatId": "blue",
+        "ruleRefs": ["RRS 12"]
+      }
+    ],
+    "outcomes": []
+  }
+}
