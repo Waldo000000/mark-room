@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "0.1.0",
+  "obligations": [
+    {
+      "atMoment": "position-1",
+      "boatId": "yellow",
+      "type": "keep-clear",
+      "owedToBoatId": "blue",
+      "ruleRefs": ["RRS 10"]
+    }
+  ],
+  "outcomes": []
+}

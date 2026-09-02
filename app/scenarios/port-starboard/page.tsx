@@ -7,6 +7,8 @@ import {
   deriveSailPresentation,
 } from '@/src/components/scenario/boat-glyph';
 import { corpusMetadataSchema } from '@/src/domain/corpus/schema';
+import portStarboardRuling from '@/src/domain/ruling/__fixtures__/port-starboard-ruling.json';
+import { rulingSchema } from '@/src/domain/ruling/schema';
 import validDevelopmentScenario from '@/src/domain/scenario/__fixtures__/valid-development-scenario.json';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
 import { scenarioSchema } from '@/src/domain/scenario/schema';
@@ -25,6 +27,7 @@ export const metadata: Metadata = {
 
 const scenario = scenarioSchema.parse(validDevelopmentScenario);
 const situation = situationSchema.parse(portStarboardSituation);
+const ruling = rulingSchema.parse(portStarboardRuling);
 const corpusMetadata = corpusMetadataSchema.parse(portStarboardMetadata);
 
 if (corpusMetadata.scenarioId !== scenario.id) {
@@ -46,20 +49,23 @@ const verificationLabel = {
 }[corpusMetadata.verification.status];
 const keyframe = scenario.keyframes[0];
 const situationMoment = situation.moments[0];
-const finding = scenario.ruling.findings[0];
+const obligation = ruling.obligations[0];
 const subjectBoat = scenario.boats.find(
-  (boat) => boat.id === finding.subjectBoat,
+  (boat) => boat.id === obligation.boatId,
 );
-const otherBoat = scenario.boats.find((boat) => boat.id === finding.otherBoat);
+const otherBoat = scenario.boats.find(
+  (boat) => boat.id === obligation.owedToBoatId,
+);
 const subjectState = situationMoment.boatStates.find(
-  (state) => state.boatId === finding.subjectBoat,
+  (state) => state.boatId === obligation.boatId,
 );
 const otherState = situationMoment.boatStates.find(
-  (state) => state.boatId === finding.otherBoat,
+  (state) => state.boatId === obligation.owedToBoatId,
 );
 const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
 const scenarioJson = JSON.stringify(scenario, null, 2);
 const situationJson = JSON.stringify(situation, null, 2);
+const rulingJson = JSON.stringify(ruling, null, 2);
 const diagramTitle = `${keyframe.boatStates
   .map((state) => {
     const boat = scenario.boats.find(
@@ -266,7 +272,7 @@ export default function PortStarboardScenarioPage() {
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
                 {subjectBoat?.label} is on {subjectState?.tack} tack and{' '}
                 {otherBoat?.label} is on {otherState?.tack} tack. The structured
-                finding cites {finding.ruleRefs.join(', ')}.
+                obligation cites {obligation.ruleRefs.join(', ')}.
               </p>
               {corpusMetadata.teachingText ? (
                 <p className="mt-3 border-l-4 border-primary pl-3 text-sm leading-6">
@@ -339,6 +345,21 @@ export default function PortStarboardScenarioPage() {
               data-testid="situation-json"
             >
               {situationJson}
+            </pre>
+          </details>
+          <details className="mt-6" open>
+            <summary className="cursor-pointer text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-4">
+              Expected Ruling JSON
+            </summary>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+              This authored expectation records deterministic obligations and
+              outcomes. A future rules transform will produce it from Situation.
+            </p>
+            <pre
+              className="mt-4 max-h-[42rem] overflow-auto rounded-md border border-border bg-slate-950 p-4 text-xs leading-5 text-slate-100"
+              data-testid="ruling-json"
+            >
+              {rulingJson}
             </pre>
           </details>
         </section>

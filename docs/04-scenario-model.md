@@ -87,63 +87,39 @@ MarkRoom uses three bounded models:
    contact, relative position, windward/leeward relationships, proximity in
    hull lengths, available room, and observed actions. It does not contain
    positions, headings, hull polygons, or renderer-only sail trim.
-3. `Ruling` will contain obligations and outcomes derived from Situation
-   without needing Scenario geometry.
+3. `Ruling` contains obligations and outcomes derived from Situation without
+   needing Scenario geometry. It is deterministic structured output: statement
+   IDs, confidence, authored explanations, and conclusion prose are excluded.
 
 The provisional Situation schema lives in
 [`src/domain/situation/schema.ts`](../src/domain/situation/schema.ts). Temporal
 transition vocabulary is deferred until a representative multi-keyframe rules
 case establishes what the model needs.
 
-## Rulings And Findings
+The provisional Ruling schema lives in
+[`src/domain/ruling/schema.ts`](../src/domain/ruling/schema.ts). Obligations
+identify the boat, moment, obligation type, boat owed the obligation,
+and applicable rule references. Outcomes identify breaches, exoneration,
+penalties, or no breach.
 
-Avoid a single free-text `answer` field as the canonical result.
+## Ruling Shape
 
-Use structured findings:
+Avoid a free-text `answer` field. A Ruling uses compact statements such as:
 
 ```ts
-type ScenarioFinding = {
-  id: string;
-  atKeyframe?: string;
-  subjectBoat: string;
-  findingType:
-    | 'right_of_way'
-    | 'keep_clear'
-    | 'entitled_to_room'
-    | 'entitled_to_mark_room'
-    | 'must_give_room'
-    | 'must_avoid_contact'
-    | 'rule_applies'
-    | 'rule_breached'
-    | 'exonerated'
-    | 'penalty'
-    | 'no_breach';
-  otherBoat?: string;
+type Obligation = {
+  atMoment: string;
+  boatId: string;
+  type: 'keep-clear' | 'give-room' | 'give-mark-room' | 'avoid-contact';
+  owedToBoatId: string;
   ruleRefs: string[];
-  status: 'definite' | 'conditional' | 'not_determinable';
-  explanation?: string;
-};
-
-type ScenarioRuling = {
-  findings: ScenarioFinding[];
-  conclusion: string;
 };
 ```
 
-This list is a hypothesis, not a frozen ontology. The corpus discovery process must test and refine it.
-
-## Three Layers
-
-Keep these separate:
-
-- facts: what physically happened or was asserted
-- findings: structured rules conclusions
-- explanation: human-readable teaching material
-
-Legal conclusions such as entitlement to mark-room belong in findings, not in
-the physical facts layer.
-
-Do not infer stronger findings than the authoritative source supports.
+Legal conclusions such as entitlement to mark-room belong in Ruling, not in
+Scenario or Situation. Human-readable teaching material belongs in corpus
+metadata or presentation. Do not infer stronger rulings than the authoritative
+source supports.
 
 ## Schema Discovery Requirement
 
