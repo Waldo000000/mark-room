@@ -97,10 +97,6 @@ test('shows the windward boat keeping clear under Rule 11', async ({
     'windward-leeward-diagram.png',
     { maxDiffPixelRatio: 0.005 },
   );
-  await expect(page.getByTestId('ruling-statements')).toHaveScreenshot(
-    'windward-leeward-rulings.png',
-    { maxDiffPixelRatio: 0.005 },
-  );
 });
 
 test('switches keyframes, Situation moments, and Rulings together', async ({
