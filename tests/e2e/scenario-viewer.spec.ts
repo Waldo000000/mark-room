@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test';
 
 import { deriveSailPresentation } from '../../src/components/scenario/boat-glyph';
+import type { Ruling } from '../../src/domain/ruling/schema';
 import { inferTackFromHeading } from '../../src/domain/scenario/geometry';
 import type { Scenario } from '../../src/domain/scenario/schema';
 import type { Situation } from '../../src/domain/situation/schema';
 
-test('renders Scenario geometry and expected Situation consistently', async ({
+test('renders Scenario, Situation, and Ruling consistently', async ({
   page,
 }) => {
   const runtimeErrors: string[] = [];
@@ -28,6 +29,8 @@ test('renders Scenario geometry and expected Situation consistently', async ({
     .textContent();
   const situation = JSON.parse(situationJsonText ?? '') as Situation;
   const situationMoment = situation.moments[0];
+  const rulingJsonText = await page.getByTestId('ruling-json').textContent();
+  const ruling = JSON.parse(rulingJsonText ?? '') as Ruling;
 
   expect(scenario).not.toHaveProperty('lengthUnit');
   expect(scenario).not.toHaveProperty('teachingText');
@@ -152,11 +155,15 @@ test('renders Scenario geometry and expected Situation consistently', async ({
     ).toBe(state.tack);
   }
 
-  const finding = scenario.ruling.findings[0];
-  const subject = scenario.boats.find(
-    (boat) => boat.id === finding.subjectBoat,
+  const obligation = ruling.obligations[0];
+  const subject = scenario.boats.find((boat) => boat.id === obligation.boatId);
+  const other = scenario.boats.find(
+    (boat) => boat.id === obligation.owedToBoatId,
   );
-  const other = scenario.boats.find((boat) => boat.id === finding.otherBoat);
+
+  expect(obligation).not.toHaveProperty('id');
+  expect(obligation).not.toHaveProperty('explanation');
+  expect(ruling).not.toHaveProperty('conclusion');
 
   await expect(
     page.getByRole('heading', {

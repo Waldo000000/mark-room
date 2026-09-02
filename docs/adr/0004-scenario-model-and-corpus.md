@@ -23,13 +23,17 @@ resolve it in head-to-wind and dead-downwind states. The renderer derives sail
 side, trim, and luffing deterministically from tack, heading, and wind; these
 presentation values are not Scenario data.
 
-Use structured rulings and findings rather than a single `answer` field.
+Use structured obligations and outcomes rather than a single `answer` field.
 
 Separate the reasoning pipeline into three bounded models: editor-controlled
 `Scenario`, self-contained RRS-language `Situation`, and obligations/outcomes
 `Ruling`. A rules engine consumes Situation without also needing Scenario.
 Situation excludes geometry and renderer details. Defer temporal transition
 types until multi-keyframe cases establish the required RRS vocabulary.
+
+Keep Ruling deterministic and structural. It contains obligations and outcomes
+with rule references, but no confidence status, statement IDs, authored
+explanations, or conclusion prose.
 
 Store initial corpus records as validated files in Git. Keep teaching text,
 source provenance, and verification in sidecar metadata keyed by scenario ID,
