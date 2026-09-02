@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import path from 'node:path';
 
 import { TrainingExampleView } from '@/src/components/scenario/training-example-view';
+import { collectRuleReferences } from '@/src/domain/corpus/library';
 import { validateCorpusDirectory } from '@/src/domain/corpus/validate';
 
 type ScenarioPageProps = {
@@ -10,6 +11,7 @@ type ScenarioPageProps = {
   searchParams: Promise<{
     mode?: string | string[];
     position?: string | string[];
+    question?: string | string[];
   }>;
 };
 
@@ -48,7 +50,10 @@ export default async function ScenarioPage({
   searchParams,
 }: ScenarioPageProps) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
-  const entry = await findTrainingExample(slug);
+  const entries = await validateCorpusDirectory(
+    path.resolve(process.cwd(), 'corpus'),
+  );
+  const entry = entries.find((candidate) => candidate.slug === slug);
 
   if (!entry) notFound();
 
@@ -56,6 +61,9 @@ export default async function ScenarioPage({
     ? query.position[0]
     : query.position;
   const requestedMode = Array.isArray(query.mode) ? query.mode[0] : query.mode;
+  const requestedQuestion = Array.isArray(query.question)
+    ? query.question[0]
+    : query.question;
   const selectedKeyframeId =
     requestedPosition &&
     entry.trainingExample.scenario.keyframes.some(
@@ -67,7 +75,11 @@ export default async function ScenarioPage({
   return (
     <TrainingExampleView
       corpusMetadata={entry.metadata}
+      availableRuleReferences={collectRuleReferences(entries)}
       quizMode={requestedMode === 'quiz'}
+      quizQuestionType={
+        requestedQuestion === 'rule' ? 'applicable-rule' : 'keep-clear'
+      }
       scenarioSlug={slug}
       selectedKeyframeId={selectedKeyframeId}
       trainingExample={entry.trainingExample}
