@@ -50,13 +50,18 @@ unattended, for example overnight.
 
 It optimizes for steady, reviewable progress rather than maximum throughput:
 
-- one issue at a time
+- one issue at a time, not one issue total
 - one focused branch and pull request per issue
 - GitHub Issues as the durable delivery state and decision record
 - early refinement and splitting of work that is too large or unclear
 - low-conflict, independently verifiable slices
 - best-judgment decisions when evidence is sufficient and reversal remains
   practical
+
+A run normally advances through multiple focused issues and pull requests.
+Completing one per-issue loop does not complete the run. After each merge,
+recheck usage, select the next safe issue from updated `main`, and repeat until
+a documented stop condition applies.
 
 It may merge its own pull requests after the required checks pass. It does not
 bypass branch protection, merge another agent's work, or turn a roadmap issue
@@ -190,11 +195,14 @@ safe, well-documented implementation choice.
    blocking review or conflict, and a complete issue decision record, merge the
    agent's own pull request using the repository's configured merge method.
 9. Post the closing decision log on the issue. Fetch the updated `main`, remove
-   or leave the completed worktree cleanly, and create the next issue's branch
-   from the new `main` before returning to issue selection.
+   or leave the completed worktree cleanly, return to issue selection, and
+   repeat this loop with the next safe issue from the new `main`.
 
 Never begin a second coding issue while the first has uncommitted work, an
 unexplained failure, or an unresolved decision.
+
+Never treat one completed issue, green pull request, or successful merge as the
+end of the overall run. Those events complete one loop iteration only.
 
 ### Decision Record
 
@@ -216,6 +224,10 @@ morning-review list: the user can inspect GitHub Issues to see the choices made
 without reconstructing them from chat history.
 
 ### Stop Conditions
+
+Completing an issue or merging a pull request is not a stop condition. Do not
+send the run's final response at that boundary; continue the per-issue loop
+unless one of the conditions below applies.
 
 Stop after recording a concise GitHub handoff when any of these applies:
 

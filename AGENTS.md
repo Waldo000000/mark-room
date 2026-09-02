@@ -76,6 +76,12 @@ See [docs/07-agent-git-workflow.md](docs/07-agent-git-workflow.md) for the full
 issue-selection and delivery workflow, including hands-free "I'm Feeling Lucky"
 mode when the user explicitly requests it.
 
+An explicitly requested "I'm Feeling Lucky" run is a multi-issue loop. "One
+issue at a time" describes sequencing, not a one-issue run limit. After each
+green pull request is merged, recheck usage and return to issue selection from
+updated `main`. Do not end the run merely because one issue or pull request is
+complete; continue until a stop condition in the workflow applies.
+
 ## Documentation Ownership
 
 - ADRs own durable decisions and their rationale.
