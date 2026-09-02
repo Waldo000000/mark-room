@@ -13,7 +13,6 @@ import {
 import { inferTackFromHeading } from './geometry';
 
 export const SCENARIO_SCHEMA_VERSION = '0.2.0' as const;
-export const SCENARIO_LENGTH_UNIT = 'hull-length' as const;
 
 const coordinateSchema = z
   .object({ x: z.number().nonnegative(), y: z.number().nonnegative() })
@@ -121,7 +120,6 @@ export const scenarioSchema = z
     title: shortTextSchema,
     prompt: longTextSchema,
     context: rulesContextSchema,
-    lengthUnit: z.literal(SCENARIO_LENGTH_UNIT),
     sailingArea: sailingAreaSchema,
     wind: windSchema,
     boats: z.array(boatSchema).min(1),

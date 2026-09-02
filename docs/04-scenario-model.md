@@ -32,10 +32,11 @@ Scenario does not contain sail trim, luffing, hull polygons, overlap, contact,
 zone membership, windward/leeward relationships, room assessments, obligations,
 breaches, or penalties imposed by a ruling.
 
-All linear Scenario dimensions are measured in hull lengths and the JSON carries
-the literal `lengthUnit: "hull-length"`. Coordinates, sailing-area dimensions,
-mark radii, line endpoints, and boundary points are therefore multiples of the
-common boat hull length. Angles remain degrees.
+By convention, all linear Scenario dimensions are measured in hull lengths.
+Coordinates, sailing-area dimensions, mark radii, line endpoints, and boundary
+points are therefore multiples of the common boat hull length. Scenario records
+do not carry a unit field because the app supports no other linear unit. Angles
+remain degrees.
 
 The provisional Scenario schema is version `0.2.0` and lives in
 [`src/domain/scenario/schema.ts`](../src/domain/scenario/schema.ts).

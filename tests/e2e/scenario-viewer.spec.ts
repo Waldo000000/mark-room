@@ -82,7 +82,7 @@ for (const expectedScenario of expectedScenarios) {
 
     expect(scenario).not.toHaveProperty('ruling');
     expect(scenario).not.toHaveProperty('facts');
-    expect(scenario.lengthUnit).toBe('hull-length');
+    expect(scenario).not.toHaveProperty('lengthUnit');
     expect(situation).not.toHaveProperty('sailingArea');
 
     await expect(page.locator('main')).toHaveAttribute(

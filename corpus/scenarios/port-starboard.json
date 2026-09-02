@@ -8,7 +8,6 @@
       "discipline": "radio_sailing",
       "ruleSetVersion": "2025-2028"
     },
-    "lengthUnit": "hull-length",
     "sailingArea": { "width": 6, "height": 6 },
     "wind": { "fromDegrees": 0 },
     "boats": [
