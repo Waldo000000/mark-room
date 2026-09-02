@@ -35,7 +35,8 @@ Use:
   lowest-numbered unblocked `ready` issue unless the user reprioritizes
 - an explicit hands-free "I'm Feeling Lucky" mode which extends that workflow,
   records decisions in GitHub issue comments, refines large issues before
-  coding, and stops between issues at the user's configured usage cap
+  coding, asks only for the user's usage cap at launch, and stops between
+  issues at that cap
 - a sailor-facing deployed proof as part of the definition of done for every feature slice
 - domain-semantic browser assertions for scenario diagram changes, alongside visual inspection
 

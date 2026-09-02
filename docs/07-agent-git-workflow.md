@@ -62,23 +62,23 @@ It may merge its own pull requests after the required checks pass. It does not
 bypass branch protection, merge another agent's work, or turn a roadmap issue
 into code without first making its delivery scope clear.
 
-### Trigger
+### Trigger And Single Question
 
-Start the session with a prompt like this:
+The user starts this mode by saying "I'm feeling lucky." Do not require a
+longer launch prompt or repeat the workflow back to the user.
+
+Before doing any work, ask exactly one question:
 
 ```text
-Run I'm Feeling Lucky mode for MarkRoom. Work hands-free through one GitHub
-issue at a time. Follow AGENTS.md and docs/07-agent-git-workflow.md. Use GitHub
-Issues and issue comments as the source of truth. Before starting each new
-issue, check Codex usage; do not start another issue when weekly usage is at or
-above 50%, or if usage cannot be checked. Make contained, reversible decisions
-using best judgment and record them on the issue. Merge only your own green PRs.
-Stop and leave a clear GitHub handoff when blocked.
+What maximum weekly Codex usage are you comfortable spending on this run?
 ```
 
-Replace `50%` with another cap when desired. The cap is a start-next-issue
-guardrail, not a real-time hard stop: an issue already in progress may take
-usage beyond the threshold before its next check.
+Treat the answer as the usage cap for the run. Do not ask further setup
+questions: use this workflow, the repository docs, GitHub Issues, and best
+judgment to proceed hands-free.
+
+The cap is a start-next-issue guardrail, not a real-time hard stop: an issue
+already in progress may take usage beyond the threshold before its next check.
 
 ### Session Settings
 
