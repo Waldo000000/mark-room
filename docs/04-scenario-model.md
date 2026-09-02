@@ -23,8 +23,9 @@ types are inferred from that schema so runtime validation and application types
 cannot drift apart.
 
 Development fixtures live beside the schema tests. They are synthetic,
-unverified records and are not part of the canonical corpus. The corpus layout
-and repository-wide validation command belong to MR-003.
+unverified records and are not part of the canonical corpus. Corpus metadata is
+stored separately from Scenario so provenance, verification, and teaching
+material cannot be mistaken for sailing input or derived rules output.
 
 The app exposes a minimal sailor-facing scenario at
 `/scenarios/port-starboard`. It renders directly from a validated fixture so a
@@ -74,9 +75,10 @@ A scenario contains:
 - optional course features: marks, zones, lines, boundaries, laylines
 - explicit physical or asserted facts: tack, overlap, zone entry, contact, course changes, hail events, penalties
 - structured ruling/findings
-- explanatory teaching text
-- source provenance
-- verification status
+
+Corpus records associate this model with separate metadata containing teaching
+text, source provenance, and verification status. Those fields describe the
+record and its stewardship, not the sailing scenario itself.
 
 ## Rulings And Findings
 
@@ -105,7 +107,6 @@ type ScenarioFinding = {
   ruleRefs: string[];
   status: 'definite' | 'conditional' | 'not_determinable';
   explanation?: string;
-  provenanceRefs?: string[];
 };
 
 type ScenarioRuling = {

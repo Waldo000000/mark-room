@@ -24,10 +24,17 @@ head-to-wind and dead-downwind states where heading alone is insufficient.
 
 Use structured rulings and findings rather than a single `answer` field.
 
-Store initial corpus records as validated files in Git. Every scenario must carry provenance and verification status.
+Store initial corpus records as validated files in Git. Keep teaching text,
+source provenance, and verification in sidecar metadata keyed by scenario ID,
+not in the Scenario model itself. Every stored corpus scenario must have this
+metadata.
 
 ## Consequences
 
 Scenarios become inspectable, diffable, and testable. The model can support SVG, Canvas, Konva, or other renderers without changing legal/rules data.
+
+Scenario remains focused on sailing data while corpus stewardship can evolve
+without changing editor input. Corpus loading must validate that each sidecar
+references its paired scenario.
 
 The schema must be discovered and refined against a broad corpus before being treated as stable.

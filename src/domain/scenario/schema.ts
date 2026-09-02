@@ -1,17 +1,14 @@
 import { z } from 'zod';
 
+import {
+  entityIdSchema,
+  longTextSchema,
+  shortTextSchema,
+} from '../shared/schema';
 import { inferTackFromHeading } from './geometry';
 
 export const SCENARIO_SCHEMA_VERSION = '0.1.0' as const;
 
-const entityIdSchema = z
-  .string()
-  .min(1)
-  .max(80)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use a lowercase, hyphen-separated ID');
-
-const shortTextSchema = z.string().trim().min(1).max(200);
-const longTextSchema = z.string().trim().min(1).max(5_000);
 const coordinateSchema = z
   .object({
     x: z.number().nonnegative(),
@@ -228,7 +225,6 @@ export const scenarioFindingSchema = z
     ruleRefs: z.array(shortTextSchema).min(1),
     status: z.enum(['definite', 'conditional', 'not_determinable']),
     explanation: longTextSchema.optional(),
-    provenanceRefs: z.array(entityIdSchema).min(1).optional(),
   })
   .strict();
 
@@ -238,71 +234,6 @@ export const scenarioRulingSchema = z
     conclusion: longTextSchema,
   })
   .strict();
-
-export const provenanceSchema = z
-  .object({
-    sourceId: entityIdSchema,
-    sourceType: z.enum([
-      'world_sailing_rule',
-      'world_sailing_case',
-      'official_interpretation',
-      'club_training',
-      'competitor_reference',
-      'user_report',
-      'image',
-      'video',
-      'other',
-    ]),
-    title: shortTextSchema.optional(),
-    publisher: shortTextSchema.optional(),
-    url: z.url().optional(),
-    documentVersion: shortTextSchema.optional(),
-    publicationDate: z.iso.date().optional(),
-    accessedAt: z.iso.datetime({ offset: true }).optional(),
-    pageOrSection: shortTextSchema.optional(),
-    extractionMethod: z.enum([
-      'manual',
-      'agent_assisted',
-      'ocr',
-      'image_reconstruction',
-      'video_reconstruction',
-    ]),
-    notes: longTextSchema.optional(),
-  })
-  .strict();
-
-const unverifiedSchema = z
-  .object({
-    status: z.literal('unverified'),
-    notes: longTextSchema.optional(),
-  })
-  .strict();
-
-const reviewedVerificationFields = {
-  verifiedBy: shortTextSchema,
-  verifiedAt: z.iso.datetime({ offset: true }),
-  notes: longTextSchema.optional(),
-};
-
-const agentReviewedSchema = z
-  .object({
-    status: z.literal('agent-reviewed'),
-    ...reviewedVerificationFields,
-  })
-  .strict();
-
-const humanVerifiedSchema = z
-  .object({
-    status: z.literal('human-verified'),
-    ...reviewedVerificationFields,
-  })
-  .strict();
-
-export const verificationSchema = z.discriminatedUnion('status', [
-  unverifiedSchema,
-  agentReviewedSchema,
-  humanVerifiedSchema,
-]);
 
 export const scenarioSchema = z
   .object({
@@ -323,9 +254,6 @@ export const scenarioSchema = z
     courseFeatures: z.array(courseFeatureSchema),
     facts: z.array(scenarioFactSchema),
     ruling: scenarioRulingSchema,
-    teachingText: longTextSchema,
-    provenance: z.array(provenanceSchema).min(1),
-    verification: verificationSchema,
   })
   .strict()
   .superRefine((scenario, context) => {
@@ -367,12 +295,6 @@ export const scenarioSchema = z
       scenario.ruling.findings.map((finding) => finding.id),
       ['ruling', 'findings'],
     );
-    reportDuplicateIds(
-      scenario.provenance.map((source) => source.sourceId),
-      ['provenance'],
-      'sourceId',
-    );
-
     const boatIds = new Set(scenario.boats.map((boat) => boat.id));
     const keyframeIds = new Set(
       scenario.keyframes.map((keyframe) => keyframe.id),
@@ -390,10 +312,6 @@ export const scenarioSchema = z
         .filter((feature) => feature.type === 'zone')
         .map((zone) => zone.id),
     );
-    const provenanceIds = new Set(
-      scenario.provenance.map((source) => source.sourceId),
-    );
-
     const requireReference = (
       value: string,
       validValues: Set<string>,
@@ -662,14 +580,6 @@ export const scenarioSchema = z
           'keyframe ID',
         );
       }
-      finding.provenanceRefs?.forEach((sourceId, sourceIndex) => {
-        requireReference(
-          sourceId,
-          provenanceIds,
-          [...findingPath, 'provenanceRefs', sourceIndex],
-          'provenance source ID',
-        );
-      });
       if (new Set(finding.ruleRefs).size !== finding.ruleRefs.length) {
         context.addIssue({
           code: 'custom',
@@ -700,6 +610,4 @@ export type CourseFeature = z.infer<typeof courseFeatureSchema>;
 export type ScenarioFact = z.infer<typeof scenarioFactSchema>;
 export type ScenarioFinding = z.infer<typeof scenarioFindingSchema>;
 export type ScenarioRuling = z.infer<typeof scenarioRulingSchema>;
-export type Provenance = z.infer<typeof provenanceSchema>;
-export type Verification = z.infer<typeof verificationSchema>;
 export type Scenario = z.infer<typeof scenarioSchema>;

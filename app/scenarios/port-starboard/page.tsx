@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import portStarboardMetadata from '@/corpus/metadata/port-starboard.json';
 import { BoatGlyph } from '@/src/components/scenario/boat-glyph';
+import { corpusMetadataSchema } from '@/src/domain/corpus/schema';
 import validDevelopmentScenario from '@/src/domain/scenario/__fixtures__/valid-development-scenario.json';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
 import { scenarioSchema } from '@/src/domain/scenario/schema';
@@ -17,6 +19,19 @@ export const metadata: Metadata = {
 };
 
 const scenario = scenarioSchema.parse(validDevelopmentScenario);
+const corpusMetadata = corpusMetadataSchema.parse(portStarboardMetadata);
+
+if (corpusMetadata.scenarioId !== scenario.id) {
+  throw new Error(
+    `Corpus metadata references ${corpusMetadata.scenarioId}, expected ${scenario.id}`,
+  );
+}
+
+const verificationLabel = {
+  unverified: 'Unverified transcription',
+  'agent-reviewed': 'Agent-reviewed transcription',
+  'human-verified': 'Human-verified transcription',
+}[corpusMetadata.verification.status];
 const keyframe = scenario.keyframes[0];
 const tackFacts = scenario.facts.filter((fact) => fact.type === 'tack');
 const finding = scenario.ruling.findings[0];
@@ -56,7 +71,7 @@ export default function PortStarboardScenarioPage() {
               Scenario
             </p>
             <span className="rounded-sm border border-amber-600 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-900">
-              Unverified transcription
+              {verificationLabel}
             </span>
           </div>
           <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">
@@ -234,6 +249,11 @@ export default function PortStarboardScenarioPage() {
                 {otherBoat?.label} is on {otherTack?.tack} tack. The structured
                 finding cites {finding.ruleRefs.join(', ')}.
               </p>
+              {corpusMetadata.teachingText ? (
+                <p className="mt-3 border-l-4 border-primary pl-3 text-sm leading-6">
+                  {corpusMetadata.teachingText}
+                </p>
+              ) : null}
             </section>
 
             <section className="mt-7 border-t border-border pt-6">
@@ -249,7 +269,7 @@ export default function PortStarboardScenarioPage() {
 
             <section className="mt-7 border-t border-border pt-6">
               <h2 className="text-base font-semibold">Source</h2>
-              {scenario.provenance.map((source) => (
+              {corpusMetadata.provenance.map((source) => (
                 <div key={source.sourceId} className="mt-3 text-sm leading-6">
                   <p className="font-semibold">{source.title}</p>
                   <p className="text-muted-foreground">
@@ -276,7 +296,8 @@ export default function PortStarboardScenarioPage() {
             </summary>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
               This is the exact validated scenario record driving the diagram
-              and finding above.
+              and finding above. Corpus notes, sources, and verification are
+              kept separately.
             </p>
             <pre
               className="mt-4 max-h-[42rem] overflow-auto rounded-md border border-border bg-slate-950 p-4 text-xs leading-5 text-slate-100"

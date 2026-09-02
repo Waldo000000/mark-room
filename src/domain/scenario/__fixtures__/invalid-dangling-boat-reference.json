@@ -53,17 +53,5 @@
       }
     ],
     "conclusion": "Invalid development fixture."
-  },
-  "teachingText": "Invalid development fixture.",
-  "provenance": [
-    {
-      "sourceId": "synthetic-schema-fixture",
-      "sourceType": "other",
-      "extractionMethod": "manual",
-      "notes": "Invalid fixture used only by schema tests."
-    }
-  ],
-  "verification": {
-    "status": "unverified"
   }
 }
