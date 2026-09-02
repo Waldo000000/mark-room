@@ -7,7 +7,10 @@ import { validateCorpusDirectory } from '@/src/domain/corpus/validate';
 
 type ScenarioPageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ position?: string | string[] }>;
+  searchParams: Promise<{
+    mode?: string | string[];
+    position?: string | string[];
+  }>;
 };
 
 async function findTrainingExample(slug: string) {
@@ -52,6 +55,7 @@ export default async function ScenarioPage({
   const requestedPosition = Array.isArray(query.position)
     ? query.position[0]
     : query.position;
+  const requestedMode = Array.isArray(query.mode) ? query.mode[0] : query.mode;
   const selectedKeyframeId =
     requestedPosition &&
     entry.trainingExample.scenario.keyframes.some(
@@ -63,6 +67,7 @@ export default async function ScenarioPage({
   return (
     <TrainingExampleView
       corpusMetadata={entry.metadata}
+      quizMode={requestedMode === 'quiz'}
       scenarioSlug={slug}
       selectedKeyframeId={selectedKeyframeId}
       trainingExample={entry.trainingExample}
