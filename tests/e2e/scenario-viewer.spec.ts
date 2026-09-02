@@ -22,13 +22,16 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
   const scenario = JSON.parse(jsonText ?? '') as Scenario;
   const keyframe = scenario.keyframes[0];
 
+  expect(scenario).not.toHaveProperty('lengthUnit');
+  expect(scenario.sailingArea).toEqual({ width: 6, height: 6 });
+
   await expect(page.getByTestId('wind-indicator')).toHaveAttribute(
     'data-wind-from-degrees',
     String(scenario.wind.fromDegrees),
   );
   await expect(page.getByTestId('wind-indicator')).toHaveAttribute(
     'transform',
-    `translate(10 12) rotate(${scenario.wind.fromDegrees})`,
+    `translate(0.6 0.72) rotate(${scenario.wind.fromDegrees})`,
   );
 
   const windLine = page.getByTestId('wind-indicator').locator('line');
@@ -50,6 +53,7 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
     );
 
     const glyph = renderedBoat.getByTestId('boat-glyph');
+    await expect(glyph).toHaveAttribute('data-hull-length', '1');
     await expect(glyph).toHaveAttribute('data-sail-side', state.sail.side);
     await expect(glyph).toHaveAttribute(
       'data-trim-degrees',
@@ -68,7 +72,45 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
       'transform',
       `rotate(${sailRotation} 0 -3)`,
     );
+
+    const renderedHullLength = await renderedBoat
+      .getByTestId('boat-hull')
+      .evaluate((hull) => {
+        const box = (hull as SVGGraphicsElement).getBBox();
+        const matrix = (hull as SVGGraphicsElement).getScreenCTM();
+        if (!matrix) throw new Error('Hull has no screen transform');
+
+        const bow = new DOMPoint(box.x + box.width / 2, box.y).matrixTransform(
+          matrix,
+        );
+        const stern = new DOMPoint(
+          box.x + box.width / 2,
+          box.y + box.height,
+        ).matrixTransform(matrix);
+
+        return Math.hypot(stern.x - bow.x, stern.y - bow.y);
+      });
+    const renderedScaleLength = await page
+      .getByTestId('hull-length-scale-line')
+      .evaluate((line) => {
+        const x1 = Number(line.getAttribute('x1'));
+        const x2 = Number(line.getAttribute('x2'));
+        const y1 = Number(line.getAttribute('y1'));
+        const y2 = Number(line.getAttribute('y2'));
+        const matrix = (line as SVGGraphicsElement).getScreenCTM();
+        if (!matrix) throw new Error('Scale has no screen transform');
+
+        const start = new DOMPoint(x1, y1).matrixTransform(matrix);
+        const end = new DOMPoint(x2, y2).matrixTransform(matrix);
+        return Math.hypot(end.x - start.x, end.y - start.y);
+      });
+    expect(renderedHullLength).toBeCloseTo(renderedScaleLength, 1);
   }
+
+  await expect(page.getByTestId('hull-length-scale')).toContainText(
+    '1 hull length',
+  );
+  await expect(page.getByTestId('hull-length-scale')).toBeVisible();
 
   for (const fact of scenario.facts) {
     if (fact.type !== 'tack') continue;
@@ -100,7 +142,7 @@ test('renders geometry, facts, and finding from the same scenario JSON', async (
   await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
     'port-starboard-diagram.png',
     {
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.005,
     },
   );
   expect(runtimeErrors).toEqual([]);

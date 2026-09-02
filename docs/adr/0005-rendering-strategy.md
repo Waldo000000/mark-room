@@ -27,4 +27,8 @@ diagrams: a narrow rounded hull and a separate sail line offset to leeward. Sail
 trim and luffing shape come from keyframe data rather than from decorative UI
 choices.
 
+The renderer normalizes the standard hull path to exactly one Scenario
+hull-length unit and displays a one-hull-length scale. Renderer pixels do not
+define or alter Scenario dimensions.
+
 The project does not make an ideological commitment to SVG. It commits to the simplest implementation that delivers the required user experience.

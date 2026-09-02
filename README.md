@@ -41,6 +41,7 @@ mobile-first MarkRoom surface with:
 
 - an honest coming-soon page
 - a first unverified sailing scenario rendered from validated data
+- hull-length geometry with equal-size one-unit boats and a visible scale
 - a Next.js, TypeScript, and Tailwind scaffold
 - a Vercel-ready path for production and pull-request previews
 
