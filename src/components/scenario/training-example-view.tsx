@@ -47,6 +47,12 @@ export function TrainingExampleView({
   const boatLabels = new Map(
     scenario.boats.map((boat) => [boat.id, boat.label]),
   );
+  const marks = scenario.courseFeatures.filter(
+    (feature) => feature.type === 'mark',
+  );
+  const zones = scenario.courseFeatures.filter(
+    (feature) => feature.type === 'zone',
+  );
   const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
   const scenarioJson = JSON.stringify(scenario, null, 2);
   const situationJson = JSON.stringify(situation, null, 2);
@@ -149,6 +155,41 @@ export function TrainingExampleView({
                   </marker>
                 </defs>
 
+                {zones.map((zone) => {
+                  const screenY = scenario.sailingArea.height - zone.center.y;
+
+                  return (
+                    <g
+                      key={zone.id}
+                      data-center-x={zone.center.x}
+                      data-center-y={zone.center.y}
+                      data-radius-hull-lengths={zone.radius}
+                      data-testid={`zone-${zone.id}`}
+                    >
+                      <circle
+                        cx={zone.center.x}
+                        cy={screenY}
+                        fill="#0891b2"
+                        fillOpacity="0.06"
+                        r={zone.radius}
+                        stroke="#0e7490"
+                        strokeDasharray="0.16 0.12"
+                        strokeWidth="0.045"
+                      />
+                      <text
+                        fill="#155e75"
+                        fontSize="0.2"
+                        fontWeight="600"
+                        textAnchor="middle"
+                        x={zone.center.x}
+                        y={screenY - zone.radius + 0.3}
+                      >
+                        {zone.label ?? `${zone.radius} hull length zone`}
+                      </text>
+                    </g>
+                  );
+                })}
+
                 <g
                   data-testid="wind-indicator"
                   data-wind-from-degrees={scenario.wind.fromDegrees}
@@ -172,6 +213,37 @@ export function TrainingExampleView({
                 >
                   WIND
                 </text>
+
+                {marks.map((mark) => {
+                  const screenY = scenario.sailingArea.height - mark.position.y;
+
+                  return (
+                    <g
+                      key={mark.id}
+                      data-position-x={mark.position.x}
+                      data-position-y={mark.position.y}
+                      data-testid={`mark-${mark.id}`}
+                    >
+                      <circle
+                        cx={mark.position.x}
+                        cy={screenY}
+                        fill="#f97316"
+                        r={mark.radius ?? 0.18}
+                        stroke="#7c2d12"
+                        strokeWidth="0.045"
+                      />
+                      <text
+                        fill="#7c2d12"
+                        fontSize={DIAGRAM_FONT_SIZE}
+                        fontWeight="600"
+                        x={mark.position.x + 0.34}
+                        y={screenY - 0.24}
+                      >
+                        {mark.label ?? mark.id}
+                      </text>
+                    </g>
+                  );
+                })}
 
                 {keyframe.boatStates.map((state) => {
                   const boat = scenario.boats.find(
