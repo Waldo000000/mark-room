@@ -7,6 +7,15 @@ type RuleReferenceEntry = {
   };
 };
 
+type SearchableCorpusEntry = {
+  trainingExample: { scenario: { title: string } };
+  metadata: { teachingText?: string };
+};
+
+function normalizeSearchText(value: string): string {
+  return value.trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
 function entryRuleReferences(entry: RuleReferenceEntry): string[] {
   return [
     ...entry.trainingExample.rulings.obligations,
@@ -38,4 +47,19 @@ export function buildRuleIndex<T extends RuleReferenceEntry>(
     ruleReference,
     entries: filterCorpusEntriesByRule(entries, ruleReference),
   }));
+}
+
+export function searchCorpusEntries<T extends SearchableCorpusEntry>(
+  entries: readonly T[],
+  query?: string,
+): T[] {
+  const normalizedQuery = normalizeSearchText(query ?? '');
+  if (!normalizedQuery) return [...entries];
+
+  return entries.filter((entry) =>
+    [
+      entry.trainingExample.scenario.title,
+      entry.metadata.teachingText ?? '',
+    ].some((value) => normalizeSearchText(value).includes(normalizedQuery)),
+  );
 }

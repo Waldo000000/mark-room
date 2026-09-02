@@ -4,16 +4,20 @@ import {
   buildRuleIndex,
   collectRuleReferences,
   filterCorpusEntriesByRule,
+  searchCorpusEntries,
 } from './library';
 
 function entry(
   slug: string,
   obligationRuleRefs: string[][],
   outcomeRuleRefs: string[][] = [],
+  teachingText = '',
 ) {
   return {
     slug,
+    metadata: { teachingText },
     trainingExample: {
+      scenario: { title: slug.replaceAll('-', ' ') },
       rulings: {
         obligations: obligationRuleRefs.map((ruleRefs) => ({ ruleRefs })),
         outcomes: outcomeRuleRefs.map((ruleRefs) => ({ ruleRefs })),
@@ -23,8 +27,18 @@ function entry(
 }
 
 const entries = [
-  entry('port-starboard', [['RRS 10']]),
-  entry('windward-leeward', [['RRS 11', 'RRS 14']]),
+  entry(
+    'port-starboard',
+    [['RRS 10']],
+    [],
+    'The port-tack boat must keep clear.',
+  ),
+  entry(
+    'windward-leeward',
+    [['RRS 11', 'RRS 14']],
+    [],
+    'The windward boat keeps clear.',
+  ),
   entry('contact', [], [['RRS 14']]),
 ];
 
@@ -62,5 +76,24 @@ describe('corpus library filters', () => {
         slugs: ['windward-leeward', 'contact'],
       },
     ]);
+  });
+
+  it('searches titles and teaching text without case sensitivity', () => {
+    expect(
+      searchCorpusEntries(entries, 'STARBOARD').map((item) => item.slug),
+    ).toEqual(['port-starboard']);
+    expect(
+      searchCorpusEntries(entries, 'PORT-TACK').map((item) => item.slug),
+    ).toEqual(['port-starboard']);
+  });
+
+  it('normalizes whitespace and handles empty or unmatched searches', () => {
+    expect(
+      searchCorpusEntries(entries, '  windward   boat  ').map(
+        (item) => item.slug,
+      ),
+    ).toEqual(['windward-leeward']);
+    expect(searchCorpusEntries(entries, '   ')).toEqual(entries);
+    expect(searchCorpusEntries(entries, 'iceberg')).toEqual([]);
   });
 });
