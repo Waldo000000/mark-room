@@ -30,3 +30,12 @@ export function filterCorpusEntriesByRule<T extends RuleReferenceEntry>(
     entryRuleReferences(entry).includes(ruleReference),
   );
 }
+
+export function buildRuleIndex<T extends RuleReferenceEntry>(
+  entries: readonly T[],
+): { ruleReference: string; entries: T[] }[] {
+  return collectRuleReferences(entries).map((ruleReference) => ({
+    ruleReference,
+    entries: filterCorpusEntriesByRule(entries, ruleReference),
+  }));
+}
