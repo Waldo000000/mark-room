@@ -8,7 +8,8 @@ Protect `main`:
 
 - require pull requests
 - require CI checks
-- require human approval initially
+- require human approval except for explicitly authorized "I'm Feeling Lucky"
+  runs merging their own green pull requests
 - prevent direct pushes where possible
 
 ## CI Checks

@@ -20,7 +20,8 @@ Use:
 - descriptive `type(scope): outcome` pull request titles using the compact
   vocabulary defined in `AGENTS.md`
 - one branch/worktree per issue or agent
-- human approval before merge
+- human approval before merge except for explicitly authorized "I'm Feeling
+  Lucky" runs merging their own green pull requests
 - Codex as primary engineering cockpit
 - ChatGPT as thinking room
 - GitHub as durable source of truth
@@ -54,6 +55,12 @@ Hands-free work remains bounded and reviewable: an agent takes one issue at a
 time, avoids known conflicts, and leaves its material choices in the selected
 issue. A usage cap prevents it from beginning further work, rather than trying
 to predict token consumption mid-issue.
+
+An explicitly authorized hands-free run makes contained, reversible decisions
+using its best judgment and records them in the issue. It may merge its own pull
+request when the required checks pass, the decision record is complete, and
+branch protection permits it; it cannot bypass protection or merge another
+agent's work.
 
 A GitHub Project is deferred until custom priority fields, dates, iterations,
 or cross-repository planning would repay its additional maintenance. Milestones

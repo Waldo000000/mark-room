@@ -55,10 +55,12 @@ It optimizes for steady, reviewable progress rather than maximum throughput:
 - GitHub Issues as the durable delivery state and decision record
 - early refinement and splitting of work that is too large or unclear
 - low-conflict, independently verifiable slices
-- a stop between issues when the next safe decision needs a human
+- best-judgment decisions when evidence is sufficient and reversal remains
+  practical
 
-It does not merge pull requests, override the project's normal approval rules,
-or turn a roadmap issue into code without first making its delivery scope clear.
+It may merge its own pull requests after the required checks pass. It does not
+bypass branch protection, merge another agent's work, or turn a roadmap issue
+into code without first making its delivery scope clear.
 
 ### Trigger
 
@@ -69,8 +71,9 @@ Run I'm Feeling Lucky mode for MarkRoom. Work hands-free through one GitHub
 issue at a time. Follow AGENTS.md and docs/07-agent-git-workflow.md. Use GitHub
 Issues and issue comments as the source of truth. Before starting each new
 issue, check Codex usage; do not start another issue when weekly usage is at or
-above 50%, or if usage cannot be checked. Do not merge main. Stop and leave a
-clear GitHub handoff when blocked or when a decision needs me.
+above 50%, or if usage cannot be checked. Make contained, reversible decisions
+using best judgment and record them on the issue. Merge only your own green PRs.
+Stop and leave a clear GitHub handoff when blocked.
 ```
 
 Replace `50%` with another cap when desired. The cap is a start-next-issue
@@ -130,6 +133,18 @@ Before coding a large or ambiguous issue:
 The issue and its sub-issues, rather than a repository status document, are the
 durable record of the plan.
 
+### Decision Authority
+
+Make the best available decision without waiting for a human when the evidence
+is sufficient, the outcome stays within the selected issue, and reversal is
+practical. Record material choices with the decision record below so they are
+easy to inspect or reverse in the morning.
+
+Stop rather than guessing when a decision requires unavailable authoritative
+source material, credentials or external access, changes the release boundary,
+or would be expensive to reverse. A human is not a default approval gate for a
+safe, well-documented implementation choice.
+
 ### Per-Issue Loop
 
 1. Recheck usage. If the cap is reached or usage is unavailable, do not start
@@ -144,7 +159,10 @@ durable record of the plan.
 6. Push the exact commit and open a pull request that closes the issue. Include
    tests, screenshots for UI work, documentation, and provenance notes as the
    normal workflow requires.
-7. Post the closing decision log on the issue, then return to issue selection.
+7. When the exact pushed commit has all required checks green, no unresolved
+   blocking review or conflict, and a complete issue decision record, merge the
+   agent's own pull request using the repository's configured merge method.
+8. Post the closing decision log on the issue, then return to issue selection.
 
 Never begin a second coding issue while the first has uncommitted work, an
 unexplained failure, or an unresolved decision.
@@ -176,11 +194,10 @@ Stop after recording a concise GitHub handoff when any of these applies:
 - usage cannot be inspected
 - no unblocked, low-conflict issue is available
 - credentials, source material, or an external service is needed
-- the next step needs a product, architecture, legal, provenance, or domain
-  ruling that the agent cannot safely make
+- the next decision would be unsafe or expensive to reverse
 - an active pull request or branch creates a material conflict
-- a pull request is failing and resolving it requires a human choice
-- the remaining work would require merging or bypassing review
+- a pull request is failing and there is no safe, contained fix
+- branch protection or a required review prevents the agent's authorized merge
 
 Do not silently skip blocked issues. Record the blocker, its impact, and the
 next safe action on the issue or parent roadmap issue before stopping.
@@ -235,7 +252,9 @@ A PR needs:
 
 Substantive PRs should get a second agent review when practical.
 
-Human approval is required for every merge initially.
+Human approval is required outside explicitly requested "I'm Feeling Lucky"
+mode. That mode may merge its own pull request after the required checks pass,
+the issue decision record is complete, and branch protection permits it.
 
 ## Cleanup
 
