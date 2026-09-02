@@ -1,11 +1,5 @@
 import Link from 'next/link';
 
-const nextSteps = [
-  'Add the corpus directory and repository-wide validation command.',
-  'Add one provenance-aware scenario from inspectable source notes.',
-  'Turn the scenario prototype into a reusable keyframe viewer.',
-];
-
 export default function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -31,24 +25,12 @@ export default function Home() {
               provenance-aware scenario data.
             </p>
             <Link
-              href="/scenarios/port-starboard"
+              href="/scenarios"
               className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
             >
-              View scenario
+              Browse scenarios
             </Link>
           </div>
-        </section>
-
-        <section className="mt-8">
-          <h2 className="text-base font-semibold">Coming next</h2>
-          <ol className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
-            {nextSteps.map((step) => (
-              <li key={step} className="flex gap-3">
-                <span className="mt-2 block size-1.5 shrink-0 rounded-full bg-primary" />
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
         </section>
       </section>
     </main>
