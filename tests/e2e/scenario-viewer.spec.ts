@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { deriveSailPresentation } from '../../src/components/scenario/boat-glyph';
+import type { ScenarioEvalCase } from '../../src/domain/eval/schema';
 import type { Ruling } from '../../src/domain/ruling/schema';
 import { inferTackFromHeading } from '../../src/domain/scenario/geometry';
 import type { Scenario } from '../../src/domain/scenario/schema';
@@ -31,6 +32,10 @@ test('renders Scenario, Situation, and Ruling consistently', async ({
   const situationMoment = situation.moments[0];
   const rulingJsonText = await page.getByTestId('ruling-json').textContent();
   const ruling = JSON.parse(rulingJsonText ?? '') as Ruling;
+  const evalCaseJsonText = await page
+    .getByTestId('eval-case-json')
+    .textContent();
+  const evalCase = JSON.parse(evalCaseJsonText ?? '') as ScenarioEvalCase;
 
   expect(scenario).not.toHaveProperty('lengthUnit');
   expect(scenario).not.toHaveProperty('teachingText');
@@ -50,6 +55,9 @@ test('renders Scenario, Situation, and Ruling consistently', async ({
     expect(situationState).not.toHaveProperty('headingDegrees');
   }
   expect(situation.scenarioId).toBe(scenario.id);
+  expect(evalCase.input).toEqual(scenario);
+  expect(evalCase.expected).toEqual({ situation, ruling });
+  expect(Object.keys(evalCase)).toEqual(['input', 'expected']);
   await expect(
     page.getByText('Expected Situation', { exact: true }),
   ).toBeVisible();

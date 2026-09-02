@@ -7,13 +7,11 @@ import {
   deriveSailPresentation,
 } from '@/src/components/scenario/boat-glyph';
 import { corpusMetadataSchema } from '@/src/domain/corpus/schema';
+import { scenarioEvalCaseSchema } from '@/src/domain/eval/schema';
 import portStarboardRuling from '@/src/domain/ruling/__fixtures__/port-starboard-ruling.json';
-import { rulingSchema } from '@/src/domain/ruling/schema';
 import validDevelopmentScenario from '@/src/domain/scenario/__fixtures__/valid-development-scenario.json';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
-import { scenarioSchema } from '@/src/domain/scenario/schema';
 import portStarboardSituation from '@/src/domain/situation/__fixtures__/port-starboard-situation.json';
-import { situationSchema } from '@/src/domain/situation/schema';
 
 const DIAGRAM_FONT_SIZE = 0.24;
 const BOAT_LABEL_X_OFFSET = 0.66;
@@ -25,9 +23,15 @@ export const metadata: Metadata = {
     'An unverified MarkRoom scenario illustrating a port-starboard crossing.',
 };
 
-const scenario = scenarioSchema.parse(validDevelopmentScenario);
-const situation = situationSchema.parse(portStarboardSituation);
-const ruling = rulingSchema.parse(portStarboardRuling);
+const evalCase = scenarioEvalCaseSchema.parse({
+  input: validDevelopmentScenario,
+  expected: {
+    situation: portStarboardSituation,
+    ruling: portStarboardRuling,
+  },
+});
+const scenario = evalCase.input;
+const { ruling, situation } = evalCase.expected;
 const corpusMetadata = corpusMetadataSchema.parse(portStarboardMetadata);
 
 if (corpusMetadata.scenarioId !== scenario.id) {
@@ -66,6 +70,7 @@ const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
 const scenarioJson = JSON.stringify(scenario, null, 2);
 const situationJson = JSON.stringify(situation, null, 2);
 const rulingJson = JSON.stringify(ruling, null, 2);
+const evalCaseJson = JSON.stringify(evalCase, null, 2);
 const diagramTitle = `${keyframe.boatStates
   .map((state) => {
     const boat = scenario.boats.find(
@@ -360,6 +365,21 @@ export default function PortStarboardScenarioPage() {
               data-testid="ruling-json"
             >
               {rulingJson}
+            </pre>
+          </details>
+          <details className="mt-6">
+            <summary className="cursor-pointer text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-4">
+              Complete EvalCase JSON
+            </summary>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+              The complete evaluation record composes only Scenario input and
+              the expected Situation and Ruling outputs.
+            </p>
+            <pre
+              className="mt-4 max-h-[42rem] overflow-auto rounded-md border border-border bg-slate-950 p-4 text-xs leading-5 text-slate-100"
+              data-testid="eval-case-json"
+            >
+              {evalCaseJson}
             </pre>
           </details>
         </section>
