@@ -122,7 +122,7 @@ Use descriptive Conventional Commit-style PR titles in the form
 
 - Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`.
 - Product scopes: `browse`, `quiz`, `editor`, `derive`, `model`, `corpus`,
-  `render`, `ci`, `deploy`.
+  `render`, `ci`, `deploy`, `workflow`.
 - Use one delivered outcome, written as a concise lowercase imperative.
 - Keep the title understandable without an issue ID or reading the diff; avoid
   vague outcomes such as `updates`, `cleanup`, or `more work`.
