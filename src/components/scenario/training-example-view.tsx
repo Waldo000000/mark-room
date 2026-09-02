@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { KeepClearQuiz } from '@/src/components/quiz/keep-clear-quiz';
 import {
   BoatGlyph,
   deriveSailPresentation,
@@ -10,6 +11,7 @@ import {
   selectRulingStatements,
 } from '@/src/components/scenario/ruling-presentation';
 import type { CorpusMetadata } from '@/src/domain/corpus/schema';
+import { deriveKeepClearQuestion } from '@/src/domain/quiz/keep-clear';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
 import type { TrainingExample } from '@/src/domain/training-example/schema';
 
@@ -19,6 +21,7 @@ const BOAT_LABEL_Y_OFFSET = 0.3;
 
 type TrainingExampleViewProps = {
   corpusMetadata: CorpusMetadata;
+  quizMode: boolean;
   scenarioSlug: string;
   selectedKeyframeId: string;
   trainingExample: TrainingExample;
@@ -26,6 +29,7 @@ type TrainingExampleViewProps = {
 
 export function TrainingExampleView({
   corpusMetadata,
+  quizMode,
   scenarioSlug,
   selectedKeyframeId,
   trainingExample,
@@ -44,6 +48,10 @@ export function TrainingExampleView({
     situation.moments.find((candidate) => candidate.id === keyframe.id) ??
     situation.moments[0];
   const selectedRulings = selectRulingStatements(rulings, situationMoment.id);
+  const quizQuestion = deriveKeepClearQuestion(
+    trainingExample,
+    situationMoment.id,
+  );
   const boatLabels = new Map(
     scenario.boats.map((boat) => [boat.id, boat.label]),
   );
@@ -66,6 +74,8 @@ export function TrainingExampleView({
       return `${boat?.label} on ${state.tack} tack`;
     })
     .join(' and ')} approaching each other in wind from ${windDirection}`;
+  const reviewHref = `/scenarios/${scenarioSlug}?position=${encodeURIComponent(keyframe.id)}`;
+  const quizHref = `${reviewHref}&mode=quiz`;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -114,7 +124,7 @@ export function TrainingExampleView({
                             ? 'border-primary bg-primary text-primary-foreground'
                             : 'border-border bg-background text-foreground hover:bg-muted'
                         }`}
-                        href={`/scenarios/${scenarioSlug}?position=${encodeURIComponent(candidate.id)}`}
+                        href={`/scenarios/${scenarioSlug}?position=${encodeURIComponent(candidate.id)}${quizMode ? '&mode=quiz' : ''}`}
                       >
                         {candidate.label}
                       </Link>
@@ -356,10 +366,47 @@ export function TrainingExampleView({
           </section>
 
           <aside className="min-w-0 border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+            {quizMode ? (
+              quizQuestion ? (
+                <KeepClearQuiz
+                  question={quizQuestion}
+                  reviewHref={reviewHref}
+                  teachingText={corpusMetadata.teachingText}
+                />
+              ) : (
+                <section aria-labelledby="quiz-unavailable-heading">
+                  <p className="text-sm font-semibold uppercase text-muted-foreground">
+                    Quick check
+                  </p>
+                  <h2
+                    className="mt-2 text-xl font-semibold"
+                    id="quiz-unavailable-heading"
+                  >
+                    No keep-clear question at this position
+                  </h2>
+                  <Link
+                    className="mt-4 inline-block text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+                    href={reviewHref}
+                  >
+                    Review the full ruling
+                  </Link>
+                </section>
+              )
+            ) : null}
             <section
               data-ruling-moment-id={situationMoment.id}
               data-testid="ruling-statements"
+              hidden={quizMode}
             >
+              {quizQuestion ? (
+                <Link
+                  className="mb-5 inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
+                  data-testid="start-quiz"
+                  href={quizHref}
+                >
+                  Test this position
+                </Link>
+              ) : null}
               <p className="text-sm font-semibold uppercase text-muted-foreground">
                 Rulings
               </p>
@@ -488,7 +535,10 @@ export function TrainingExampleView({
           </aside>
         </div>
 
-        <section className="mt-10 border-t border-border pt-8">
+        <section
+          className="mt-10 border-t border-border pt-8"
+          hidden={quizMode}
+        >
           <details open>
             <summary className="cursor-pointer text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-4">
               Scenario JSON

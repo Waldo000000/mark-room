@@ -221,6 +221,69 @@ test('shows the windward boat keeping clear under Rule 11', async ({
   );
 });
 
+test('scores a keep-clear answer without revealing the ruling first', async ({
+  page,
+}) => {
+  const runtimeErrors: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') runtimeErrors.push(message.text());
+  });
+  page.on('pageerror', (error) => runtimeErrors.push(error.message));
+
+  await page.goto('/scenarios/port-starboard');
+  await page.getByTestId('start-quiz').click();
+
+  await expect(page).toHaveURL(
+    '/scenarios/port-starboard?position=position-1&mode=quiz',
+  );
+  await expect(
+    page.getByRole('heading', {
+      level: 2,
+      name: 'Which boat must keep clear at Position 1?',
+    }),
+  ).toBeVisible();
+  await expect(page.getByTestId('ruling-statements')).toBeHidden();
+  await expect(page.getByTestId('rulings-json')).toBeHidden();
+  await expect(
+    page.getByRole('button', { name: 'Check answer' }),
+  ).toBeDisabled();
+
+  await page.getByRole('radio', { name: 'Blue' }).check();
+  await page.getByRole('button', { name: 'Check answer' }).click();
+
+  const incorrectFeedback = page.getByTestId('quiz-feedback');
+  await expect(incorrectFeedback).toHaveAttribute('data-correct', 'false');
+  await expect(incorrectFeedback).toContainText('Not quite');
+  await expect(incorrectFeedback).toContainText(
+    'Yellow must keep clear of Blue.',
+  );
+  await expect(incorrectFeedback).toContainText('RRS 10');
+  await expect(incorrectFeedback).toContainText(
+    'On opposite tacks, identify the starboard-tack boat first',
+  );
+
+  await page.goto('/scenarios/port-starboard?position=position-1&mode=quiz');
+  await page.getByRole('radio', { name: 'Yellow' }).check();
+  await page.getByRole('button', { name: 'Check answer' }).click();
+
+  const correctFeedback = page.getByTestId('quiz-feedback');
+  await expect(correctFeedback).toHaveAttribute('data-correct', 'true');
+  await expect(correctFeedback).toContainText('Correct');
+  await correctFeedback
+    .getByRole('link', { name: 'Review the full ruling' })
+    .click();
+
+  await expect(page).toHaveURL('/scenarios/port-starboard?position=position-1');
+  await expect(page.getByTestId('ruling-statements')).toContainText(
+    'Yellow must keep clear of Blue.',
+  );
+  await expect(page.locator('html')).toHaveJSProperty(
+    'scrollWidth',
+    await page.locator('html').evaluate((element) => element.clientWidth),
+  );
+  expect(runtimeErrors).toEqual([]);
+});
+
 test('switches keyframes, Situation moments, and Rulings together', async ({
   page,
 }) => {
