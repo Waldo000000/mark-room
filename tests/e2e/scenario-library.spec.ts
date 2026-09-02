@@ -8,15 +8,21 @@ test('filters and clears scenarios by rule reference', async ({ page }) => {
   page.on('pageerror', (error) => runtimeErrors.push(error.message));
 
   await page.goto('/scenarios');
-  await expect(page.getByTestId('scenario-count')).toHaveText('3 scenarios');
+  await expect(page.getByTestId('scenario-count')).toHaveText('4 scenarios');
 
   await page.getByLabel('Filter by rule').selectOption('RRS 11');
   await page.getByRole('button', { name: 'Apply filter' }).click();
 
   await expect(page).toHaveURL('/scenarios?rule=RRS+11');
   await expect(page.getByTestId('scenario-count')).toHaveText(
-    '2 scenarios citing RRS 11',
+    '3 scenarios citing RRS 11',
   );
+  await expect(
+    page.getByRole('heading', {
+      level: 2,
+      name: 'Inside overlap at a leeward mark',
+    }),
+  ).toBeVisible();
   await expect(
     page.getByRole('heading', { level: 2, name: 'Windward meets leeward' }),
   ).toBeVisible();
@@ -29,15 +35,15 @@ test('filters and clears scenarios by rule reference', async ({ page }) => {
   await expect(
     page.getByRole('heading', { level: 2, name: 'Port meets starboard' }),
   ).toHaveCount(0);
-  await expect(page.getByText('Unverified transcription')).toHaveCount(2);
+  await expect(page.getByText('Unverified transcription')).toHaveCount(3);
   await expect(page.getByRole('link', { name: 'Open scenario' })).toHaveCount(
-    2,
+    3,
   );
 
   await page.getByRole('link', { name: 'Clear filter' }).click();
 
   await expect(page).toHaveURL('/scenarios');
-  await expect(page.getByTestId('scenario-count')).toHaveText('3 scenarios');
+  await expect(page.getByTestId('scenario-count')).toHaveText('4 scenarios');
   await expect(page.getByLabel('Filter by rule')).toHaveValue('');
   await expect(page.locator('html')).toHaveJSProperty(
     'scrollWidth',
@@ -61,16 +67,24 @@ test('searches titles and teaching notes with an honest empty state', async ({
 
   await expect(page).toHaveURL('/scenarios?q=mark');
   await expect(page.getByTestId('scenario-count')).toHaveText(
-    '1 scenario matching "mark"',
+    '2 scenarios matching "mark"',
   );
+  await expect(
+    page.getByRole('heading', {
+      level: 2,
+      name: 'Inside overlap at a leeward mark',
+    }),
+  ).toBeVisible();
   await expect(
     page.getByRole('heading', {
       level: 2,
       name: 'Overlapped boats near a mark',
     }),
   ).toBeVisible();
-  await expect(page.getByText('Unverified transcription')).toHaveCount(1);
-  await expect(page.getByText('World Sailing', { exact: false })).toBeVisible();
+  await expect(page.getByText('Unverified transcription')).toHaveCount(2);
+  await expect(page.getByText('World Sailing', { exact: false })).toHaveCount(
+    2,
+  );
 
   await page.getByLabel('Search scenarios').fill('iceberg');
   await page.getByRole('button', { name: 'Search', exact: true }).click();
@@ -84,7 +98,7 @@ test('searches titles and teaching notes with an honest empty state', async ({
 
   await expect(page).toHaveURL('/scenarios');
   await expect(page.getByLabel('Search scenarios')).toHaveValue('');
-  await expect(page.getByTestId('scenario-count')).toHaveText('3 scenarios');
+  await expect(page.getByTestId('scenario-count')).toHaveText('4 scenarios');
   await expect(page.locator('html')).toHaveJSProperty(
     'scrollWidth',
     await page.locator('html').evaluate((element) => element.clientWidth),

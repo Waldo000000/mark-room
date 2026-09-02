@@ -98,6 +98,11 @@ Appendix E1.1. The viewer derives that circle from the mark position. Whether a
 boat is in a mark's zone remains explicit Situation data in `inZoneOfMarks`;
 MarkRoom does not yet claim to derive that semantic fact from geometry.
 
+A mark may record the side on which boats are required to leave it. Situation
+records an inside/outside relationship at a mark separately from overlap and
+windward/leeward relationships so Rule 18 inputs remain explicit and
+inspectable.
+
 The provisional Situation schema lives in
 [`src/domain/situation/schema.ts`](../src/domain/situation/schema.ts). Temporal
 transition vocabulary is deferred until a representative multi-keyframe rules

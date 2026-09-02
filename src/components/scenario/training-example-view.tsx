@@ -55,6 +55,9 @@ export function TrainingExampleView({
     situation.moments.find((candidate) => candidate.id === keyframe.id) ??
     situation.moments[0];
   const selectedRulings = selectRulingStatements(rulings, situationMoment.id);
+  const markPositions = situationMoment.relationships.filter(
+    (relationship) => relationship.type === 'mark-position',
+  );
   const quizQuestion = deriveKeepClearQuestion(
     trainingExample,
     situationMoment.id,
@@ -244,6 +247,7 @@ export function TrainingExampleView({
                       key={mark.id}
                       data-position-x={mark.position.x}
                       data-position-y={mark.position.y}
+                      data-required-side={mark.requiredSide}
                       data-testid={`mark-${mark.id}`}
                     >
                       <circle
@@ -262,6 +266,9 @@ export function TrainingExampleView({
                         y={screenY - 0.24}
                       >
                         {mark.label ?? mark.id}
+                        {mark.requiredSide
+                          ? ` (leave to ${mark.requiredSide})`
+                          : ''}
                       </text>
                     </g>
                   );
@@ -374,6 +381,32 @@ export function TrainingExampleView({
                   );
                 })}
               </div>
+              {markPositions.length > 0 ? (
+                <div className="mt-4 space-y-2">
+                  {markPositions.map((relationship) => {
+                    const mark = situation.marks.find(
+                      (candidate) => candidate.id === relationship.markId,
+                    );
+
+                    return (
+                      <p
+                        className="border-l-4 border-cyan-700 pl-3 text-sm leading-6 text-muted-foreground"
+                        data-testid={`mark-position-${relationship.markId}`}
+                        key={`${relationship.markId}-${relationship.insideBoatId}-${relationship.outsideBoatId}`}
+                      >
+                        <span className="font-semibold text-foreground">
+                          {boatLabels.get(relationship.insideBoatId)}
+                        </span>{' '}
+                        is inside{' '}
+                        <span className="font-semibold text-foreground">
+                          {boatLabels.get(relationship.outsideBoatId)}
+                        </span>{' '}
+                        at {mark?.label ?? relationship.markId}.
+                      </p>
+                    );
+                  })}
+                </div>
+              ) : null}
             </section>
           </section>
 

@@ -1,6 +1,6 @@
 {
   "scenario": {
-    "schemaVersion": "0.4.0",
+    "schemaVersion": "0.5.0",
     "id": "development-port-starboard-crossing",
     "title": "Port meets starboard",
     "context": {
@@ -82,7 +82,7 @@
     "observedEvents": []
   },
   "situation": {
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "scenarioId": "development-port-starboard-crossing",
     "context": {
       "discipline": "radio_sailing",

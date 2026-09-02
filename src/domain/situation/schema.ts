@@ -7,7 +7,7 @@ import {
   tackSchema,
 } from '../shared/schema';
 
-export const SITUATION_SCHEMA_VERSION = '0.1.0' as const;
+export const SITUATION_SCHEMA_VERSION = '0.2.0' as const;
 
 export const boatSituationStateSchema = z
   .object({
@@ -38,6 +38,15 @@ const windwardLeewardSchema = z
     type: z.literal('windward-leeward'),
     windwardBoatId: entityIdSchema,
     leewardBoatId: entityIdSchema,
+  })
+  .strict();
+
+const markPositionSchema = z
+  .object({
+    type: z.literal('mark-position'),
+    markId: entityIdSchema,
+    insideBoatId: entityIdSchema,
+    outsideBoatId: entityIdSchema,
   })
   .strict();
 
@@ -76,6 +85,7 @@ const availableRoomSchema = z
 export const situationRelationshipSchema = z.discriminatedUnion('type', [
   relativePositionSchema,
   windwardLeewardSchema,
+  markPositionSchema,
   contactSchema,
   proximitySchema,
   availableRoomSchema,
@@ -222,6 +232,22 @@ export const situationSchema = z
         } else if (relationship.type === 'windward-leeward') {
           requireBoat(relationship.windwardBoatId, [...path, 'windwardBoatId']);
           requireBoat(relationship.leewardBoatId, [...path, 'leewardBoatId']);
+        } else if (relationship.type === 'mark-position') {
+          requireReference(
+            relationship.markId,
+            markIds,
+            [...path, 'markId'],
+            'mark ID',
+          );
+          requireBoat(relationship.insideBoatId, [...path, 'insideBoatId']);
+          requireBoat(relationship.outsideBoatId, [...path, 'outsideBoatId']);
+          if (relationship.insideBoatId === relationship.outsideBoatId) {
+            context.addIssue({
+              code: 'custom',
+              path: [...path, 'outsideBoatId'],
+              message: 'Inside and outside boats must be different',
+            });
+          }
         } else if (relationship.type === 'contact') {
           relationship.boatIds.forEach((boatId, boatIndex) =>
             requireBoat(boatId, [...path, 'boatIds', boatIndex]),

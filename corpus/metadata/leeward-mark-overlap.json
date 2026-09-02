@@ -1,0 +1,22 @@
+{
+  "scenarioId": "development-leeward-mark-overlap",
+  "teachingText": "When Blue first reaches the radio-sailing zone, the boats are already overlapped. Yellow is outside and must continue giving inside boat Blue mark-room while rule 18 applies, even as they approach the mark.",
+  "provenance": [
+    {
+      "sourceId": "world-sailing-rrs-2025-2028",
+      "sourceType": "world_sailing_rule",
+      "title": "Racing Rules of Sailing 2025-2028",
+      "publisher": "World Sailing",
+      "url": "https://www.sailing.org/inside-world-sailing/rules-regulations/racingrules/",
+      "documentVersion": "2025-2028 with Changes and Corrections",
+      "accessedAt": "2026-09-03T00:00:00+10:00",
+      "pageOrSection": "Definitions: Mark-Room and Zone; Part 2, rules 11, 18.1, and 18.2(a)(1); Appendix E1.1",
+      "extractionMethod": "manual",
+      "notes": "World Sailing is authoritative for the rule logic and four-hull-length radio-sailing zone. The mark placement, required side, boat geometry, relationships, and MarkRoom transcription are authored training content and remain unverified."
+    }
+  ],
+  "verification": {
+    "status": "unverified",
+    "notes": "The World Sailing source is authoritative; this authored two-position geometry and MarkRoom transcription have not been human-verified."
+  }
+}
