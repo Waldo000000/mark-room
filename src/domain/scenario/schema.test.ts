@@ -15,7 +15,7 @@ describe('scenarioSchema', () => {
     expect(scenario.id).toBe('development-port-starboard-crossing');
   });
 
-  it('validates representative features, facts, and references', () => {
+  it('validates representative features, observed events, and references', () => {
     const scenario = scenarioSchema.parse(validRichDevelopmentScenario);
 
     expect(scenario.courseFeatures.map((feature) => feature.type)).toEqual([
@@ -25,7 +25,7 @@ describe('scenarioSchema', () => {
       'boundary',
       'layline',
     ]);
-    expect(scenario.facts).toHaveLength(6);
+    expect(scenario.observedEvents).toHaveLength(2);
   });
 
   it('rejects a dangling boat reference', () => {
@@ -70,27 +70,6 @@ describe('scenarioSchema', () => {
       const messages = result.error.issues.map((issue) => issue.message);
       expect(messages).toContain('Missing boat state: yellow');
       expect(messages).toContain('Coordinate exceeds sailing area width');
-    }
-  });
-
-  it('requires explanations for uncertain findings', () => {
-    const scenario = cloneValidFixture() as typeof validDevelopmentScenario;
-    const finding = scenario.ruling.findings[0] as unknown as Record<
-      string,
-      unknown
-    >;
-    finding.status = 'conditional';
-    delete finding.explanation;
-
-    const result = scenarioSchema.safeParse(scenario);
-
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(
-        result.error.issues.some((issue) =>
-          issue.message.includes('conditional findings require an explanation'),
-        ),
-      ).toBe(true);
     }
   });
 

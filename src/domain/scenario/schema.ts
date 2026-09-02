@@ -2,14 +2,13 @@ import { z } from 'zod';
 
 import {
   entityIdSchema,
-  longTextSchema,
   rulesContextSchema,
   shortTextSchema,
   tackSchema,
 } from '../shared/schema';
 import { inferTackFromHeading } from './geometry';
 
-export const SCENARIO_SCHEMA_VERSION = '0.2.0' as const;
+export const SCENARIO_SCHEMA_VERSION = '0.3.0' as const;
 
 const coordinateSchema = z
   .object({
@@ -121,46 +120,12 @@ export const courseFeatureSchema = z.discriminatedUnion('type', [
   laylineFeatureSchema,
 ]);
 
-const factBaseSchema = z.object({
+const observedEventBaseSchema = z.object({
   id: entityIdSchema,
   atKeyframe: entityIdSchema,
 });
 
-const overlapFactSchema = factBaseSchema
-  .extend({
-    type: z.literal('overlap'),
-    subjectBoat: entityIdSchema,
-    otherBoat: entityIdSchema,
-    relationship: z.enum(['overlapped', 'clear-ahead', 'clear-astern']),
-  })
-  .strict();
-
-const zoneEntryFactSchema = factBaseSchema
-  .extend({
-    type: z.literal('zone-entry'),
-    boatId: entityIdSchema,
-    zoneId: entityIdSchema,
-  })
-  .strict();
-
-const contactFactSchema = factBaseSchema
-  .extend({
-    type: z.literal('contact'),
-    boatIds: z.array(entityIdSchema).min(1),
-    featureId: entityIdSchema.optional(),
-  })
-  .strict();
-
-const courseChangeFactSchema = factBaseSchema
-  .extend({
-    type: z.literal('course-change'),
-    boatId: entityIdSchema,
-    fromHeadingDegrees: headingDegreesSchema,
-    toHeadingDegrees: headingDegreesSchema,
-  })
-  .strict();
-
-const hailFactSchema = factBaseSchema
+const hailEventSchema = observedEventBaseSchema
   .extend({
     type: z.literal('hail'),
     boatId: entityIdSchema,
@@ -168,7 +133,7 @@ const hailFactSchema = factBaseSchema
   })
   .strict();
 
-const penaltyTakenFactSchema = factBaseSchema
+const penaltyTakenEventSchema = observedEventBaseSchema
   .extend({
     type: z.literal('penalty-taken'),
     boatId: entityIdSchema,
@@ -177,48 +142,10 @@ const penaltyTakenFactSchema = factBaseSchema
   })
   .strict();
 
-export const scenarioFactSchema = z.discriminatedUnion('type', [
-  overlapFactSchema,
-  zoneEntryFactSchema,
-  contactFactSchema,
-  courseChangeFactSchema,
-  hailFactSchema,
-  penaltyTakenFactSchema,
+export const observedEventSchema = z.discriminatedUnion('type', [
+  hailEventSchema,
+  penaltyTakenEventSchema,
 ]);
-
-export const findingTypeSchema = z.enum([
-  'right_of_way',
-  'keep_clear',
-  'entitled_to_room',
-  'entitled_to_mark_room',
-  'must_give_room',
-  'must_avoid_contact',
-  'rule_applies',
-  'rule_breached',
-  'exonerated',
-  'penalty',
-  'no_breach',
-]);
-
-export const scenarioFindingSchema = z
-  .object({
-    id: entityIdSchema,
-    atKeyframe: entityIdSchema.optional(),
-    subjectBoat: entityIdSchema,
-    findingType: findingTypeSchema,
-    otherBoat: entityIdSchema.optional(),
-    ruleRefs: z.array(shortTextSchema).min(1),
-    status: z.enum(['definite', 'conditional', 'not_determinable']),
-    explanation: longTextSchema.optional(),
-  })
-  .strict();
-
-export const scenarioRulingSchema = z
-  .object({
-    findings: z.array(scenarioFindingSchema).min(1),
-    conclusion: longTextSchema,
-  })
-  .strict();
 
 export const scenarioSchema = z
   .object({
@@ -231,8 +158,7 @@ export const scenarioSchema = z
     boats: z.array(boatSchema).min(1),
     keyframes: z.array(keyframeSchema).min(1),
     courseFeatures: z.array(courseFeatureSchema),
-    facts: z.array(scenarioFactSchema),
-    ruling: scenarioRulingSchema,
+    observedEvents: z.array(observedEventSchema),
   })
   .strict()
   .superRefine((scenario, context) => {
@@ -267,29 +193,17 @@ export const scenarioSchema = z
       ['courseFeatures'],
     );
     reportDuplicateIds(
-      scenario.facts.map((fact) => fact.id),
-      ['facts'],
-    );
-    reportDuplicateIds(
-      scenario.ruling.findings.map((finding) => finding.id),
-      ['ruling', 'findings'],
+      scenario.observedEvents.map((event) => event.id),
+      ['observedEvents'],
     );
     const boatIds = new Set(scenario.boats.map((boat) => boat.id));
     const keyframeIds = new Set(
       scenario.keyframes.map((keyframe) => keyframe.id),
     );
-    const featureIds = new Set(
-      scenario.courseFeatures.map((feature) => feature.id),
-    );
     const markIds = new Set(
       scenario.courseFeatures
         .filter((feature) => feature.type === 'mark')
         .map((mark) => mark.id),
-    );
-    const zoneIds = new Set(
-      scenario.courseFeatures
-        .filter((feature) => feature.type === 'zone')
-        .map((zone) => zone.id),
     );
     const requireReference = (
       value: string,
@@ -432,124 +346,19 @@ export const scenarioSchema = z
       }
     });
 
-    scenario.facts.forEach((fact, factIndex) => {
+    scenario.observedEvents.forEach((event, eventIndex) => {
       requireReference(
-        fact.atKeyframe,
+        event.atKeyframe,
         keyframeIds,
-        ['facts', factIndex, 'atKeyframe'],
+        ['observedEvents', eventIndex, 'atKeyframe'],
         'keyframe ID',
       );
-
-      const requireBoat = (boatId: string, field: string) =>
-        requireReference(
-          boatId,
-          boatIds,
-          ['facts', factIndex, field],
-          'boat ID',
-        );
-
-      if (fact.type === 'overlap') {
-        requireBoat(fact.subjectBoat, 'subjectBoat');
-        requireBoat(fact.otherBoat, 'otherBoat');
-        if (fact.subjectBoat === fact.otherBoat) {
-          context.addIssue({
-            code: 'custom',
-            path: ['facts', factIndex, 'otherBoat'],
-            message: 'A boat cannot be related to itself',
-          });
-        }
-      } else if (fact.type === 'zone-entry') {
-        requireBoat(fact.boatId, 'boatId');
-        requireReference(
-          fact.zoneId,
-          zoneIds,
-          ['facts', factIndex, 'zoneId'],
-          'zone ID',
-        );
-      } else if (fact.type === 'contact') {
-        fact.boatIds.forEach((boatId, boatIndex) => {
-          requireReference(
-            boatId,
-            boatIds,
-            ['facts', factIndex, 'boatIds', boatIndex],
-            'boat ID',
-          );
-          if (fact.boatIds.indexOf(boatId) !== boatIndex) {
-            context.addIssue({
-              code: 'custom',
-              path: ['facts', factIndex, 'boatIds', boatIndex],
-              message: `Duplicate contact participant: ${boatId}`,
-            });
-          }
-        });
-        if (fact.featureId) {
-          requireReference(
-            fact.featureId,
-            featureIds,
-            ['facts', factIndex, 'featureId'],
-            'course feature ID',
-          );
-        }
-        if (fact.boatIds.length + (fact.featureId ? 1 : 0) < 2) {
-          context.addIssue({
-            code: 'custom',
-            path: ['facts', factIndex],
-            message: 'Contact requires at least two participants',
-          });
-        }
-      } else {
-        requireBoat(fact.boatId, 'boatId');
-      }
-    });
-
-    scenario.ruling.findings.forEach((finding, findingIndex) => {
-      const findingPath = ['ruling', 'findings', findingIndex] as const;
       requireReference(
-        finding.subjectBoat,
+        event.boatId,
         boatIds,
-        [...findingPath, 'subjectBoat'],
+        ['observedEvents', eventIndex, 'boatId'],
         'boat ID',
       );
-      if (finding.otherBoat) {
-        requireReference(
-          finding.otherBoat,
-          boatIds,
-          [...findingPath, 'otherBoat'],
-          'boat ID',
-        );
-        if (finding.otherBoat === finding.subjectBoat) {
-          context.addIssue({
-            code: 'custom',
-            path: [...findingPath, 'otherBoat'],
-            message: 'A finding cannot compare a boat with itself',
-          });
-        }
-      }
-      if (finding.atKeyframe) {
-        requireReference(
-          finding.atKeyframe,
-          keyframeIds,
-          [...findingPath, 'atKeyframe'],
-          'keyframe ID',
-        );
-      }
-      if (new Set(finding.ruleRefs).size !== finding.ruleRefs.length) {
-        context.addIssue({
-          code: 'custom',
-          path: [...findingPath, 'ruleRefs'],
-          message: 'Rule references must be unique',
-        });
-      }
-      if (
-        finding.status !== 'definite' &&
-        (!finding.explanation || finding.explanation.length === 0)
-      ) {
-        context.addIssue({
-          code: 'custom',
-          path: [...findingPath, 'explanation'],
-          message: `${finding.status} findings require an explanation`,
-        });
-      }
     });
   });
 
@@ -559,7 +368,5 @@ export type Boat = z.infer<typeof boatSchema>;
 export type BoatState = z.infer<typeof boatStateSchema>;
 export type Keyframe = z.infer<typeof keyframeSchema>;
 export type CourseFeature = z.infer<typeof courseFeatureSchema>;
-export type ScenarioFact = z.infer<typeof scenarioFactSchema>;
-export type ScenarioFinding = z.infer<typeof scenarioFindingSchema>;
-export type ScenarioRuling = z.infer<typeof scenarioRulingSchema>;
+export type ObservedEvent = z.infer<typeof observedEventSchema>;
 export type Scenario = z.infer<typeof scenarioSchema>;

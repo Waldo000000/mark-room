@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.3.0",
   "id": "invalid-dangling-boat-reference",
   "title": "Invalid development fixture",
   "context": {
@@ -36,17 +36,5 @@
     }
   ],
   "courseFeatures": [],
-  "facts": [],
-  "ruling": {
-    "findings": [
-      {
-        "id": "test-finding",
-        "subjectBoat": "declared-boat",
-        "findingType": "no_breach",
-        "ruleRefs": ["RRS test reference"],
-        "status": "definite"
-      }
-    ],
-    "conclusion": "Invalid development fixture."
-  }
+  "observedEvents": []
 }

@@ -320,8 +320,8 @@ export default function PortStarboardScenarioPage() {
               Scenario JSON
             </summary>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-              This is the exact validated scenario record driving the diagram
-              and finding above. Corpus notes, sources, and verification are
+              This is the exact input record driving the diagram. Derived RRS
+              observations, rulings, corpus notes, sources, and verification are
               kept separately.
             </p>
             <pre
