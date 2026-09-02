@@ -10,7 +10,8 @@ This repository is designed for parallel coding agents. Treat Git as the project
 - Keep changes scoped to the issue or task.
 - Prefer simple, inspectable code over clever abstraction.
 - Update docs, ADRs, schemas, examples, and tests when your change alters durable behavior.
-- Open a pull request for every change; do not merge to `main`.
+- Open a pull request for every change. Only an explicitly requested "I'm
+  Feeling Lucky" run may merge its own green pull requests into `main`.
 
 ## Product Principles
 
@@ -72,7 +73,8 @@ Use GitHub metadata consistently:
 - sub-issues and dependencies express decomposition and blocking relationships
 
 See [docs/07-agent-git-workflow.md](docs/07-agent-git-workflow.md) for the full
-issue-selection and delivery workflow.
+issue-selection and delivery workflow, including hands-free "I'm Feeling Lucky"
+mode when the user explicitly requests it.
 
 ## Documentation Ownership
 
@@ -180,7 +182,9 @@ PRs should include:
 - source/provenance notes for corpus changes
 - docs updated or a reason docs were not needed
 
-Human approval is required before merging to `main`.
+Outside explicitly requested "I'm Feeling Lucky" mode, human approval is
+required before merging to `main`. That mode may merge only its own pull request
+after all required checks pass and its issue decision record is complete.
 
 ## ADR Rules
 

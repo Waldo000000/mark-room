@@ -26,11 +26,13 @@
 
 <!-- Note limitations or follow-ups, or write "None known." -->
 
-## Human Approval
+## Merge Authorization
 
-<!-- Human approval is required before merge. -->
+<!-- A human approval is required unless this is an explicitly authorized
+     I'm Feeling Lucky run. That mode may merge only its own green PR. -->
 
-- [ ] A human reviewer has approved this pull request.
+- [ ] A human reviewer has approved this pull request, or this is an explicitly
+  authorized I'm Feeling Lucky run with a complete issue decision record.
 
 ## What Changed
 
