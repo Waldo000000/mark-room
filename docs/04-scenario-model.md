@@ -28,9 +28,10 @@ changes, but the sailor remains able to set it. Away from the two ambiguous
 headings, validation rejects a tack that is physically inconsistent with wind
 and heading.
 
-Scenario does not contain sail trim, luffing, hull polygons, overlap, contact,
-zone membership, windward/leeward relationships, room assessments, obligations,
-breaches, or penalties imposed by a ruling.
+Scenario does not contain teaching prompts, sail trim, luffing, hull polygons,
+overlap, contact, zone membership, windward/leeward relationships, room
+assessments, obligations, breaches, or penalties imposed by a ruling. Teaching
+copy belongs to corpus metadata or the presenting product feature.
 
 By convention, all linear Scenario dimensions are measured in hull lengths.
 Coordinates, sailing-area dimensions, mark radii, line endpoints, and boundary

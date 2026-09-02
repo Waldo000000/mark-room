@@ -3,7 +3,6 @@
     "schemaVersion": "0.2.0",
     "id": "development-windward-leeward-overlap",
     "title": "Windward and leeward",
-    "prompt": "The boats are overlapped on the same tack. Which boat must keep clear?",
     "context": {
       "discipline": "radio_sailing",
       "ruleSetVersion": "2025-2028"

@@ -115,7 +115,7 @@ export function ScenarioDetail({ evalCase, metadata }: ScenarioDetailProps) {
             {scenario.title}
           </h1>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">
-            {scenario.prompt}
+            {metadata.teachingText ?? scenario.title}
           </p>
         </header>
 

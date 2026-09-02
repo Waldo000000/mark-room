@@ -37,7 +37,7 @@ export default function ScenariosPage() {
           className="mt-9 grid gap-4 sm:grid-cols-2"
           aria-label="Scenarios"
         >
-          {scenarioEntries.map(({ slug, evalCase }) => {
+          {scenarioEntries.map(({ slug, evalCase, metadata }) => {
             const scenario = evalCase.input;
             const ruleRefs = [
               ...new Set(
@@ -59,7 +59,7 @@ export default function ScenariosPage() {
                 </p>
                 <h2 className="mt-2 text-xl font-semibold">{scenario.title}</h2>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  {scenario.prompt}
+                  {metadata.teachingText ?? scenario.title}
                 </p>
                 <Link
                   href={`/scenarios/${slug}`}

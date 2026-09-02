@@ -12,6 +12,7 @@ describe('scenarioSchema', () => {
 
     expect(scenario.id).toBe('development-port-starboard-crossing');
     expect(scenario).not.toHaveProperty('lengthUnit');
+    expect(scenario).not.toHaveProperty('prompt');
     expect(scenario.sailingArea).toEqual({ width: 6, height: 6 });
     expect(scenario.keyframes[0].boatStates[0].tack).toBe('starboard');
     expect(scenario).not.toHaveProperty('facts');

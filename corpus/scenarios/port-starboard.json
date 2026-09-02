@@ -3,7 +3,6 @@
     "schemaVersion": "0.2.0",
     "id": "development-port-starboard-crossing",
     "title": "Port meets starboard",
-    "prompt": "Which boat must keep clear at Position 1?",
     "context": {
       "discipline": "radio_sailing",
       "ruleSetVersion": "2025-2028"

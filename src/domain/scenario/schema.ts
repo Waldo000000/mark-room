@@ -3,7 +3,6 @@ import { z } from 'zod';
 import {
   entityIdSchema,
   headingDegreesSchema,
-  longTextSchema,
   reportDuplicateIds,
   requireReference,
   rulesContextSchema,
@@ -118,7 +117,6 @@ export const scenarioSchema = z
     schemaVersion: z.literal(SCENARIO_SCHEMA_VERSION),
     id: entityIdSchema,
     title: shortTextSchema,
-    prompt: longTextSchema,
     context: rulesContextSchema,
     sailingArea: sailingAreaSchema,
     wind: windSchema,

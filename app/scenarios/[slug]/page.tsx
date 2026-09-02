@@ -25,7 +25,7 @@ export async function generateMetadata({
 
   return {
     title: `${entry.evalCase.input.title} | MarkRoom`,
-    description: entry.evalCase.input.prompt,
+    description: entry.metadata.teachingText ?? entry.evalCase.input.title,
   };
 }
 
