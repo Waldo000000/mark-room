@@ -2,7 +2,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import portStarboardMetadata from '@/corpus/metadata/port-starboard.json';
-import { BoatGlyph } from '@/src/components/scenario/boat-glyph';
+import {
+  BoatGlyph,
+  deriveSailPresentation,
+} from '@/src/components/scenario/boat-glyph';
 import { corpusMetadataSchema } from '@/src/domain/corpus/schema';
 import validDevelopmentScenario from '@/src/domain/scenario/__fixtures__/valid-development-scenario.json';
 import { formatCompassDirection } from '@/src/domain/scenario/geometry';
@@ -33,24 +36,25 @@ const verificationLabel = {
   'human-verified': 'Human-verified transcription',
 }[corpusMetadata.verification.status];
 const keyframe = scenario.keyframes[0];
-const tackFacts = scenario.facts.filter((fact) => fact.type === 'tack');
 const finding = scenario.ruling.findings[0];
 const subjectBoat = scenario.boats.find(
   (boat) => boat.id === finding.subjectBoat,
 );
 const otherBoat = scenario.boats.find((boat) => boat.id === finding.otherBoat);
-const subjectTack = tackFacts.find(
-  (fact) => fact.boatId === finding.subjectBoat,
+const subjectState = keyframe.boatStates.find(
+  (state) => state.boatId === finding.subjectBoat,
 );
-const otherTack = tackFacts.find((fact) => fact.boatId === finding.otherBoat);
+const otherState = keyframe.boatStates.find(
+  (state) => state.boatId === finding.otherBoat,
+);
 const windDirection = formatCompassDirection(scenario.wind.fromDegrees);
 const scenarioJson = JSON.stringify(scenario, null, 2);
-const diagramTitle = `${tackFacts
-  .map((fact) => {
+const diagramTitle = `${keyframe.boatStates
+  .map((state) => {
     const boat = scenario.boats.find(
-      (candidate) => candidate.id === fact.boatId,
+      (candidate) => candidate.id === state.boatId,
     );
-    return `${boat?.label} on ${fact.tack} tack`;
+    return `${boat?.label} on ${state.tack} tack`;
   })
   .join(' and ')} approaching each other in wind from ${windDirection}`;
 
@@ -161,7 +165,11 @@ export default function PortStarboardScenarioPage() {
                       >
                         <BoatGlyph
                           color={boat.color ?? '#0f766e'}
-                          sail={state.sail}
+                          sail={deriveSailPresentation(
+                            state.headingDegrees,
+                            scenario.wind.fromDegrees,
+                            state.tack,
+                          )}
                         />
                       </g>
                       <text
@@ -216,19 +224,19 @@ export default function PortStarboardScenarioPage() {
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {tackFacts.map((fact) => {
+              {keyframe.boatStates.map((state) => {
                 const boat = scenario.boats.find(
-                  (candidate) => candidate.id === fact.boatId,
+                  (candidate) => candidate.id === state.boatId,
                 );
 
                 return (
                   <div
-                    key={fact.id}
+                    key={state.boatId}
                     className="border-l-4 border-primary pl-3 text-sm leading-6"
                   >
                     <span className="font-semibold">{boat?.label}</span>{' '}
                     <span className="text-muted-foreground">
-                      is on {fact.tack} tack.
+                      is on {state.tack} tack.
                     </span>
                   </div>
                 );
@@ -245,8 +253,8 @@ export default function PortStarboardScenarioPage() {
                 {subjectBoat?.label} must keep clear of {otherBoat?.label}.
               </h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                {subjectBoat?.label} is on {subjectTack?.tack} tack and{' '}
-                {otherBoat?.label} is on {otherTack?.tack} tack. The structured
+                {subjectBoat?.label} is on {subjectState?.tack} tack and{' '}
+                {otherBoat?.label} is on {otherState?.tack} tack. The structured
                 finding cites {finding.ruleRefs.join(', ')}.
               </p>
               {corpusMetadata.teachingText ? (

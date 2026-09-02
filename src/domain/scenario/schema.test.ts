@@ -25,7 +25,7 @@ describe('scenarioSchema', () => {
       'boundary',
       'layline',
     ]);
-    expect(scenario.facts).toHaveLength(7);
+    expect(scenario.facts).toHaveLength(6);
   });
 
   it('rejects a dangling boat reference', () => {
@@ -114,24 +114,6 @@ describe('scenarioSchema', () => {
           (issue) =>
             issue.message ===
             'Tack conflicts with heading and wind: expected port',
-        ),
-      ).toBe(true);
-    }
-  });
-
-  it('rejects a sail drawn on the windward side for its tack', () => {
-    const scenario = cloneValidFixture() as typeof validDevelopmentScenario;
-    scenario.keyframes[0].boatStates[0].sail.side = 'starboard';
-
-    const result = scenarioSchema.safeParse(scenario);
-
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(
-        result.error.issues.some(
-          (issue) =>
-            issue.message ===
-            'starboard tack requires the sail to lie on the port side',
         ),
       ).toBe(true);
     }

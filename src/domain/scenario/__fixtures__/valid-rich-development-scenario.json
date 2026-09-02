@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "id": "development-schema-coverage",
   "title": "Development fixture: schema coverage",
   "prompt": "Can the provisional model encode representative geometry, facts, and findings?",
@@ -43,11 +43,7 @@
             "y": 2.1
           },
           "headingDegrees": 20,
-          "sail": {
-            "side": "starboard",
-            "trimDegrees": 14,
-            "luffing": false
-          }
+          "tack": "port"
         },
         {
           "boatId": "bravo",
@@ -56,11 +52,7 @@
             "y": 2.28
           },
           "headingDegrees": 340,
-          "sail": {
-            "side": "port",
-            "trimDegrees": 14,
-            "luffing": false
-          }
+          "tack": "starboard"
         },
         {
           "boatId": "charlie",
@@ -69,11 +61,7 @@
             "y": 1.8
           },
           "headingDegrees": 0,
-          "sail": {
-            "side": "starboard",
-            "trimDegrees": 0,
-            "luffing": true
-          }
+          "tack": "port"
         }
       ]
     },
@@ -88,11 +76,7 @@
             "y": 3.18
           },
           "headingDegrees": 20,
-          "sail": {
-            "side": "starboard",
-            "trimDegrees": 14,
-            "luffing": false
-          }
+          "tack": "port"
         },
         {
           "boatId": "bravo",
@@ -101,11 +85,7 @@
             "y": 3.3
           },
           "headingDegrees": 15,
-          "sail": {
-            "side": "starboard",
-            "trimDegrees": 8,
-            "luffing": true
-          }
+          "tack": "port"
         },
         {
           "boatId": "charlie",
@@ -114,11 +94,7 @@
             "y": 2.88
           },
           "headingDegrees": 0,
-          "sail": {
-            "side": "port",
-            "trimDegrees": 0,
-            "luffing": true
-          }
+          "tack": "starboard"
         }
       ]
     }
@@ -196,13 +172,6 @@
     }
   ],
   "facts": [
-    {
-      "id": "alpha-tack",
-      "type": "tack",
-      "atKeyframe": "position-1",
-      "boatId": "alpha",
-      "tack": "port"
-    },
     {
       "id": "alpha-bravo-overlap",
       "type": "overlap",
