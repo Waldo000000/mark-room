@@ -8,7 +8,7 @@ import {
 } from '../shared/schema';
 import { inferTackFromHeading } from './geometry';
 
-export const SCENARIO_SCHEMA_VERSION = '0.4.0' as const;
+export const SCENARIO_SCHEMA_VERSION = '0.5.0' as const;
 
 const coordinateSchema = z
   .object({
@@ -68,6 +68,7 @@ const markFeatureSchema = z
     label: shortTextSchema.optional(),
     position: coordinateSchema,
     radius: z.number().positive().optional(),
+    requiredSide: z.enum(['port', 'starboard']).optional(),
   })
   .strict();
 

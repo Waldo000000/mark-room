@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.4.0",
+  "schemaVersion": "0.5.0",
   "id": "development-schema-coverage",
   "title": "Development fixture: schema coverage",
   "context": {
@@ -107,7 +107,8 @@
         "x": 3,
         "y": 4.8
       },
-      "radius": 0.12
+      "radius": 0.12,
+      "requiredSide": "port"
     },
     {
       "type": "line",

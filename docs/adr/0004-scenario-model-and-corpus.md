@@ -44,6 +44,10 @@ three hull lengths under general RRS and four hull lengths for radio sailing
 under Appendix E1.1. Keep `inZoneOfMarks` in Situation as the semantic record of
 membership until a deterministic geometry transform owns that derivation.
 
+Record a mark's optional required side in Scenario. Record mark-relative
+inside/outside boat relationships in Situation, independently of overlap and
+windward/leeward, because these are distinct Rule 18 inputs.
+
 Keep Ruling deterministic and structural. It contains obligations and outcomes
 with rule references, but no confidence status, statement IDs, authored
 explanations, or conclusion prose.

@@ -1,6 +1,6 @@
 {
   "scenario": {
-    "schemaVersion": "0.4.0",
+    "schemaVersion": "0.5.0",
     "id": "development-windward-leeward-overlap",
     "title": "Windward meets leeward",
     "context": {
@@ -58,7 +58,7 @@
     "observedEvents": []
   },
   "situation": {
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "scenarioId": "development-windward-leeward-overlap",
     "context": {
       "discipline": "radio_sailing",

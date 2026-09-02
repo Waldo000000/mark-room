@@ -19,7 +19,7 @@ test('discovers an eligible keep-clear question from the home screen', async ({
   const questions = page.getByRole('region', {
     name: 'Available keep-clear questions',
   });
-  await expect(questions.getByRole('article')).toHaveCount(4);
+  await expect(questions.getByRole('article')).toHaveCount(6);
   await expect(questions).not.toContainText('must keep clear of');
 
   const positionOne = questions
@@ -37,7 +37,7 @@ test('discovers an eligible keep-clear question from the home screen', async ({
   await page.getByRole('link', { name: 'Back to practice questions' }).click();
 
   await expect(page).toHaveURL('/quiz');
-  await expect(questions.getByRole('article')).toHaveCount(4);
+  await expect(questions.getByRole('article')).toHaveCount(6);
   await expect(page.locator('html')).toHaveJSProperty(
     'scrollWidth',
     await page.locator('html').evaluate((element) => element.clientWidth),
@@ -59,9 +59,10 @@ test('discovers and scores an applicable-rule question without revealing its ans
   const questions = page.getByRole('region', {
     name: 'Available rule questions',
   });
-  await expect(questions.getByRole('article')).toHaveCount(4);
+  await expect(questions.getByRole('article')).toHaveCount(6);
   await expect(questions).not.toContainText('RRS 10');
   await expect(questions).not.toContainText('RRS 11');
+  await expect(questions).not.toContainText('RRS 18.2(a)(1)');
 
   const positionOne = questions
     .getByRole('article')

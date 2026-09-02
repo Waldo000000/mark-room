@@ -25,6 +25,10 @@ describe('scenarioSchema', () => {
       'boundary',
       'layline',
     ]);
+    expect(scenario.courseFeatures[0]).toMatchObject({
+      requiredSide: 'port',
+      type: 'mark',
+    });
     expect(scenario.observedEvents).toHaveLength(2);
   });
 
