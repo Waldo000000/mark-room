@@ -7,8 +7,8 @@ Last updated: 2026-09-02
 
 ## Current Main
 
-`origin/main` is `dee3ec9` from
-[PR #18](https://github.com/Waldo000000/mark-room/pull/18). The latest merged
+`origin/main` is `ce2c672` from
+[PR #33](https://github.com/Waldo000000/mark-room/pull/33). The latest merged
 sequence is:
 
 1. [PR #8: Move corpus metadata out of Scenario](https://github.com/Waldo000000/mark-room/pull/8)
@@ -22,10 +22,18 @@ sequence is:
 9. [PR #17: Validate scenario evals and metadata in CI](https://github.com/Waldo000000/mark-room/pull/17)
 10. [PR #19: Replace EvalCase with TrainingExample](https://github.com/Waldo000000/mark-room/pull/19)
 11. [PR #18: Browse validated scenarios from the corpus](https://github.com/Waldo000000/mark-room/pull/18)
+12. [PR #27: Add a windward-leeward Rule 11 training example](https://github.com/Waldo000000/mark-room/pull/27)
+13. [PR #33: Require descriptive pull request titles](https://github.com/Waldo000000/mark-room/pull/33)
 
-## Ordered Next Pull Requests
+## Ordered Next Issues
 
-1. Add a windward-leeward Rule 11 scenario
+1. [#22: Switch between scenario keyframes](https://github.com/Waldo000000/mark-room/issues/22)
+2. [#23: Render structured rulings without case-specific copy](https://github.com/Waldo000000/mark-room/issues/23)
+3. [#24: Render marks and zones from Scenario data](https://github.com/Waldo000000/mark-room/issues/24)
+
+These are the current small issues labelled `ready`. Broader product streams
+are tracked by the issues labelled `roadmap` and should be decomposed before
+implementation.
 
 ## Durable Decisions
 
@@ -39,7 +47,7 @@ sequence is:
 
 ## Known Constraints
 
-- Human approval is required before merge; agents do not merge `main`.
+- Human approval is required before merge.
 - Use one focused branch and worktree per pull request.
 - Release 1 remains deterministic and corpus-backed; current product scope is
   in [docs/02](02-roadmap.md).
