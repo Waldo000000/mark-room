@@ -137,6 +137,9 @@ export function ScenarioEditorSpike() {
     initialScenario.boats[0].id,
   );
   const [draggingBoatId, setDraggingBoatId] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>(
+    'idle',
+  );
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   const activeKeyframe =
@@ -157,6 +160,12 @@ export function ScenarioEditorSpike() {
     () => JSON.stringify(scenario, null, 2),
     [scenario],
   );
+  const scenarioDownloadHref = useMemo(
+    () =>
+      `data:application/json;charset=utf-8,${encodeURIComponent(`${scenarioJson}\n`)}`,
+    [scenarioJson],
+  );
+  const scenarioDownloadFileName = `${scenario.id}.json`;
 
   function updateBoatState(
     boatId: string,
@@ -242,6 +251,15 @@ export function ScenarioEditorSpike() {
       ],
     }));
     setActiveKeyframeId(keyframeId);
+  }
+
+  async function copyScenarioJson() {
+    try {
+      await navigator.clipboard.writeText(scenarioJson);
+      setCopyStatus('copied');
+    } catch {
+      setCopyStatus('failed');
+    }
   }
 
   return (
@@ -664,8 +682,37 @@ export function ScenarioEditorSpike() {
             <summary className="cursor-pointer text-base font-semibold focus-visible:outline-2 focus-visible:outline-offset-4">
               Scenario JSON
             </summary>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
+                data-testid="copy-scenario-json"
+                type="button"
+                onClick={copyScenarioJson}
+              >
+                Copy JSON
+              </button>
+              <a
+                className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
+                data-testid="download-scenario-json"
+                download={scenarioDownloadFileName}
+                href={scenarioDownloadHref}
+              >
+                Download JSON
+              </a>
+            </div>
+            <p
+              aria-live="polite"
+              className="mt-3 min-h-5 text-sm text-muted-foreground"
+              data-testid="copy-json-status"
+            >
+              {copyStatus === 'copied'
+                ? 'Scenario JSON copied.'
+                : copyStatus === 'failed'
+                  ? 'Could not copy Scenario JSON.'
+                  : ''}
+            </p>
             <pre
-              className="mt-4 max-h-[32rem] overflow-auto rounded-md border border-border bg-slate-950 p-4 text-xs leading-5 text-slate-100"
+              className="mt-3 max-h-[32rem] overflow-auto rounded-md border border-border bg-slate-950 p-4 text-xs leading-5 text-slate-100"
               data-testid="editor-scenario-json"
             >
               {scenarioJson}
