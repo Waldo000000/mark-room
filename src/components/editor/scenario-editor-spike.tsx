@@ -15,7 +15,11 @@ import {
   normalizeDegrees,
 } from '@/src/domain/scenario/geometry';
 import { deriveMarkZones } from '@/src/domain/scenario/mark-zone';
-import { scenarioSchema, type BoatState } from '@/src/domain/scenario/schema';
+import {
+  scenarioSchema,
+  type Boat,
+  type BoatState,
+} from '@/src/domain/scenario/schema';
 import type { Scenario } from '@/src/domain/scenario/schema';
 
 const DIAGRAM_FONT_SIZE = 0.24;
@@ -275,6 +279,15 @@ export function ScenarioEditorSpike() {
 
   function updateSelectedBoat(update: (state: BoatState) => BoatState) {
     updateBoatState(selectedBoatId, update);
+  }
+
+  function updateSelectedBoatDefinition(update: (boat: Boat) => Boat) {
+    setScenario((currentScenario) => ({
+      ...currentScenario,
+      boats: currentScenario.boats.map((boat) =>
+        boat.id === selectedBoatId ? update(boat) : boat,
+      ),
+    }));
   }
 
   function setBoatPositionFromPointer(
@@ -842,6 +855,39 @@ export function ScenarioEditorSpike() {
 
           {selectedBoatState ? (
             <div className="mt-5 grid gap-4">
+              <label className="grid gap-2 text-sm font-semibold">
+                Label
+                <input
+                  className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                  data-testid="boat-label-input"
+                  maxLength={200}
+                  type="text"
+                  value={selectedBoat?.label ?? ''}
+                  onChange={(event) => {
+                    const label = event.currentTarget.value;
+                    updateSelectedBoatDefinition((boat) => ({
+                      ...boat,
+                      label,
+                    }));
+                  }}
+                />
+              </label>
+              <label className="grid gap-2 text-sm font-semibold">
+                Color
+                <input
+                  className="h-11 w-20 rounded-md border border-input bg-background p-1 focus-visible:outline-2 focus-visible:outline-offset-2"
+                  data-testid="boat-color-input"
+                  type="color"
+                  value={selectedBoat?.color ?? '#0f766e'}
+                  onChange={(event) => {
+                    const color = event.currentTarget.value;
+                    updateSelectedBoatDefinition((boat) => ({
+                      ...boat,
+                      color,
+                    }));
+                  }}
+                />
+              </label>
               <label className="grid gap-2 text-sm font-semibold">
                 X
                 <input

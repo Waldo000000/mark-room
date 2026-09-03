@@ -87,6 +87,19 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     'aria-hidden',
     'true',
   );
+  await page.getByTestId('boat-label-input').fill('Gold');
+  await page.getByTestId('boat-color-input').fill('#22c55e');
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Gold' }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Gold' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.getByTestId('editor-boat-yellow')).toContainText('Gold');
+  await expect(
+    page.getByTestId('editor-boat-yellow').locator('[data-testid="boat-hull"]'),
+  ).toHaveAttribute('fill', '#22c55e');
 
   await page.getByTestId('add-keyframe').click();
 
@@ -124,7 +137,7 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   );
   await expect(keyframeSlider).toHaveValue('3');
 
-  await page.getByRole('button', { name: 'Yellow' }).click();
+  await page.getByRole('button', { name: 'Gold' }).click();
   await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
     'data-selected-boat-id',
     'yellow',
@@ -184,6 +197,13 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
 
   expect(scenario.keyframes).toHaveLength(3);
   expect(scenario.wind.fromDegrees).toBe(270);
+  expect(scenario.boats).toContainEqual(
+    expect.objectContaining({
+      id: 'yellow',
+      label: 'Gold',
+      color: '#22c55e',
+    }),
+  );
   expect(thirdKeyframe?.label).toBe('Position 3');
   expect(secondKeyframe?.boatStates).toContainEqual(
     expect.objectContaining({
