@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises';
 
 import type { Scenario } from '../../src/domain/scenario/schema';
 
+const EDITOR_DRAFT_STORAGE_KEY = 'mark-room.editor.scenario-draft.v1';
+
 function parseScenarioJson(text: string | null): Scenario {
   return JSON.parse(text ?? '') as Scenario;
 }
@@ -141,9 +143,90 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   );
   expect(downloadedScenario).toEqual(scenario);
 
+  await expect
+    .poll(() =>
+      page.evaluate((storageKey) => {
+        const savedDraft = window.localStorage.getItem(storageKey);
+        return savedDraft ? JSON.parse(savedDraft).scenario : null;
+      }, EDITOR_DRAFT_STORAGE_KEY),
+    )
+    .toEqual(scenario);
+
+  await page.reload();
+
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-active-keyframe-id',
+    'position-3',
+  );
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-selected-boat-id',
+    'yellow',
+  );
+  const restoredScenario = parseScenarioJson(
+    await page.getByTestId('editor-scenario-json').textContent(),
+  );
+  expect(restoredScenario).toEqual(scenario);
+
+  await page.getByTestId('reset-editor-draft').click();
+
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-active-keyframe-id',
+    'position-1',
+  );
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-selected-boat-id',
+    'blue',
+  );
+  const resetScenario = parseScenarioJson(
+    await page.getByTestId('editor-scenario-json').textContent(),
+  );
+  expect(resetScenario.id).toBe('editor-spike-draft');
+  expect(resetScenario.keyframes).toHaveLength(2);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (storageKey) => window.localStorage.getItem(storageKey),
+        EDITOR_DRAFT_STORAGE_KEY,
+      ),
+    )
+    .toBeNull();
+
   await expect(page.locator('html')).toHaveJSProperty(
     'scrollWidth',
     await page.locator('html').evaluate((element) => element.clientWidth),
   );
   expect(runtimeErrors).toEqual([]);
+});
+
+test('ignores invalid saved editor drafts', async ({ page }) => {
+  await page.addInitScript((storageKey) => {
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        activeKeyframeId: 'missing-position',
+        scenario: { id: 'invalid-draft' },
+        selectedBoatId: 'missing-boat',
+      }),
+    );
+  }, EDITOR_DRAFT_STORAGE_KEY);
+
+  await page.goto('/editor');
+
+  await expect(page.getByTestId('scenario-validation')).toHaveAttribute(
+    'data-valid',
+    'true',
+  );
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-active-keyframe-id',
+    'position-1',
+  );
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-selected-boat-id',
+    'blue',
+  );
+  const scenario = parseScenarioJson(
+    await page.getByTestId('editor-scenario-json').textContent(),
+  );
+  expect(scenario.id).toBe('editor-spike-draft');
+  expect(scenario.keyframes).toHaveLength(2);
 });
