@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 
 import type { Scenario } from '../../src/domain/scenario/schema';
 
@@ -118,6 +119,28 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     'transform',
     'translate(5.2 4.6) rotate(135)',
   );
+
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.getByTestId('copy-scenario-json').click();
+  await expect(page.getByTestId('copy-json-status')).toHaveText(
+    'Scenario JSON copied.',
+  );
+  const copiedScenario = parseScenarioJson(
+    await page.evaluate(() => navigator.clipboard.readText()),
+  );
+  expect(copiedScenario).toEqual(scenario);
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByTestId('download-scenario-json').click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe(`${scenario.id}.json`);
+  const downloadedPath = await download.path();
+  expect(downloadedPath).toBeTruthy();
+  const downloadedScenario = parseScenarioJson(
+    await readFile(downloadedPath ?? '', 'utf8'),
+  );
+  expect(downloadedScenario).toEqual(scenario);
+
   await expect(page.locator('html')).toHaveJSProperty(
     'scrollWidth',
     await page.locator('html').evaluate((element) => element.clientWidth),
