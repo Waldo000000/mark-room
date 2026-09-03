@@ -57,6 +57,37 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     '0.36',
   );
 
+  const initialScenario = parseScenarioJson(
+    await page.getByTestId('editor-scenario-json').textContent(),
+  );
+  const initialYellowState = initialScenario.keyframes[0].boatStates.find(
+    (state) => state.boatId === 'yellow',
+  );
+  await page.getByTestId('editor-boat-hit-target-yellow').click();
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-selected-boat-id',
+    'yellow',
+  );
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Yellow' }),
+  ).toBeVisible();
+  await expect(page.getByTestId('selection-ring-yellow')).toBeVisible();
+  await expect(page.getByTestId('boat-x-input')).toHaveValue(
+    String(initialYellowState?.position.x),
+  );
+  await expect(page.getByTestId('boat-y-input')).toHaveValue(
+    String(initialYellowState?.position.y),
+  );
+  expect(
+    parseScenarioJson(
+      await page.getByTestId('editor-scenario-json').textContent(),
+    ),
+  ).toEqual(initialScenario);
+  await expect(page.getByTestId('ghosted-keyframe-context')).toHaveAttribute(
+    'aria-hidden',
+    'true',
+  );
+
   await page.getByTestId('add-keyframe').click();
 
   await expect(page.getByTestId('keyframe-tab-position-3')).toHaveAttribute(
