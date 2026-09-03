@@ -9,6 +9,22 @@ import type { TrainingExample } from '../../src/domain/training-example/schema';
 
 const GHOSTED_SCENARIO_MAX_DIFF_PIXEL_RATIO = 0.015;
 
+function expectedTrackPoints(scenario: Scenario, boatId: string): string {
+  const formatCoordinate = (value: number) =>
+    String(Math.round(value * 100) / 100);
+
+  return scenario.keyframes
+    .map((keyframe) =>
+      keyframe.boatStates.find((state) => state.boatId === boatId),
+    )
+    .filter((state) => state !== undefined)
+    .map((state) => {
+      const screenY = scenario.sailingArea.height - state.position.y;
+      return `${formatCoordinate(state.position.x)},${formatCoordinate(screenY)}`;
+    })
+    .join(' ');
+}
+
 test('browses the validated corpus and opens a scenario', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('link', { name: 'Browse scenarios' }).click();
@@ -693,6 +709,18 @@ test('switches keyframes, Situation moments, and Rulings together', async ({
     'opacity',
     '0.28',
   );
+  const scenario = JSON.parse(
+    (await page.getByTestId('scenario-json').textContent()) ?? '',
+  ) as Scenario;
+  await expect(page.getByTestId('keyframe-track-lines')).toBeVisible();
+  await expect(page.getByTestId('keyframe-track-line-blue')).toHaveAttribute(
+    'points',
+    expectedTrackPoints(scenario, 'blue'),
+  );
+  await expect(page.getByTestId('keyframe-track-line-blue')).toHaveAttribute(
+    'opacity',
+    '0.36',
+  );
 
   await positionTwo.click();
 
@@ -714,9 +742,6 @@ test('switches keyframes, Situation moments, and Rulings together', async ({
   await expect(page.getByTestId('ghost-boat-position-1-blue')).toBeVisible();
   await expect(page.getByTestId('ghost-boat-position-2-blue')).toHaveCount(0);
 
-  const scenario = JSON.parse(
-    (await page.getByTestId('scenario-json').textContent()) ?? '',
-  ) as Scenario;
   const selectedKeyframe = scenario.keyframes.find(
     (keyframe) => keyframe.id === 'position-2',
   );

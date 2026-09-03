@@ -7,7 +7,10 @@ import {
   BoatGlyph,
   deriveSailPresentation,
 } from '@/src/components/scenario/boat-glyph';
-import { GhostedKeyframeBoats } from '@/src/components/scenario/ghosted-keyframe-boats';
+import {
+  GhostedKeyframeBoats,
+  KeyframeTrackLines,
+} from '@/src/components/scenario/ghosted-keyframe-boats';
 import {
   describeObligation,
   describeOutcome,
@@ -190,6 +193,7 @@ export function TrainingExampleView({
                   </marker>
                 </defs>
 
+                <KeyframeTrackLines scenario={scenario} />
                 <GhostedKeyframeBoats
                   activeKeyframeId={keyframe.id}
                   scenario={scenario}

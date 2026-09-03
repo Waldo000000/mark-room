@@ -6,7 +6,10 @@ import {
   BoatGlyph,
   deriveSailPresentation,
 } from '@/src/components/scenario/boat-glyph';
-import { GhostedKeyframeBoats } from '@/src/components/scenario/ghosted-keyframe-boats';
+import {
+  GhostedKeyframeBoats,
+  KeyframeTrackLines,
+} from '@/src/components/scenario/ghosted-keyframe-boats';
 import {
   inferTackFromHeading,
   normalizeDegrees,
@@ -491,6 +494,7 @@ export function ScenarioEditorSpike() {
               </marker>
             </defs>
 
+            <KeyframeTrackLines scenario={scenario} />
             <GhostedKeyframeBoats
               activeKeyframeId={activeKeyframe.id}
               scenario={scenario}

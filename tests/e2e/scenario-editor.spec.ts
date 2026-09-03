@@ -40,6 +40,19 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     'opacity',
     '0.28',
   );
+  await expect(page.getByTestId('keyframe-track-lines')).toBeVisible();
+  await expect(page.getByTestId('keyframe-track-line-blue')).toHaveAttribute(
+    'points',
+    '3.2,2.2 3.5,3.6',
+  );
+  await expect(page.getByTestId('keyframe-track-line-blue')).toHaveAttribute(
+    'stroke',
+    '#2563EB',
+  );
+  await expect(page.getByTestId('keyframe-track-line-blue')).toHaveAttribute(
+    'opacity',
+    '0.36',
+  );
 
   await page.getByTestId('add-keyframe').click();
 
@@ -53,6 +66,10 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   );
   await expect(page.getByTestId('ghost-boat-position-1-blue')).toBeVisible();
   await expect(page.getByTestId('ghost-boat-position-2-blue')).toBeVisible();
+  await expect(page.getByTestId('keyframe-track-line-blue')).toHaveAttribute(
+    'points',
+    '3.2,2.2 3.5,3.6 3.45,2.65',
+  );
 
   await page.getByRole('button', { name: 'Yellow' }).click();
   await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
