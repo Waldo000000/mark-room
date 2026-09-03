@@ -87,6 +87,17 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   await page.getByTestId('boat-x-input').fill('5.2');
   await page.getByTestId('boat-y-input').fill('3.4');
   await page.getByTestId('heading-input').fill('135');
+  await page.getByTestId('wind-direction-input').fill('270');
+  await expect(page.getByTestId('wind-direction-value')).toHaveText(
+    '270 degrees',
+  );
+  await expect(page.getByTestId('editor-wind-indicator')).toHaveAttribute(
+    'data-wind-from-degrees',
+    '270',
+  );
+  await expect(page.getByTestId('heading-value')).toHaveText(
+    '135 degrees, starboard tack',
+  );
 
   const scenario = parseScenarioJson(
     await page.getByTestId('editor-scenario-json').textContent(),
@@ -102,6 +113,7 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   );
 
   expect(scenario.keyframes).toHaveLength(3);
+  expect(scenario.wind.fromDegrees).toBe(270);
   expect(thirdKeyframe?.label).toBe('Position 3');
   expect(secondKeyframe?.boatStates).toContainEqual(
     expect.objectContaining({
@@ -113,7 +125,7 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     boatId: 'yellow',
     position: { x: 5.2, y: 3.4 },
     headingDegrees: 135,
-    tack: 'port',
+    tack: 'starboard',
   });
 
   const renderedYellow = page.getByTestId('editor-boat-yellow');
