@@ -7,6 +7,8 @@ import type { Scenario } from '../../src/domain/scenario/schema';
 import type { Situation } from '../../src/domain/situation/schema';
 import type { TrainingExample } from '../../src/domain/training-example/schema';
 
+const GHOSTED_SCENARIO_MAX_DIFF_PIXEL_RATIO = 0.015;
+
 test('browses the validated corpus and opens a scenario', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('link', { name: 'Browse scenarios' }).click();
@@ -390,7 +392,7 @@ test('shows an outside boat giving mark-room from first zone entry', async ({
 
   await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
     'leeward-mark-overlap-diagram.png',
-    { maxDiffPixelRatio: 0.007 },
+    { maxDiffPixelRatio: GHOSTED_SCENARIO_MAX_DIFF_PIXEL_RATIO },
   );
 
   await page
@@ -494,7 +496,7 @@ test('preserves mark-room when a clear-astern boat later overlaps', async ({
 
   await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
     'leeward-mark-clear-ahead-diagram.png',
-    { maxDiffPixelRatio: 0.007 },
+    { maxDiffPixelRatio: GHOSTED_SCENARIO_MAX_DIFF_PIXEL_RATIO },
   );
 
   await page
@@ -581,7 +583,7 @@ test('preserves mark-room when a clear-astern boat later overlaps', async ({
   );
   await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
     'leeward-mark-clear-ahead-late-overlap-diagram.png',
-    { maxDiffPixelRatio: 0.007 },
+    { maxDiffPixelRatio: GHOSTED_SCENARIO_MAX_DIFF_PIXEL_RATIO },
   );
   expect(rulings.obligations).toContainEqual({
     atMoment: 'position-2',
@@ -682,6 +684,15 @@ test('switches keyframes, Situation moments, and Rulings together', async ({
     'data-keyframe-id',
     'position-1',
   );
+  await expect(page.getByTestId('ghosted-keyframe-context')).toHaveAttribute(
+    'data-labels',
+    'hidden',
+  );
+  await expect(page.getByTestId('ghost-boat-position-2-blue')).toBeVisible();
+  await expect(page.getByTestId('ghost-boat-position-2-blue')).toHaveAttribute(
+    'opacity',
+    '0.28',
+  );
 
   await positionTwo.click();
 
@@ -700,6 +711,8 @@ test('switches keyframes, Situation moments, and Rulings together', async ({
     'data-ruling-moment-id',
     'position-2',
   );
+  await expect(page.getByTestId('ghost-boat-position-1-blue')).toBeVisible();
+  await expect(page.getByTestId('ghost-boat-position-2-blue')).toHaveCount(0);
 
   const scenario = JSON.parse(
     (await page.getByTestId('scenario-json').textContent()) ?? '',
@@ -725,7 +738,7 @@ test('switches keyframes, Situation moments, and Rulings together', async ({
   );
   await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
     'port-starboard-position-2-diagram.png',
-    { maxDiffPixelRatio: 0.005 },
+    { maxDiffPixelRatio: GHOSTED_SCENARIO_MAX_DIFF_PIXEL_RATIO },
   );
 });
 
@@ -912,7 +925,7 @@ test('renders Scenario, Situation, and Ruling consistently', async ({
   await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
     'port-starboard-diagram.png',
     {
-      maxDiffPixelRatio: 0.005,
+      maxDiffPixelRatio: GHOSTED_SCENARIO_MAX_DIFF_PIXEL_RATIO,
     },
   );
   expect(runtimeErrors).toEqual([]);

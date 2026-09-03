@@ -6,6 +6,7 @@ import {
   BoatGlyph,
   deriveSailPresentation,
 } from '@/src/components/scenario/boat-glyph';
+import { GhostedKeyframeBoats } from '@/src/components/scenario/ghosted-keyframe-boats';
 import {
   inferTackFromHeading,
   normalizeDegrees,
@@ -328,9 +329,18 @@ export function ScenarioEditorSpike() {
               </marker>
             </defs>
 
+            <GhostedKeyframeBoats
+              activeKeyframeId={activeKeyframe.id}
+              scenario={scenario}
+            />
+
             {zones.map((zone) => {
               const screenY = scenario.sailingArea.height - zone.center.y;
               const labelY = Math.max(0.65, screenY - zone.radius + 0.65);
+              const labelX = Math.min(
+                scenario.sailingArea.width - 1.1,
+                Math.max(1.1, zone.center.x + zone.radius * 0.35),
+              );
 
               return (
                 <g
@@ -354,8 +364,11 @@ export function ScenarioEditorSpike() {
                     fill="#155e75"
                     fontSize="0.2"
                     fontWeight="600"
+                    paintOrder="stroke"
+                    stroke="#ecfeff"
+                    strokeWidth="0.08"
                     textAnchor="middle"
-                    x={zone.center.x}
+                    x={labelX}
                     y={labelY}
                   >
                     {zone.label}
@@ -416,43 +429,6 @@ export function ScenarioEditorSpike() {
                 </g>
               );
             })}
-
-            {scenario.keyframes
-              .filter((keyframe) => keyframe.id !== activeKeyframe.id)
-              .flatMap((keyframe) =>
-                keyframe.boatStates.map((state) => {
-                  const boat = scenario.boats.find(
-                    (candidate) => candidate.id === state.boatId,
-                  );
-                  if (!boat) return null;
-
-                  const screenY =
-                    scenario.sailingArea.height - state.position.y;
-
-                  return (
-                    <g
-                      key={`${keyframe.id}-${boat.id}`}
-                      data-keyframe-id={keyframe.id}
-                      data-testid={`ghost-boat-${keyframe.id}-${boat.id}`}
-                      opacity="0.28"
-                      pointerEvents="none"
-                    >
-                      <g
-                        transform={`translate(${state.position.x} ${screenY}) rotate(${state.headingDegrees})`}
-                      >
-                        <BoatGlyph
-                          color={boat.color ?? '#0f766e'}
-                          sail={deriveSailPresentation(
-                            state.headingDegrees,
-                            scenario.wind.fromDegrees,
-                            state.tack,
-                          )}
-                        />
-                      </g>
-                    </g>
-                  );
-                }),
-              )}
 
             {activeKeyframe.boatStates.map((state) => {
               const boat = scenario.boats.find(

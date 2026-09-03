@@ -7,6 +7,7 @@ import {
   BoatGlyph,
   deriveSailPresentation,
 } from '@/src/components/scenario/boat-glyph';
+import { GhostedKeyframeBoats } from '@/src/components/scenario/ghosted-keyframe-boats';
 import {
   describeObligation,
   describeOutcome,
@@ -189,9 +190,18 @@ export function TrainingExampleView({
                   </marker>
                 </defs>
 
+                <GhostedKeyframeBoats
+                  activeKeyframeId={keyframe.id}
+                  scenario={scenario}
+                />
+
                 {zones.map((zone) => {
                   const screenY = scenario.sailingArea.height - zone.center.y;
                   const labelY = Math.max(0.65, screenY - zone.radius + 0.65);
+                  const labelX = Math.min(
+                    scenario.sailingArea.width - 1.1,
+                    Math.max(1.1, zone.center.x + zone.radius * 0.35),
+                  );
 
                   return (
                     <g
@@ -216,8 +226,11 @@ export function TrainingExampleView({
                         fill="#155e75"
                         fontSize="0.2"
                         fontWeight="600"
+                        paintOrder="stroke"
+                        stroke="#ecfeff"
+                        strokeWidth="0.08"
                         textAnchor="middle"
-                        x={zone.center.x}
+                        x={labelX}
                         y={labelY}
                       >
                         {zone.label ?? `${zone.radius} hull length zone`}

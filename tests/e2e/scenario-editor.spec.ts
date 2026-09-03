@@ -28,7 +28,15 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     'data-active-keyframe-id',
     'position-1',
   );
+  await expect(page.getByTestId('ghosted-keyframe-context')).toHaveAttribute(
+    'data-labels',
+    'hidden',
+  );
   await expect(page.getByTestId('ghost-boat-position-2-blue')).toBeVisible();
+  await expect(page.getByTestId('ghost-boat-position-2-blue')).toHaveAttribute(
+    'opacity',
+    '0.28',
+  );
 
   await page.getByTestId('add-keyframe').click();
 
@@ -40,6 +48,8 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     'data-active-keyframe-id',
     'position-3',
   );
+  await expect(page.getByTestId('ghost-boat-position-1-blue')).toBeVisible();
+  await expect(page.getByTestId('ghost-boat-position-2-blue')).toBeVisible();
 
   await page.getByRole('button', { name: 'Yellow' }).click();
   await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
