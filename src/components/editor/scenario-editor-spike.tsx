@@ -216,6 +216,7 @@ export function ScenarioEditorSpike() {
     [scenarioJson],
   );
   const scenarioDownloadFileName = `${scenario.id}.json`;
+  const canDeleteKeyframe = scenario.keyframes.length > 1;
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -444,6 +445,26 @@ export function ScenarioEditorSpike() {
     setActiveKeyframeId(keyframeId);
   }
 
+  function removeActiveKeyframe() {
+    if (!canDeleteKeyframe) return;
+
+    const remainingKeyframes = scenario.keyframes.filter(
+      (keyframe) => keyframe.id !== activeKeyframe.id,
+    );
+    const nextIndex = Math.min(
+      activeKeyframeIndex,
+      remainingKeyframes.length - 1,
+    );
+
+    setScenario((currentScenario) => ({
+      ...currentScenario,
+      keyframes: currentScenario.keyframes.filter(
+        (keyframe) => keyframe.id !== activeKeyframe.id,
+      ),
+    }));
+    setActiveKeyframeId(remainingKeyframes[nextIndex].id);
+  }
+
   async function copyScenarioJson() {
     try {
       await navigator.clipboard.writeText(scenarioJson);
@@ -493,8 +514,8 @@ export function ScenarioEditorSpike() {
     <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
       <section className="min-w-0">
         <nav aria-label="Scenario position" className="mb-5">
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-sm font-semibold uppercase text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="mr-auto text-sm font-semibold uppercase text-muted-foreground">
               Position
             </p>
             <button
@@ -504,6 +525,15 @@ export function ScenarioEditorSpike() {
               onClick={addKeyframe}
             >
               Add position
+            </button>
+            <button
+              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              data-testid="delete-keyframe"
+              disabled={!canDeleteKeyframe}
+              type="button"
+              onClick={removeActiveKeyframe}
+            >
+              Delete keyframe
             </button>
             <button
               className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
