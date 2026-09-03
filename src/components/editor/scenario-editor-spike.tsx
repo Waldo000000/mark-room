@@ -300,6 +300,26 @@ export function ScenarioEditorSpike() {
     }));
   }
 
+  function updateMarkPosition(
+    markId: string,
+    position: Partial<{ x: number; y: number }>,
+  ) {
+    setScenario((currentScenario) => ({
+      ...currentScenario,
+      courseFeatures: currentScenario.courseFeatures.map((feature) =>
+        feature.type === 'mark' && feature.id === markId
+          ? {
+              ...feature,
+              position: {
+                ...feature.position,
+                ...position,
+              },
+            }
+          : feature,
+      ),
+    }));
+  }
+
   function updateActiveKeyframeLabel(label: string) {
     setScenario((currentScenario) => ({
       ...currentScenario,
@@ -903,6 +923,75 @@ export function ScenarioEditorSpike() {
             >
               {scenario.wind.fromDegrees} degrees
             </p>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="mark-controls-heading"
+          className="mt-7 border-t border-border pt-6"
+        >
+          <p className="text-sm font-semibold uppercase text-muted-foreground">
+            Course features
+          </p>
+          <h2 id="mark-controls-heading" className="mt-2 text-xl font-semibold">
+            Marks
+          </h2>
+          <div className="mt-4 grid gap-4">
+            {marks.map((mark) => (
+              <div key={mark.id} className="grid gap-3">
+                <h3 className="text-base font-semibold">
+                  {mark.label ?? mark.id}
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="grid gap-2 text-sm font-semibold">
+                    X
+                    <input
+                      className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                      data-testid={`mark-x-input-${mark.id}`}
+                      inputMode="decimal"
+                      max={scenario.sailingArea.width}
+                      min="0"
+                      step="0.1"
+                      type="number"
+                      value={mark.position.x}
+                      onChange={(event) => {
+                        const nextX = Number(event.currentTarget.value);
+                        if (Number.isFinite(nextX)) {
+                          updateMarkPosition(mark.id, {
+                            x: roundCoordinate(
+                              clamp(nextX, 0, scenario.sailingArea.width),
+                            ),
+                          });
+                        }
+                      }}
+                    />
+                  </label>
+                  <label className="grid gap-2 text-sm font-semibold">
+                    Y
+                    <input
+                      className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                      data-testid={`mark-y-input-${mark.id}`}
+                      inputMode="decimal"
+                      max={scenario.sailingArea.height}
+                      min="0"
+                      step="0.1"
+                      type="number"
+                      value={mark.position.y}
+                      onChange={(event) => {
+                        const nextY = Number(event.currentTarget.value);
+                        if (Number.isFinite(nextY)) {
+                          updateMarkPosition(mark.id, {
+                            y: roundCoordinate(
+                              clamp(nextY, 0, scenario.sailingArea.height),
+                            ),
+                          });
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
