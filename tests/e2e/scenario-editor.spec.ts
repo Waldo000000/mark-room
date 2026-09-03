@@ -61,6 +61,16 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     .getByTestId('scenario-title-input')
     .fill('Practice leeward rounding');
   await page.getByTestId('scenario-id-input').fill('practice-leeward-rounding');
+  await expect(page.getByTestId('keyframe-label-input')).toHaveValue(
+    'Position 1',
+  );
+  await page.getByTestId('keyframe-label-input').fill('Approach to zone');
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Approach to zone' }),
+  ).toBeVisible();
+  await expect(page.getByTestId('keyframe-tab-position-1')).toHaveText(
+    'Approach to zone',
+  );
 
   const initialScenario = parseScenarioJson(
     await page.getByTestId('editor-scenario-json').textContent(),
@@ -69,6 +79,7 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     id: 'practice-leeward-rounding',
     title: 'Practice leeward rounding',
   });
+  expect(initialScenario.keyframes[0].label).toBe('Approach to zone');
   const initialYellowState = initialScenario.keyframes[0].boatStates.find(
     (state) => state.boatId === 'yellow',
   );
@@ -122,6 +133,9 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   );
   await expect(keyframeSlider).toHaveAttribute('max', '3');
   await expect(keyframeSlider).toHaveValue('3');
+  await expect(page.getByTestId('keyframe-label-input')).toHaveValue(
+    'Position 3',
+  );
   await expect(page.getByTestId('ghost-boat-position-1-blue')).toBeVisible();
   await expect(page.getByTestId('ghost-boat-position-2-blue')).toBeVisible();
   await expect(page.getByTestId('keyframe-track-line-blue')).toHaveAttribute(
@@ -138,6 +152,13 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     'aria-current',
     'step',
   );
+  await expect(page.getByTestId('keyframe-label-input')).toHaveValue(
+    'Position 2',
+  );
+  await page.getByTestId('keyframe-label-input').fill('Overlap established');
+  await expect(page.getByTestId('keyframe-tab-position-2')).toHaveText(
+    'Overlap established',
+  );
   await keyframeSlider.focus();
   await page.keyboard.press('ArrowRight');
   await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
@@ -145,6 +166,13 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     'position-3',
   );
   await expect(keyframeSlider).toHaveValue('3');
+  await expect(page.getByTestId('keyframe-label-input')).toHaveValue(
+    'Position 3',
+  );
+  await page.getByTestId('keyframe-label-input').fill('Inside overlap');
+  await expect(page.getByTestId('keyframe-tab-position-3')).toHaveText(
+    'Inside overlap',
+  );
 
   await page.getByRole('button', { name: 'Gold' }).click();
   await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
@@ -206,6 +234,7 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
 
   expect(scenario.keyframes).toHaveLength(3);
   expect(scenario.wind.fromDegrees).toBe(270);
+  expect(scenario.keyframes[0].label).toBe('Approach to zone');
   expect(scenario.boats).toContainEqual(
     expect.objectContaining({
       id: 'yellow',
@@ -213,7 +242,8 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
       color: '#22c55e',
     }),
   );
-  expect(thirdKeyframe?.label).toBe('Position 3');
+  expect(secondKeyframe?.label).toBe('Overlap established');
+  expect(thirdKeyframe?.label).toBe('Inside overlap');
   expect(secondKeyframe?.boatStates).toContainEqual(
     expect.objectContaining({
       boatId: 'yellow',
@@ -269,6 +299,9 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     'data-active-keyframe-id',
     'position-3',
   );
+  await expect(page.getByTestId('keyframe-label-input')).toHaveValue(
+    'Inside overlap',
+  );
   await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
     'data-selected-boat-id',
     'yellow',
@@ -293,6 +326,9 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   );
   expect(resetScenario.id).toBe('editor-spike-draft');
   expect(resetScenario.keyframes).toHaveLength(2);
+  await expect(page.getByTestId('keyframe-label-input')).toHaveValue(
+    'Position 1',
+  );
   await expect
     .poll(() =>
       page.evaluate(
@@ -327,6 +363,9 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
     'data-active-keyframe-id',
     'position-1',
+  );
+  await expect(page.getByTestId('keyframe-label-input')).toHaveValue(
+    'Approach to zone',
   );
   await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
     'data-selected-boat-id',

@@ -299,6 +299,15 @@ export function ScenarioEditorSpike() {
     }));
   }
 
+  function updateActiveKeyframeLabel(label: string) {
+    setScenario((currentScenario) => ({
+      ...currentScenario,
+      keyframes: currentScenario.keyframes.map((keyframe) =>
+        keyframe.id === activeKeyframe.id ? { ...keyframe, label } : keyframe,
+      ),
+    }));
+  }
+
   function setBoatPositionFromPointer(
     event: React.PointerEvent<SVGElement>,
     boatId = selectedBoatId,
@@ -518,6 +527,19 @@ export function ScenarioEditorSpike() {
               value={activeKeyframeIndex + 1}
               onChange={(event) =>
                 selectKeyframeByIndex(Number(event.currentTarget.value) - 1)
+              }
+            />
+          </label>
+          <label className="mt-4 grid gap-2 text-sm font-semibold">
+            Keyframe label
+            <input
+              className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+              data-testid="keyframe-label-input"
+              maxLength={120}
+              type="text"
+              value={activeKeyframe.label}
+              onChange={(event) =>
+                updateActiveKeyframeLabel(event.currentTarget.value)
               }
             />
           </label>
