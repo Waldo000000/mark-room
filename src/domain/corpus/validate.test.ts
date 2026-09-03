@@ -65,6 +65,28 @@ describe('corpus validation', () => {
       otherBoatId: 'yellow',
       relationship: 'overlapped',
     });
+    expect(leewardMarkClearAhead.situation.moments[1].relationships).toEqual(
+      expect.arrayContaining([
+        {
+          type: 'windward-leeward',
+          windwardBoatId: 'blue',
+          leewardBoatId: 'yellow',
+        },
+        {
+          type: 'mark-position',
+          markId: 'leeward-mark',
+          insideBoatId: 'yellow',
+          outsideBoatId: 'blue',
+        },
+        {
+          type: 'available-room',
+          boatId: 'yellow',
+          constrainedByBoatId: 'blue',
+          purpose: 'mark-rounding',
+          available: true,
+        },
+      ]),
+    );
     expect(leewardMarkClearAhead.rulings.obligations).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -80,6 +102,13 @@ describe('corpus validation', () => {
           owedToBoatId: 'blue',
           ruleRefs: ['RRS 18.2(a)(2)'],
           type: 'give-mark-room',
+        }),
+        expect.objectContaining({
+          atMoment: 'position-2',
+          boatId: 'blue',
+          owedToBoatId: 'yellow',
+          ruleRefs: ['RRS 11'],
+          type: 'keep-clear',
         }),
       ]),
     );

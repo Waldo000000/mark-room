@@ -499,11 +499,40 @@ test('preserves mark-room when a clear-astern boat later overlaps', async ({
 
   await page
     .getByTestId('position-selector')
-    .getByRole('link', { name: 'Later overlap' })
+    .getByRole('link', { name: 'Later leeward inside overlap' })
     .click();
 
   await expect(page.getByTestId('mark-position-leeward-mark')).toHaveText(
-    'Blue is inside Yellow at Leeward mark.',
+    'Yellow is inside Blue at Leeward mark.',
+  );
+  const laterKeyframe = scenario.keyframes[1];
+  const laterBlue = laterKeyframe.boatStates.find(
+    (state) => state.boatId === 'blue',
+  );
+  const laterYellow = laterKeyframe.boatStates.find(
+    (state) => state.boatId === 'yellow',
+  );
+  if (!laterBlue || !laterYellow) {
+    throw new Error('Expected both boats in the later keyframe');
+  }
+  expect(laterBlue.headingDegrees).toBe(180);
+  expect(laterYellow.headingDegrees).toBe(180);
+  expect(laterBlue.tack).toBe('starboard');
+  expect(laterYellow.tack).toBe('starboard');
+  expect(laterYellow.position.x).toBeGreaterThan(laterBlue.position.x);
+  expect(Math.abs(laterYellow.position.y - laterBlue.position.y)).toBeLessThan(
+    1,
+  );
+  expect(
+    Math.hypot(
+      laterYellow.position.x - mark.position.x,
+      laterYellow.position.y - mark.position.y,
+    ),
+  ).toBeLessThan(
+    Math.hypot(
+      laterBlue.position.x - mark.position.x,
+      laterBlue.position.y - mark.position.y,
+    ),
   );
   expect(situation.moments[1].relationships).toEqual(
     expect.arrayContaining([
@@ -514,18 +543,45 @@ test('preserves mark-room when a clear-astern boat later overlaps', async ({
         relationship: 'overlapped',
       },
       {
+        type: 'windward-leeward',
+        windwardBoatId: 'blue',
+        leewardBoatId: 'yellow',
+      },
+      {
         type: 'mark-position',
         markId: 'leeward-mark',
-        insideBoatId: 'blue',
-        outsideBoatId: 'yellow',
+        insideBoatId: 'yellow',
+        outsideBoatId: 'blue',
+      },
+      {
+        type: 'available-room',
+        boatId: 'yellow',
+        constrainedByBoatId: 'blue',
+        purpose: 'mark-rounding',
+        available: true,
+      },
+      {
+        type: 'available-room',
+        boatId: 'blue',
+        constrainedByBoatId: 'yellow',
+        purpose: 'mark-rounding',
+        available: true,
       },
     ]),
   );
+  await expect(page.getByTestId('ruling-statements')).toContainText(
+    'Blue must keep clear of Yellow.',
+  );
+  await expect(page.getByTestId('ruling-statements')).toContainText('RRS 11');
   await expect(page.getByTestId('ruling-statements')).toContainText(
     'Yellow must give mark-room to Blue.',
   );
   await expect(page.getByTestId('ruling-statements')).toContainText(
     'RRS 18.2(a)(2)',
+  );
+  await expect(page.getByTestId('scenario-diagram')).toHaveScreenshot(
+    'leeward-mark-clear-ahead-late-overlap-diagram.png',
+    { maxDiffPixelRatio: 0.007 },
   );
   expect(rulings.obligations).toContainEqual({
     atMoment: 'position-2',
