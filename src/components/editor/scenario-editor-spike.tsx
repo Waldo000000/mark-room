@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   BoatGlyph,
@@ -18,6 +18,7 @@ import type { Scenario } from '@/src/domain/scenario/schema';
 const DIAGRAM_FONT_SIZE = 0.24;
 const BOAT_LABEL_X_OFFSET = 0.66;
 const BOAT_LABEL_Y_OFFSET = 0.3;
+const EDITOR_DRAFT_STORAGE_KEY = 'mark-room.editor.scenario-draft.v1';
 
 const initialScenario: Scenario = {
   schemaVersion: '0.5.0',
@@ -128,6 +129,26 @@ function withUpdatedBoatState(
   };
 }
 
+type SavedEditorDraft = {
+  activeKeyframeId: string;
+  scenario: Scenario;
+  selectedBoatId: string;
+};
+
+function resolveKeyframeId(scenario: Scenario, requestedId: string): string {
+  return (
+    scenario.keyframes.find((keyframe) => keyframe.id === requestedId)?.id ??
+    scenario.keyframes[0].id
+  );
+}
+
+function resolveBoatId(scenario: Scenario, requestedId: string): string {
+  return (
+    scenario.boats.find((boat) => boat.id === requestedId)?.id ??
+    scenario.boats[0].id
+  );
+}
+
 export function ScenarioEditorSpike() {
   const [scenario, setScenario] = useState<Scenario>(initialScenario);
   const [activeKeyframeId, setActiveKeyframeId] = useState(
@@ -140,7 +161,9 @@ export function ScenarioEditorSpike() {
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>(
     'idle',
   );
+  const [draftLoaded, setDraftLoaded] = useState(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const skipNextDraftSaveRef = useRef(false);
 
   const activeKeyframe =
     scenario.keyframes.find((keyframe) => keyframe.id === activeKeyframeId) ??
@@ -166,6 +189,57 @@ export function ScenarioEditorSpike() {
     [scenarioJson],
   );
   const scenarioDownloadFileName = `${scenario.id}.json`;
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      try {
+        const savedDraft = window.localStorage.getItem(
+          EDITOR_DRAFT_STORAGE_KEY,
+        );
+        if (!savedDraft) return;
+
+        const parsedDraft = JSON.parse(savedDraft) as Partial<SavedEditorDraft>;
+        const parsedScenario = scenarioSchema.safeParse(parsedDraft.scenario);
+        if (!parsedScenario.success) return;
+
+        setScenario(parsedScenario.data);
+        setActiveKeyframeId(
+          resolveKeyframeId(
+            parsedScenario.data,
+            parsedDraft.activeKeyframeId ?? '',
+          ),
+        );
+        setSelectedBoatId(
+          resolveBoatId(parsedScenario.data, parsedDraft.selectedBoatId ?? ''),
+        );
+      } catch {
+        window.localStorage.removeItem(EDITOR_DRAFT_STORAGE_KEY);
+      } finally {
+        setDraftLoaded(true);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoaded) return;
+
+    if (skipNextDraftSaveRef.current) {
+      skipNextDraftSaveRef.current = false;
+      return;
+    }
+
+    const draft: SavedEditorDraft = {
+      activeKeyframeId: activeKeyframe.id,
+      scenario,
+      selectedBoatId,
+    };
+    window.localStorage.setItem(
+      EDITOR_DRAFT_STORAGE_KEY,
+      JSON.stringify(draft),
+    );
+  }, [activeKeyframe.id, draftLoaded, scenario, selectedBoatId]);
 
   function updateBoatState(
     boatId: string,
@@ -262,6 +336,15 @@ export function ScenarioEditorSpike() {
     }
   }
 
+  function resetDraft() {
+    skipNextDraftSaveRef.current = true;
+    window.localStorage.removeItem(EDITOR_DRAFT_STORAGE_KEY);
+    setScenario(initialScenario);
+    setActiveKeyframeId(initialScenario.keyframes[0].id);
+    setSelectedBoatId(initialScenario.boats[0].id);
+    setCopyStatus('idle');
+  }
+
   return (
     <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
       <section className="min-w-0">
@@ -277,6 +360,14 @@ export function ScenarioEditorSpike() {
               onClick={addKeyframe}
             >
               Add position
+            </button>
+            <button
+              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
+              data-testid="reset-editor-draft"
+              type="button"
+              onClick={resetDraft}
+            >
+              Reset draft
             </button>
           </div>
           <div
