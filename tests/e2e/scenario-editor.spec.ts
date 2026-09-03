@@ -57,9 +57,18 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     '0.36',
   );
 
+  await page
+    .getByTestId('scenario-title-input')
+    .fill('Practice leeward rounding');
+  await page.getByTestId('scenario-id-input').fill('practice-leeward-rounding');
+
   const initialScenario = parseScenarioJson(
     await page.getByTestId('editor-scenario-json').textContent(),
   );
+  expect(initialScenario).toMatchObject({
+    id: 'practice-leeward-rounding',
+    title: 'Practice leeward rounding',
+  });
   const initialYellowState = initialScenario.keyframes[0].boatStates.find(
     (state) => state.boatId === 'yellow',
   );
@@ -237,7 +246,7 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   const downloadPromise = page.waitForEvent('download');
   await page.getByTestId('download-scenario-json').click();
   const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe(`${scenario.id}.json`);
+  expect(download.suggestedFilename()).toBe('practice-leeward-rounding.json');
   const downloadedPath = await download.path();
   expect(downloadedPath).toBeTruthy();
   const downloadedScenario = parseScenarioJson(
@@ -292,6 +301,17 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
       ),
     )
     .toBeNull();
+
+  await page.getByTestId('scenario-id-input').fill('Bad ID');
+  await expect(page.getByTestId('scenario-validation')).toHaveAttribute(
+    'data-valid',
+    'false',
+  );
+  await page.getByTestId('scenario-id-input').fill('editor-spike-draft');
+  await expect(page.getByTestId('scenario-validation')).toHaveAttribute(
+    'data-valid',
+    'true',
+  );
 
   await page
     .getByTestId('import-scenario-json-input')

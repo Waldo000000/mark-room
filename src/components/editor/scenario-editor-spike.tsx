@@ -290,6 +290,15 @@ export function ScenarioEditorSpike() {
     }));
   }
 
+  function updateScenarioIdentity(
+    update: Partial<Pick<Scenario, 'id' | 'title'>>,
+  ) {
+    setScenario((currentScenario) => ({
+      ...currentScenario,
+      ...update,
+    }));
+  }
+
   function setBoatPositionFromPointer(
     event: React.PointerEvent<SVGElement>,
     boatId = selectedBoatId,
@@ -790,9 +799,37 @@ export function ScenarioEditorSpike() {
             id="scenario-setup-heading"
             className="mt-2 text-xl font-semibold"
           >
-            Wind
+            Scenario
           </h2>
           <div className="mt-4 grid gap-4">
+            <label className="grid gap-2 text-sm font-semibold">
+              Title
+              <input
+                className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                data-testid="scenario-title-input"
+                maxLength={200}
+                type="text"
+                value={scenario.title}
+                onChange={(event) => {
+                  const title = event.currentTarget.value;
+                  updateScenarioIdentity({ title });
+                }}
+              />
+            </label>
+            <label className="grid gap-2 text-sm font-semibold">
+              Scenario ID
+              <input
+                className="min-h-11 rounded-md border border-input bg-background px-3 font-mono text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                data-testid="scenario-id-input"
+                maxLength={80}
+                type="text"
+                value={scenario.id}
+                onChange={(event) => {
+                  const id = event.currentTarget.value;
+                  updateScenarioIdentity({ id });
+                }}
+              />
+            </label>
             <label className="grid gap-2 text-sm font-semibold">
               Wind from
               <input
