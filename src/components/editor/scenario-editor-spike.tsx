@@ -303,6 +303,27 @@ export function ScenarioEditorSpike() {
     });
   }
 
+  function updateWindDirection(windFromDegrees: number) {
+    const normalizedWind = normalizeDegrees(windFromDegrees);
+
+    setScenario((currentScenario) => ({
+      ...currentScenario,
+      wind: {
+        ...currentScenario.wind,
+        fromDegrees: normalizedWind,
+      },
+      keyframes: currentScenario.keyframes.map((keyframe) => ({
+        ...keyframe,
+        boatStates: keyframe.boatStates.map((state) => ({
+          ...state,
+          tack:
+            inferTackFromHeading(state.headingDegrees, normalizedWind) ??
+            state.tack,
+        })),
+      })),
+    }));
+  }
+
   function addKeyframe() {
     const nextIndex = scenario.keyframes.length + 1;
     const copiedStates = activeKeyframe.boatStates.map((state) => ({
@@ -668,7 +689,45 @@ export function ScenarioEditorSpike() {
       </section>
 
       <aside className="min-w-0 border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
-        <section aria-labelledby="boat-controls-heading">
+        <section aria-labelledby="scenario-setup-heading">
+          <p className="text-sm font-semibold uppercase text-muted-foreground">
+            Scenario setup
+          </p>
+          <h2
+            id="scenario-setup-heading"
+            className="mt-2 text-xl font-semibold"
+          >
+            Wind
+          </h2>
+          <div className="mt-4 grid gap-4">
+            <label className="grid gap-2 text-sm font-semibold">
+              Wind from
+              <input
+                className="w-full accent-primary"
+                data-testid="wind-direction-input"
+                max="359"
+                min="0"
+                step="1"
+                type="range"
+                value={scenario.wind.fromDegrees}
+                onChange={(event) =>
+                  updateWindDirection(Number(event.currentTarget.value))
+                }
+              />
+            </label>
+            <p
+              className="text-sm text-muted-foreground"
+              data-testid="wind-direction-value"
+            >
+              {scenario.wind.fromDegrees} degrees
+            </p>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="boat-controls-heading"
+          className="mt-7 border-t border-border pt-6"
+        >
           <p className="text-sm font-semibold uppercase text-muted-foreground">
             Selected boat
           </p>
