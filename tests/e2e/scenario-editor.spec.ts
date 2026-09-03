@@ -31,6 +31,9 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     'data-active-keyframe-id',
     'position-1',
   );
+  const keyframeSlider = page.getByTestId('keyframe-slider');
+  await expect(keyframeSlider).toHaveAttribute('max', '2');
+  await expect(keyframeSlider).toHaveValue('1');
   await expect(page.getByTestId('ghosted-keyframe-context')).toHaveAttribute(
     'data-labels',
     'hidden',
@@ -64,12 +67,31 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     'data-active-keyframe-id',
     'position-3',
   );
+  await expect(keyframeSlider).toHaveAttribute('max', '3');
+  await expect(keyframeSlider).toHaveValue('3');
   await expect(page.getByTestId('ghost-boat-position-1-blue')).toBeVisible();
   await expect(page.getByTestId('ghost-boat-position-2-blue')).toBeVisible();
   await expect(page.getByTestId('keyframe-track-line-blue')).toHaveAttribute(
     'points',
     '3.2,2.2 3.5,3.6 3.45,2.65',
   );
+
+  await keyframeSlider.fill('2');
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-active-keyframe-id',
+    'position-2',
+  );
+  await expect(page.getByTestId('keyframe-tab-position-2')).toHaveAttribute(
+    'aria-current',
+    'step',
+  );
+  await keyframeSlider.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-active-keyframe-id',
+    'position-3',
+  );
+  await expect(keyframeSlider).toHaveValue('3');
 
   await page.getByRole('button', { name: 'Yellow' }).click();
   await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
