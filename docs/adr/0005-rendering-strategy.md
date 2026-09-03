@@ -38,6 +38,7 @@ input back into Scenario units before validation or export.
 
 The project does not make an ideological commitment to SVG. It commits to the simplest implementation that delivers the required user experience.
 
-The editor spike should also inform a shared viewer/editor treatment for
-ghosted positions: non-selected keyframes may render semi-transparent for
-sequence context, while the selected keyframe remains primary and editable.
+Scenario diagrams share a ghosted-positions treatment across the viewer and
+editor: non-selected keyframes render semi-transparent for sequence context,
+while the selected keyframe remains primary. Ghost labels are hidden until a
+later issue proves a readable label treatment.
