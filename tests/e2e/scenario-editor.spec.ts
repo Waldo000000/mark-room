@@ -32,8 +32,10 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     'position-1',
   );
   const keyframeSlider = page.getByTestId('keyframe-slider');
+  const deleteKeyframe = page.getByTestId('delete-keyframe');
   await expect(keyframeSlider).toHaveAttribute('max', '2');
   await expect(keyframeSlider).toHaveValue('1');
+  await expect(deleteKeyframe).toBeEnabled();
   await expect(page.getByTestId('ghosted-keyframe-context')).toHaveAttribute(
     'data-labels',
     'hidden',
@@ -410,6 +412,37 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     await page.getByTestId('editor-scenario-json').textContent(),
   );
   expect(rejectedSchemaScenario).toEqual(scenario);
+
+  await page.getByTestId('keyframe-tab-position-2').click();
+  await deleteKeyframe.click();
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-active-keyframe-id',
+    'position-3',
+  );
+  await expect(keyframeSlider).toHaveAttribute('max', '2');
+  await expect(keyframeSlider).toHaveValue('2');
+  await expect(page.getByTestId('keyframe-tab-position-2')).toHaveCount(0);
+  const afterMiddleDeleteScenario = parseScenarioJson(
+    await page.getByTestId('editor-scenario-json').textContent(),
+  );
+  expect(
+    afterMiddleDeleteScenario.keyframes.map((keyframe) => keyframe.id),
+  ).toEqual(['position-1', 'position-3']);
+
+  await deleteKeyframe.click();
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-active-keyframe-id',
+    'position-1',
+  );
+  await expect(keyframeSlider).toHaveAttribute('max', '1');
+  await expect(keyframeSlider).toHaveValue('1');
+  await expect(deleteKeyframe).toBeDisabled();
+  const afterLastDeleteScenario = parseScenarioJson(
+    await page.getByTestId('editor-scenario-json').textContent(),
+  );
+  expect(
+    afterLastDeleteScenario.keyframes.map((keyframe) => keyframe.id),
+  ).toEqual(['position-1']);
 
   await expect(page.locator('html')).toHaveJSProperty(
     'scrollWidth',
