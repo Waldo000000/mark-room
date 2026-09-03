@@ -176,6 +176,12 @@ export function ScenarioEditorSpike() {
   const activeKeyframe =
     scenario.keyframes.find((keyframe) => keyframe.id === activeKeyframeId) ??
     scenario.keyframes[0];
+  const activeKeyframeIndex = Math.max(
+    0,
+    scenario.keyframes.findIndex(
+      (keyframe) => keyframe.id === activeKeyframe.id,
+    ),
+  );
   const selectedBoat = scenario.boats.find(
     (boat) => boat.id === selectedBoatId,
   );
@@ -327,6 +333,11 @@ export function ScenarioEditorSpike() {
     }));
   }
 
+  function selectKeyframeByIndex(index: number) {
+    const nextIndex = clamp(index, 0, scenario.keyframes.length - 1);
+    setActiveKeyframeId(scenario.keyframes[nextIndex].id);
+  }
+
   function addKeyframe() {
     const nextIndex = scenario.keyframes.length + 1;
     const copiedStates = activeKeyframe.boatStates.map((state) => ({
@@ -426,6 +437,22 @@ export function ScenarioEditorSpike() {
               Reset draft
             </button>
           </div>
+          <label className="mt-4 grid gap-2 text-sm font-semibold">
+            {activeKeyframe.label} of {scenario.keyframes.length}
+            <input
+              aria-label="Select scenario position"
+              className="w-full accent-primary"
+              data-testid="keyframe-slider"
+              max={scenario.keyframes.length}
+              min="1"
+              step="1"
+              type="range"
+              value={activeKeyframeIndex + 1}
+              onChange={(event) =>
+                selectKeyframeByIndex(Number(event.currentTarget.value) - 1)
+              }
+            />
+          </label>
           <div
             className="mt-2 flex gap-2 overflow-x-auto pb-1"
             data-testid="editor-position-selector"
