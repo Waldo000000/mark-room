@@ -191,6 +191,65 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     )
     .toBeNull();
 
+  await page
+    .getByTestId('import-scenario-json-input')
+    .fill(JSON.stringify(scenario, null, 2));
+  await page.getByTestId('import-scenario-json').click();
+  await expect(page.getByTestId('import-json-status')).toHaveAttribute(
+    'data-status',
+    'imported',
+  );
+  await expect(page.getByTestId('import-json-status')).toHaveText(
+    'Scenario JSON imported.',
+  );
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-active-keyframe-id',
+    'position-1',
+  );
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-selected-boat-id',
+    'blue',
+  );
+  const importedScenario = parseScenarioJson(
+    await page.getByTestId('editor-scenario-json').textContent(),
+  );
+  expect(importedScenario).toEqual(scenario);
+  await expect
+    .poll(() =>
+      page.evaluate((storageKey) => {
+        const savedDraft = window.localStorage.getItem(storageKey);
+        return savedDraft ? JSON.parse(savedDraft).scenario : null;
+      }, EDITOR_DRAFT_STORAGE_KEY),
+    )
+    .toEqual(scenario);
+
+  await page.getByTestId('import-scenario-json-input').fill('{');
+  await page.getByTestId('import-scenario-json').click();
+  await expect(page.getByTestId('import-json-status')).toHaveAttribute(
+    'data-status',
+    'invalid-json',
+  );
+  await expect(page.getByTestId('import-json-status')).toHaveText(
+    'Pasted text is not valid JSON.',
+  );
+  const malformedImportScenario = parseScenarioJson(
+    await page.getByTestId('editor-scenario-json').textContent(),
+  );
+  expect(malformedImportScenario).toEqual(scenario);
+
+  await page
+    .getByTestId('import-scenario-json-input')
+    .fill(JSON.stringify({ id: 'not-a-scenario' }));
+  await page.getByTestId('import-scenario-json').click();
+  await expect(page.getByTestId('import-json-status')).toHaveAttribute(
+    'data-status',
+    'invalid-schema',
+  );
+  const rejectedSchemaScenario = parseScenarioJson(
+    await page.getByTestId('editor-scenario-json').textContent(),
+  );
+  expect(rejectedSchemaScenario).toEqual(scenario);
+
   await expect(page.locator('html')).toHaveJSProperty(
     'scrollWidth',
     await page.locator('html').evaluate((element) => element.clientWidth),

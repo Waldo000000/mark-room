@@ -161,6 +161,11 @@ export function ScenarioEditorSpike() {
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>(
     'idle',
   );
+  const [importJson, setImportJson] = useState('');
+  const [importStatus, setImportStatus] = useState<
+    'idle' | 'imported' | 'invalid-json' | 'invalid-schema'
+  >('idle');
+  const [importError, setImportError] = useState('');
   const [draftLoaded, setDraftLoaded] = useState(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const skipNextDraftSaveRef = useRef(false);
@@ -336,6 +341,31 @@ export function ScenarioEditorSpike() {
     }
   }
 
+  function importScenarioJson() {
+    try {
+      const parsedJson = JSON.parse(importJson) as unknown;
+      const parsedScenario = scenarioSchema.safeParse(parsedJson);
+      if (!parsedScenario.success) {
+        setImportStatus('invalid-schema');
+        setImportError(
+          parsedScenario.error.issues[0]?.message ??
+            'Scenario JSON does not match the schema.',
+        );
+        return;
+      }
+
+      setScenario(parsedScenario.data);
+      setActiveKeyframeId(parsedScenario.data.keyframes[0].id);
+      setSelectedBoatId(parsedScenario.data.boats[0].id);
+      setCopyStatus('idle');
+      setImportStatus('imported');
+      setImportError('');
+    } catch {
+      setImportStatus('invalid-json');
+      setImportError('Pasted text is not valid JSON.');
+    }
+  }
+
   function resetDraft() {
     skipNextDraftSaveRef.current = true;
     window.localStorage.removeItem(EDITOR_DRAFT_STORAGE_KEY);
@@ -343,6 +373,8 @@ export function ScenarioEditorSpike() {
     setActiveKeyframeId(initialScenario.keyframes[0].id);
     setSelectedBoatId(initialScenario.boats[0].id);
     setCopyStatus('idle');
+    setImportStatus('idle');
+    setImportError('');
   }
 
   return (
@@ -802,6 +834,45 @@ export function ScenarioEditorSpike() {
                   ? 'Could not copy Scenario JSON.'
                   : ''}
             </p>
+            <div className="mt-4 grid gap-3">
+              <label className="grid gap-2 text-sm font-semibold">
+                Import Scenario JSON
+                <textarea
+                  className="min-h-36 rounded-md border border-input bg-background px-3 py-2 font-mono text-xs font-normal leading-5 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
+                  data-testid="import-scenario-json-input"
+                  spellCheck={false}
+                  value={importJson}
+                  onChange={(event) => {
+                    setImportJson(event.currentTarget.value);
+                    setImportStatus('idle');
+                    setImportError('');
+                  }}
+                />
+              </label>
+              <button
+                className="inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
+                data-testid="import-scenario-json"
+                type="button"
+                onClick={importScenarioJson}
+              >
+                Import JSON
+              </button>
+              <p
+                aria-live="polite"
+                className={`min-h-5 text-sm ${
+                  importStatus === 'invalid-json' ||
+                  importStatus === 'invalid-schema'
+                    ? 'text-destructive'
+                    : 'text-muted-foreground'
+                }`}
+                data-status={importStatus}
+                data-testid="import-json-status"
+              >
+                {importStatus === 'imported'
+                  ? 'Scenario JSON imported.'
+                  : importError}
+              </p>
+            </div>
             <pre
               className="mt-3 max-h-[32rem] overflow-auto rounded-md border border-border bg-slate-950 p-4 text-xs leading-5 text-slate-100"
               data-testid="editor-scenario-json"
