@@ -220,6 +220,34 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   await expect(page.getByTestId('heading-value')).toHaveText(
     '135 degrees, starboard tack',
   );
+  await page.getByTestId('mark-x-input-leeward-mark').fill('99');
+  await expect(page.getByTestId('editor-mark-leeward-mark')).toHaveAttribute(
+    'data-position-x',
+    '8',
+  );
+  await page.getByTestId('mark-y-input-leeward-mark').fill('-3');
+  await expect(page.getByTestId('editor-mark-leeward-mark')).toHaveAttribute(
+    'data-position-y',
+    '0',
+  );
+  await page.getByTestId('mark-x-input-leeward-mark').fill('1.4');
+  await page.getByTestId('mark-y-input-leeward-mark').fill('2.6');
+  await expect(page.getByTestId('editor-mark-leeward-mark')).toHaveAttribute(
+    'data-position-x',
+    '1.4',
+  );
+  await expect(page.getByTestId('editor-mark-leeward-mark')).toHaveAttribute(
+    'data-position-y',
+    '2.6',
+  );
+  await expect(page.getByTestId('editor-zone-leeward-mark')).toHaveAttribute(
+    'data-center-x',
+    '1.4',
+  );
+  await expect(page.getByTestId('editor-zone-leeward-mark')).toHaveAttribute(
+    'data-center-y',
+    '2.6',
+  );
 
   const scenario = parseScenarioJson(
     await page.getByTestId('editor-scenario-json').textContent(),
@@ -257,6 +285,10 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     position: { x: 5.2, y: 3.4 },
     headingDegrees: 135,
     tack: 'starboard',
+  });
+  expect(scenario.courseFeatures[0]).toMatchObject({
+    id: 'leeward-mark',
+    position: { x: 1.4, y: 2.6 },
   });
 
   const renderedYellow = page.getByTestId('editor-boat-yellow');
@@ -328,6 +360,10 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   );
   expect(resetScenario.id).toBe('editor-spike-draft');
   expect(resetScenario.keyframes).toHaveLength(2);
+  expect(resetScenario.courseFeatures[0]).toMatchObject({
+    id: 'leeward-mark',
+    position: { x: 4, y: 2 },
+  });
   await expect(page.getByTestId('keyframe-label-input')).toHaveValue(
     'Position 1',
   );
