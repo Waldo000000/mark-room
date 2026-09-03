@@ -20,7 +20,7 @@ export default function Home() {
           <p className="text-sm font-semibold">Available now</p>
           <nav
             aria-label="Learning paths"
-            className="mt-4 grid gap-3 sm:grid-cols-3"
+            className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
           >
             <Link
               href="/scenarios"
@@ -39,6 +39,12 @@ export default function Home() {
               className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               Explore rules
+            </Link>
+            <Link
+              href="/editor"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Open editor
             </Link>
           </nav>
         </section>

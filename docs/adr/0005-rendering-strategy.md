@@ -10,9 +10,13 @@ Scenario diagrams must be clear, mobile-friendly, testable, and maintainable by 
 
 ## Decision
 
-Use React + SVG for the Release 1 scenario viewer.
+Use React + SVG for the Release 1 scenario viewer and the first Release 2
+editor interaction spike.
 
-Before building the Release 2 editor, run an explicit SVG vs react-konva mobile interaction spike. Prefer SVG unless the spike demonstrates a material advantage for react-konva in code simplicity or touch experience.
+Before adding a canvas dependency such as react-konva, prove the editor's basic
+mobile interactions against the existing SVG renderer. Prefer SVG unless the
+spike demonstrates a material advantage for react-konva in code simplicity,
+touch experience, or rendering correctness.
 
 ## Consequences
 
@@ -29,6 +33,11 @@ choices.
 
 The renderer normalizes the standard hull path to exactly one Scenario
 hull-length unit and displays a one-hull-length scale. Renderer pixels do not
-define or alter Scenario dimensions.
+define or alter Scenario dimensions. Editor interactions must convert pointer
+input back into Scenario units before validation or export.
 
 The project does not make an ideological commitment to SVG. It commits to the simplest implementation that delivers the required user experience.
+
+The editor spike should also inform a shared viewer/editor treatment for
+ghosted positions: non-selected keyframes may render semi-transparent for
+sequence context, while the selected keyframe remains primary and editable.
