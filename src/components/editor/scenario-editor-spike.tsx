@@ -21,6 +21,7 @@ import type { Scenario } from '@/src/domain/scenario/schema';
 const DIAGRAM_FONT_SIZE = 0.24;
 const BOAT_LABEL_X_OFFSET = 0.66;
 const BOAT_LABEL_Y_OFFSET = 0.3;
+const BOAT_DRAG_THRESHOLD_PIXELS = 4;
 const EDITOR_DRAFT_STORAGE_KEY = 'mark-room.editor.scenario-draft.v1';
 
 const initialScenario: Scenario = {
@@ -138,6 +139,14 @@ type SavedEditorDraft = {
   selectedBoatId: string;
 };
 
+type BoatDrag = {
+  boatId: string;
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  dragging: boolean;
+};
+
 function resolveKeyframeId(scenario: Scenario, requestedId: string): string {
   return (
     scenario.keyframes.find((keyframe) => keyframe.id === requestedId)?.id ??
@@ -160,7 +169,6 @@ export function ScenarioEditorSpike() {
   const [selectedBoatId, setSelectedBoatId] = useState(
     initialScenario.boats[0].id,
   );
-  const [draggingBoatId, setDraggingBoatId] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>(
     'idle',
   );
@@ -171,6 +179,7 @@ export function ScenarioEditorSpike() {
   const [importError, setImportError] = useState('');
   const [draftLoaded, setDraftLoaded] = useState(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const boatDragRef = useRef<BoatDrag | null>(null);
   const skipNextDraftSaveRef = useRef(false);
 
   const activeKeyframe =
@@ -294,6 +303,43 @@ export function ScenarioEditorSpike() {
       ...state,
       position: { x, y },
     }));
+  }
+
+  function beginBoatPointerInteraction(
+    event: React.PointerEvent<SVGGElement>,
+    boatId: string,
+  ) {
+    event.stopPropagation();
+    setSelectedBoatId(boatId);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    boatDragRef.current = {
+      boatId,
+      dragging: false,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+    };
+  }
+
+  function updateBoatPointerInteraction(event: React.PointerEvent<SVGElement>) {
+    const drag = boatDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    const pointerDistance = Math.hypot(
+      event.clientX - drag.startClientX,
+      event.clientY - drag.startClientY,
+    );
+    if (!drag.dragging && pointerDistance < BOAT_DRAG_THRESHOLD_PIXELS) return;
+
+    boatDragRef.current = { ...drag, dragging: true };
+    setBoatPositionFromPointer(event, drag.boatId);
+  }
+
+  function endBoatPointerInteraction(event: React.PointerEvent<SVGElement>) {
+    const drag = boatDragRef.current;
+    if (drag?.pointerId === event.pointerId) {
+      boatDragRef.current = null;
+    }
   }
 
   function updateHeading(headingDegrees: number) {
@@ -499,13 +545,9 @@ export function ScenarioEditorSpike() {
             className="size-full touch-none"
             viewBox={`0 0 ${scenario.sailingArea.width} ${scenario.sailingArea.height}`}
             onPointerDown={setBoatPositionFromPointer}
-            onPointerMove={(event) => {
-              if (draggingBoatId) {
-                setBoatPositionFromPointer(event, draggingBoatId);
-              }
-            }}
-            onPointerUp={() => setDraggingBoatId(null)}
-            onPointerCancel={() => setDraggingBoatId(null)}
+            onPointerMove={updateBoatPointerInteraction}
+            onPointerUp={endBoatPointerInteraction}
+            onPointerCancel={endBoatPointerInteraction}
           >
             <title id="editor-diagram-title">Editable scenario diagram</title>
             <defs>
@@ -637,15 +679,14 @@ export function ScenarioEditorSpike() {
               return (
                 <g
                   key={boat.id}
+                  className="cursor-pointer"
                   data-boat-id={boat.id}
                   data-heading-degrees={state.headingDegrees}
                   data-testid={`editor-boat-${boat.id}`}
-                  onPointerDown={(event) => {
-                    event.stopPropagation();
-                    setSelectedBoatId(boat.id);
-                    setDraggingBoatId(boat.id);
-                    setBoatPositionFromPointer(event, boat.id);
-                  }}
+                  onPointerDown={(event) =>
+                    beginBoatPointerInteraction(event, boat.id)
+                  }
+                  pointerEvents="all"
                 >
                   <g
                     transform={`translate(${state.position.x} ${screenY}) rotate(${state.headingDegrees})`}
@@ -669,6 +710,14 @@ export function ScenarioEditorSpike() {
                       />
                     ) : null}
                   </g>
+                  <circle
+                    cx={state.position.x}
+                    cy={screenY}
+                    data-testid={`editor-boat-hit-target-${boat.id}`}
+                    fill="transparent"
+                    pointerEvents="all"
+                    r="0.72"
+                  />
                   <text
                     fill="#0f172a"
                     fontSize={DIAGRAM_FONT_SIZE}
