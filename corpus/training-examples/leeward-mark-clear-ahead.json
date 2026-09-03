@@ -55,13 +55,13 @@
       },
       {
         "id": "position-2",
-        "label": "Later overlap",
+        "label": "Later leeward inside overlap",
         "boatStates": [
           {
             "boatId": "blue",
             "position": {
-              "x": 3.35,
-              "y": 2.8
+              "x": 2.55,
+              "y": 3.05
             },
             "headingDegrees": 180,
             "tack": "starboard"
@@ -69,8 +69,8 @@
           {
             "boatId": "yellow",
             "position": {
-              "x": 2,
-              "y": 3
+              "x": 3.35,
+              "y": 2.75
             },
             "headingDegrees": 180,
             "tack": "starboard"
@@ -148,7 +148,7 @@
       },
       {
         "id": "position-2",
-        "label": "Later overlap",
+        "label": "Later leeward inside overlap",
         "boatStates": [
           {
             "boatId": "blue",
@@ -174,14 +174,21 @@
           },
           {
             "type": "windward-leeward",
-            "windwardBoatId": "yellow",
-            "leewardBoatId": "blue"
+            "windwardBoatId": "blue",
+            "leewardBoatId": "yellow"
           },
           {
             "type": "mark-position",
             "markId": "leeward-mark",
-            "insideBoatId": "blue",
-            "outsideBoatId": "yellow"
+            "insideBoatId": "yellow",
+            "outsideBoatId": "blue"
+          },
+          {
+            "type": "available-room",
+            "boatId": "yellow",
+            "constrainedByBoatId": "blue",
+            "purpose": "mark-rounding",
+            "available": true
           },
           {
             "type": "available-room",
@@ -214,9 +221,9 @@
       },
       {
         "atMoment": "position-2",
-        "boatId": "yellow",
+        "boatId": "blue",
         "type": "keep-clear",
-        "owedToBoatId": "blue",
+        "owedToBoatId": "yellow",
         "ruleRefs": ["RRS 11"]
       },
       {

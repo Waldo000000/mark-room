@@ -1,6 +1,6 @@
 {
   "scenarioId": "development-leeward-mark-clear-ahead",
-  "teachingText": "When Blue first reaches the radio-sailing zone, Blue is clear ahead and Yellow has not reached the zone. Yellow must give Blue mark-room while rule 18 applies, even after Yellow later establishes an outside overlap.",
+  "teachingText": "When Blue first reaches the radio-sailing zone, Blue is clear ahead and Yellow has not reached the zone. Yellow must give Blue mark-room while rule 18 applies, even after Yellow later establishes a leeward, inside overlap. Yellow becomes the right-of-way boat under Rule 11, but she may not use that right of way in a way that denies Blue the mark-room she still owes.",
   "provenance": [
     {
       "sourceId": "world-sailing-rrs-2025-2028",
@@ -10,7 +10,7 @@
       "url": "https://www.sailing.org/inside-world-sailing/rules-regulations/racingrules/",
       "documentVersion": "2025-2028 with Changes and Corrections",
       "accessedAt": "2026-09-03T00:00:00+10:00",
-      "pageOrSection": "Definitions: Clear Astern and Clear Ahead; Overlap, Mark-Room, and Zone; Part 2, rules 11, 12, 18.1, and 18.2(a)(2); Appendix E1.1",
+      "pageOrSection": "Definitions: Clear Astern and Clear Ahead; Overlap, Mark-Room, and Zone; Part 2, rules 11, 12, 18.1, 18.2(a)(2), and 18.2(d); Appendix E1.1",
       "extractionMethod": "manual",
       "notes": "World Sailing is authoritative for the rule logic and four-hull-length radio-sailing zone. The mark placement, required side, boat geometry, relationships, and MarkRoom transcription are authored training content and remain unverified."
     }
