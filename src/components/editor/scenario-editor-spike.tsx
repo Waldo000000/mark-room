@@ -272,7 +272,11 @@ export function ScenarioEditorSpike({
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [draftConflict, setDraftConflict] = useState(false);
   const [rotationHandleTargetRadius, setRotationHandleTargetRadius] = useState(
-    ROTATION_HANDLE_MIN_TARGET_RADIUS,
+    Math.min(
+      ROTATION_HANDLE_MIN_TARGET_RADIUS,
+      startingScenario.sailingArea.width / 4,
+      startingScenario.sailingArea.height / 4,
+    ),
   );
   const svgRef = useRef<SVGSVGElement | null>(null);
   const editorDragRef = useRef<EditorDrag | null>(null);
@@ -317,6 +321,8 @@ export function ScenarioEditorSpike({
             selectedBoatRotationHandle.y - selectedBoatScreenPosition.y;
           const distance = Math.hypot(deltaX, deltaY);
 
+          if (distance < 0.0001) return selectedBoatScreenPosition;
+
           return {
             x: selectedBoatScreenPosition.x + (deltaX / distance) * 0.64,
             y: selectedBoatScreenPosition.y + (deltaY / distance) * 0.64,
@@ -351,11 +357,15 @@ export function ScenarioEditorSpike({
       const pixelsPerScenarioUnit = Math.hypot(matrix.a, matrix.b);
       if (pixelsPerScenarioUnit <= 0) return;
 
+      const pixelTargetRadius =
+        ROTATION_HANDLE_TARGET_RADIUS_PIXELS / pixelsPerScenarioUnit;
+      const comfortableScenarioRadius = Math.min(
+        ROTATION_HANDLE_MIN_TARGET_RADIUS,
+        scenario.sailingArea.width / 4,
+        scenario.sailingArea.height / 4,
+      );
       setRotationHandleTargetRadius(
-        Math.max(
-          ROTATION_HANDLE_MIN_TARGET_RADIUS,
-          ROTATION_HANDLE_TARGET_RADIUS_PIXELS / pixelsPerScenarioUnit,
-        ),
+        Math.max(pixelTargetRadius, comfortableScenarioRadius),
       );
     };
 
@@ -650,6 +660,13 @@ export function ScenarioEditorSpike({
     }));
   }
 
+  function beginDiagramPointerInteraction(
+    event: React.PointerEvent<SVGSVGElement>,
+  ) {
+    if (event.isPrimary === false || editorDragRef.current) return;
+    setBoatPositionFromPointer(event);
+  }
+
   function setMarkPositionFromPointer(
     event: React.PointerEvent<SVGElement>,
     markId: string,
@@ -665,6 +682,8 @@ export function ScenarioEditorSpike({
     boatId: string,
   ) {
     event.stopPropagation();
+    if (event.isPrimary === false || editorDragRef.current) return;
+
     setSelectedBoatId(boatId);
     event.currentTarget.setPointerCapture(event.pointerId);
     editorDragRef.current = {
@@ -682,6 +701,8 @@ export function ScenarioEditorSpike({
     markId: string,
   ) {
     event.stopPropagation();
+    if (event.isPrimary === false || editorDragRef.current) return;
+
     event.currentTarget.setPointerCapture(event.pointerId);
     editorDragRef.current = {
       targetId: markId,
@@ -709,6 +730,8 @@ export function ScenarioEditorSpike({
     boatState: BoatState,
   ) {
     event.stopPropagation();
+    if (event.isPrimary === false || editorDragRef.current) return;
+
     const pointer = getRawScenarioPositionFromPointer(event);
     if (!pointer) return;
     const pointerHeading = pointerHeadingDegrees(pointer, boatState.position);
@@ -1112,7 +1135,7 @@ export function ScenarioEditorSpike({
             aria-labelledby="editor-diagram-title"
             className="size-full touch-none"
             viewBox={`0 0 ${scenario.sailingArea.width} ${scenario.sailingArea.height}`}
-            onPointerDown={setBoatPositionFromPointer}
+            onPointerDown={beginDiagramPointerInteraction}
             onPointerMove={updateEditorPointerInteraction}
             onPointerUp={endEditorPointerInteraction}
             onPointerCancel={cancelEditorPointerInteraction}

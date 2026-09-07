@@ -266,3 +266,95 @@ test('preserves the touch target when imported bounds shrink the boat glyphs', a
   await page.getByTestId('rotation-handle-blue').click();
   expect(await scenario(page)).toEqual(before);
 });
+
+test('ignores a second touch during rotation and still restores cancellation', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/editor');
+  await page.getByTestId('boat-x-input').fill('4');
+  await page.getByTestId('boat-y-input').fill('4');
+  const before = await scenario(page);
+  const { start, end } = await gesture(page, 90);
+  const session = await context.newCDPSession(page);
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ ...start, id: 1 }],
+  });
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchMove',
+    touchPoints: [{ ...end, id: 1 }],
+  });
+  const rotated = await scenario(page);
+  const second = await point(page, 1, 1);
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [
+      { ...end, id: 1 },
+      { ...second, id: 2 },
+    ],
+  });
+  expect(await scenario(page)).toEqual(rotated);
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchCancel',
+    touchPoints: [],
+  });
+  expect(await scenario(page)).toEqual(before);
+  await session.detach();
+});
+
+test('keeps finite usable handle geometry in small and narrow imported areas', async ({
+  page,
+}) => {
+  await page.goto('/editor');
+  const initial = await scenario(page);
+  for (const [width, height] of [
+    [1, 1],
+    [0.5, 8],
+  ]) {
+    const imported = structuredClone(initial);
+    imported.sailingArea = { width, height };
+    imported.courseFeatures = [];
+    for (const keyframe of imported.keyframes) {
+      for (const state of keyframe.boatStates) {
+        state.position = { x: width / 2, y: height / 2 };
+      }
+    }
+    await page
+      .getByTestId('import-scenario-json-input')
+      .fill(JSON.stringify(imported));
+    await page.getByTestId('import-scenario-json').click();
+    await expect(page.getByTestId('scenario-validation')).toHaveAttribute(
+      'data-valid',
+      'true',
+    );
+    const control = page.getByTestId('rotation-control-blue');
+    await expect(control).toBeVisible();
+    const line = control.locator('line');
+    for (const attribute of ['x1', 'x2', 'y1', 'y2']) {
+      expect(Number.isFinite(Number(await line.getAttribute(attribute)))).toBe(
+        true,
+      );
+    }
+    const svg = (await page
+      .getByTestId('editor-diagram')
+      .locator('svg')
+      .boundingBox())!;
+    const handle = (await page
+      .getByTestId('rotation-handle-blue')
+      .boundingBox())!;
+    expect(handle.width).toBeGreaterThanOrEqual(43.9);
+    expect(handle.x).toBeGreaterThanOrEqual(svg.x - 1);
+    expect(handle.y).toBeGreaterThanOrEqual(svg.y - 1);
+    expect(handle.x + handle.width).toBeLessThanOrEqual(svg.x + svg.width + 1);
+    expect(handle.y + handle.height).toBeLessThanOrEqual(
+      svg.y + svg.height + 1,
+    );
+    expect(
+      Math.hypot(
+        handle.x + handle.width / 2 - svg.x - svg.width / 2,
+        handle.y + handle.height / 2 - svg.y - svg.height / 2,
+      ),
+    ).toBeGreaterThan(5);
+  }
+});
