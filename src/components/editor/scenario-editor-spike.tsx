@@ -19,7 +19,10 @@ import {
   withHeadingAlignmentDisabled,
   type HeadingAlignmentPair,
 } from '@/src/components/editor/heading-alignment';
-import { addBoatToScenario } from '@/src/components/editor/boat-management';
+import {
+  addBoatToScenario,
+  removeBoatFromScenario,
+} from '@/src/components/editor/boat-management';
 import {
   inferTackFromHeading,
   normalizeDegrees,
@@ -438,6 +441,10 @@ export function ScenarioEditorSpike({
   );
   const scenarioDownloadFileName = `${scenario.id}.json`;
   const canDeleteKeyframe = scenario.keyframes.length > 1;
+  const canRemoveBoat = scenario.boats.length > 1;
+  const selectedBoatEventCount = scenario.observedEvents.filter(
+    (event) => event.boatId === selectedBoatId,
+  ).length;
   const disabledHeadingAlignmentPairs = draftDisabledHeadingAlignmentPairs;
   const activeHeadingAlignmentPair = {
     boatId: selectedBoatId,
@@ -764,6 +771,21 @@ export function ScenarioEditorSpike({
     const result = addBoatToScenario(scenario, selectedBoatId);
     setScenario(result.scenario);
     setSelectedBoatId(result.boatId);
+  }
+
+  function removeSelectedBoat() {
+    const result = removeBoatFromScenario(scenario, selectedBoatId);
+    if (!result) return;
+
+    editorDragRef.current = null;
+    wheelRemainderPixelsRef.current = 0;
+    replaceDisabledHeadingAlignmentPairs(
+      disabledHeadingAlignmentPairsRef.current.filter(
+        (pair) => pair.boatId !== selectedBoatId,
+      ),
+    );
+    setScenario(result.scenario);
+    setSelectedBoatId(result.selectedBoatId);
   }
 
   function updateScenarioIdentity(
@@ -2008,14 +2030,38 @@ export function ScenarioEditorSpike({
             })}
           </div>
 
-          <button
-            className="mt-3 inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
-            data-testid="add-boat"
-            type="button"
-            onClick={addBoat}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              className="inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
+              data-testid="add-boat"
+              type="button"
+              onClick={addBoat}
+            >
+              Add boat
+            </button>
+            <button
+              aria-describedby="remove-boat-description"
+              aria-label={`Remove ${selectedBoat?.label ?? selectedBoatId}`}
+              className="inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-destructive px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-destructive"
+              data-testid="remove-boat"
+              disabled={!canRemoveBoat}
+              type="button"
+              onClick={removeSelectedBoat}
+            >
+              Remove boat
+            </button>
+          </div>
+          <p
+            className="mt-3 text-sm leading-6 text-muted-foreground"
+            data-testid="remove-boat-description"
+            id="remove-boat-description"
           >
-            Add boat
-          </button>
+            {canRemoveBoat
+              ? selectedBoatEventCount > 0
+                ? `Removing this boat also removes ${selectedBoatEventCount} related ${selectedBoatEventCount === 1 ? 'event' : 'events'}.`
+                : 'This boat has no related events.'
+              : 'A scenario must keep at least one boat.'}
+          </p>
 
           {selectedBoatState ? (
             <div className="mt-5 grid gap-4">

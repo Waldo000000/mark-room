@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import { scenarioSchema, type Scenario } from '../../domain/scenario/schema';
 
-import { addBoatToScenario, BOAT_COLOR_PALETTE } from './boat-management';
+import {
+  addBoatToScenario,
+  BOAT_COLOR_PALETTE,
+  removeBoatFromScenario,
+} from './boat-management';
 
 function scenarioWith(
   boats: Scenario['boats'],
@@ -247,5 +251,133 @@ describe('addBoatToScenario', () => {
 
     expect(result.scenario.boats.at(-1)?.color).toMatch(/^#[0-9A-F]{6}$/);
     expect(scenarioSchema.safeParse(result.scenario).success).toBe(true);
+  });
+});
+
+describe('removeBoatFromScenario', () => {
+  const scenario = scenarioWith(
+    [
+      { id: 'blue', label: 'Blue', color: BOAT_COLOR_PALETTE[0] },
+      { id: 'yellow', label: 'Yellow', color: BOAT_COLOR_PALETTE[1] },
+      { id: 'red', label: 'Red', color: BOAT_COLOR_PALETTE[2] },
+    ],
+    twoFrameScenario.keyframes.map((keyframe) => ({
+      ...keyframe,
+      boatStates: [
+        keyframe.boatStates[0],
+        { ...keyframe.boatStates[1], boatId: 'yellow' },
+        {
+          boatId: 'red',
+          position: { x: 1, y: 1 },
+          headingDegrees: 90,
+          tack: 'port' as const,
+        },
+      ],
+    })),
+  );
+  scenario.id = 'remove-boat-test';
+  scenario.title = 'Remove boat test';
+  scenario.courseFeatures = [
+    {
+      type: 'mark',
+      id: 'mark-1',
+      label: 'Mark 1',
+      position: { x: 4, y: 4 },
+      requiredSide: 'port',
+    },
+  ];
+  scenario.observedEvents = [
+    {
+      id: 'blue-hail-1',
+      type: 'hail',
+      atKeyframe: 'position-1',
+      boatId: 'blue',
+      message: 'Room',
+    },
+    {
+      id: 'yellow-hail-1',
+      type: 'hail',
+      atKeyframe: 'position-1',
+      boatId: 'yellow',
+      message: 'Starboard',
+    },
+    {
+      id: 'blue-penalty-1',
+      type: 'penalty-taken',
+      atKeyframe: 'position-2',
+      boatId: 'blue',
+      penaltyType: 'one-turn',
+      notes: 'Clear of other boats',
+    },
+  ];
+
+  it('removes the identity, every state, and all related event types', () => {
+    const result = removeBoatFromScenario(scenario, 'blue');
+
+    expect(result).not.toBeNull();
+    expect(result?.scenario.boats.map((boat) => boat.id)).toEqual([
+      'yellow',
+      'red',
+    ]);
+    expect(
+      result?.scenario.keyframes.map((keyframe) =>
+        keyframe.boatStates.map((state) => state.boatId),
+      ),
+    ).toEqual([
+      ['yellow', 'red'],
+      ['yellow', 'red'],
+    ]);
+    expect(result?.scenario.observedEvents).toEqual([
+      scenario.observedEvents[1],
+    ]);
+    expect(scenarioSchema.safeParse(result?.scenario).success).toBe(true);
+  });
+
+  it('preserves unrelated data without mutating the source scenario', () => {
+    const snapshot = structuredClone(scenario);
+    const result = removeBoatFromScenario(scenario, 'yellow');
+
+    expect(scenario).toEqual(snapshot);
+    expect(result?.scenario).not.toBe(scenario);
+    expect(result?.scenario.boats[0]).toBe(scenario.boats[0]);
+    expect(result?.scenario.courseFeatures).toBe(scenario.courseFeatures);
+    expect(result?.scenario.wind).toBe(scenario.wind);
+    expect(result?.scenario.context).toBe(scenario.context);
+    expect(result?.scenario.observedEvents).toEqual([
+      scenario.observedEvents[0],
+      scenario.observedEvents[2],
+    ]);
+  });
+
+  it('selects the next remaining boat, or the previous boat at the end', () => {
+    expect(removeBoatFromScenario(scenario, 'yellow')?.selectedBoatId).toBe(
+      'red',
+    );
+    expect(removeBoatFromScenario(scenario, 'red')?.selectedBoatId).toBe(
+      'yellow',
+    );
+  });
+
+  it('refuses to remove the last boat or an unknown boat', () => {
+    const oneBoatScenario = scenarioWith(
+      [{ id: 'only', label: 'Only' }],
+      [
+        {
+          id: 'position-1',
+          label: 'Position 1',
+          boatStates: [
+            {
+              boatId: 'only',
+              position: { x: 1, y: 1 },
+              headingDegrees: 0,
+              tack: 'port',
+            },
+          ],
+        },
+      ],
+    );
+
+    expect(removeBoatFromScenario(oneBoatScenario, 'only')).toBeNull();
+    expect(removeBoatFromScenario(scenario, 'missing')).toBeNull();
   });
 });
