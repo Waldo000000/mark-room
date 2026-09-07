@@ -28,6 +28,15 @@ Keep these boundaries clean:
 
 The scenario model should not know whether it is displayed by SVG, Canvas, Konva, screenshots, or tests.
 
+## Quiz Framing
+
+When a recorded moment includes a give-mark-room obligation, practice focuses
+on who is owed mark-room. Keep-clear and keep-clear-rule questions are omitted
+for that moment. Existing viewer quiz links use the mark-room question when
+there is one unambiguous entitlement. Feedback preserves any simultaneous
+keep-clear obligation owed by the boat receiving mark-room; the quiz does not
+alter the structured ruling.
+
 ## Persistence
 
 Initial milestones should not have a runtime database.

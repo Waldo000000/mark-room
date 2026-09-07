@@ -53,6 +53,15 @@ export function deriveMarkRoomQuestion(
 
   if (!moment || !givingBoatLabel || !owedBoatLabel) return null;
 
+  const crossObligation = trainingExample.rulings.obligations.find(
+    (candidate) =>
+      candidate.atMoment === momentId &&
+      candidate.type === 'keep-clear' &&
+      candidate.boatId === obligation.owedToBoatId &&
+      candidate.owedToBoatId === obligation.boatId,
+  );
+  const explanation = `${owedBoatLabel} is owed mark-room from ${givingBoatLabel}.`;
+
   return {
     momentId,
     prompt: `Which boat is owed mark-room at ${moment.label}?`,
@@ -62,8 +71,15 @@ export function deriveMarkRoomQuestion(
     })),
     answer: {
       boatId: obligation.owedToBoatId,
-      explanation: `${owedBoatLabel} is owed mark-room from ${givingBoatLabel}.`,
-      ruleRefs: [...obligation.ruleRefs],
+      explanation: crossObligation
+        ? `${explanation} ${owedBoatLabel} must still keep clear of ${givingBoatLabel} under ${crossObligation.ruleRefs.join(', ')}; the mark-room obligation does not remove that keep-clear obligation.`
+        : explanation,
+      ruleRefs: [
+        ...new Set([
+          ...obligation.ruleRefs,
+          ...(crossObligation?.ruleRefs ?? []),
+        ]),
+      ],
     },
   };
 }
