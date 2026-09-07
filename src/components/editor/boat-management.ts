@@ -23,6 +23,11 @@ export type AddBoatResult = {
   boatId: string;
 };
 
+export type RemoveBoatResult = {
+  scenario: Scenario;
+  selectedBoatId: string;
+};
+
 function clamp(value: number, maximum: number): number {
   return Math.min(Math.max(value, 0), maximum);
 }
@@ -186,6 +191,36 @@ export function addBoatToScenario(
           ],
         };
       }),
+    },
+  };
+}
+
+export function removeBoatFromScenario(
+  scenario: Scenario,
+  boatId: string,
+): RemoveBoatResult | null {
+  const removedBoatIndex = scenario.boats.findIndex(
+    (boat) => boat.id === boatId,
+  );
+  if (removedBoatIndex < 0 || scenario.boats.length === 1) return null;
+
+  const boats = scenario.boats.filter((boat) => boat.id !== boatId);
+  const selectedBoatId = boats[Math.min(removedBoatIndex, boats.length - 1)].id;
+
+  return {
+    selectedBoatId,
+    scenario: {
+      ...scenario,
+      boats,
+      keyframes: scenario.keyframes.map((keyframe) => ({
+        ...keyframe,
+        boatStates: keyframe.boatStates.filter(
+          (state) => state.boatId !== boatId,
+        ),
+      })),
+      observedEvents: scenario.observedEvents.filter(
+        (event) => event.boatId !== boatId,
+      ),
     },
   };
 }

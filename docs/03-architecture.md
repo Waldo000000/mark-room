@@ -89,6 +89,12 @@ come from the previously selected boat in each keyframe. Existing geometry and
 manual-heading settings remain intact, while the new boat's positions start
 with the default movement-alignment behavior.
 
+Removing a boat removes its identity, states in every keyframe, observed events
+that require its boat ID, and editor-only manual-heading settings. The action
+explains any related events beforehand, retains unrelated data, and selects a
+remaining boat at the current position. The final boat cannot be removed,
+preserving the Scenario schema's minimum boat/state requirements.
+
 Release 1 viewer: React + SVG.
 
 Reasoning:
