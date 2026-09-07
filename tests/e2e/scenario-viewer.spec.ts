@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Locator, test } from '@playwright/test';
 
 import { deriveSailPresentation } from '../../src/components/scenario/boat-glyph';
 import type { Ruling } from '../../src/domain/ruling/schema';
@@ -23,6 +23,20 @@ function expectedTrackPoints(scenario: Scenario, boatId: string): string {
       return `${formatCoordinate(state.position.x)},${formatCoordinate(screenY)}`;
     })
     .join(' ');
+}
+
+async function renderedStrokeWidthInPixels(trackLine: Locator) {
+  return trackLine.evaluate((element) => {
+    const strokeWidth = Number(element.getAttribute('stroke-width'));
+    const matrix = (element as SVGGraphicsElement).getScreenCTM();
+    if (!Number.isFinite(strokeWidth) || !matrix) {
+      throw new Error('Expected a measurable SVG track line');
+    }
+
+    return element.getAttribute('vector-effect') === 'non-scaling-stroke'
+      ? strokeWidth
+      : strokeWidth * Math.hypot(matrix.a, matrix.b);
+  });
 }
 
 test('browses the validated corpus and opens a scenario', async ({ page }) => {
@@ -448,6 +462,16 @@ test('preserves mark-room when a clear-astern boat later overlaps', async ({
   const rulings = JSON.parse(
     (await page.getByTestId('rulings-json').textContent()) ?? '',
   ) as Ruling;
+  for (const boat of scenario.boats) {
+    const trackLine = page.getByTestId(`keyframe-track-line-${boat.id}`);
+    await expect(trackLine).toHaveAttribute(
+      'points',
+      expectedTrackPoints(scenario, boat.id),
+    );
+    expect(await renderedStrokeWidthInPixels(trackLine)).toBeGreaterThanOrEqual(
+      2,
+    );
+  }
   const mark = scenario.courseFeatures.find(
     (feature) => feature.type === 'mark' && feature.id === 'leeward-mark',
   );
