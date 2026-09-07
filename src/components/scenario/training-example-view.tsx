@@ -16,6 +16,7 @@ import {
   describeOutcome,
   selectRulingStatements,
 } from '@/src/components/scenario/ruling-presentation';
+import { ViewerKeyframeTimeline } from '@/src/components/scenario/viewer-keyframe-timeline';
 import type { CorpusMetadata } from '@/src/domain/corpus/schema';
 import { deriveApplicableRuleQuestion } from '@/src/domain/quiz/applicable-rule';
 import { deriveKeepClearQuestion } from '@/src/domain/quiz/keep-clear';
@@ -139,34 +140,16 @@ export function TrainingExampleView({
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
           <section className="min-w-0">
             {scenario.keyframes.length > 1 ? (
-              <nav aria-label="Scenario position" className="mb-5">
-                <p className="text-sm font-semibold uppercase text-muted-foreground">
-                  Position
-                </p>
-                <div
-                  className="mt-2 flex gap-2 overflow-x-auto pb-1"
-                  data-testid="position-selector"
-                >
-                  {scenario.keyframes.map((candidate) => {
-                    const selected = candidate.id === keyframe.id;
-
-                    return (
-                      <Link
-                        key={candidate.id}
-                        aria-current={selected ? 'step' : undefined}
-                        className={`inline-flex min-h-11 min-w-24 shrink-0 items-center justify-center rounded-sm border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 ${
-                          selected
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border bg-background text-foreground hover:bg-muted'
-                        }`}
-                        href={`/scenarios/${scenarioSlug}?position=${encodeURIComponent(candidate.id)}${quizMode ? `&mode=quiz${quizQuestionQuery}` : ''}`}
-                      >
-                        {candidate.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </nav>
+              <ViewerKeyframeTimeline
+                keyframes={scenario.keyframes.map(({ id, label }) => ({
+                  id,
+                  label,
+                }))}
+                quizMode={quizMode}
+                quizQuestionQuery={quizQuestionQuery}
+                scenarioSlug={scenarioSlug}
+                selectedKeyframeId={keyframe.id}
+              />
             ) : null}
 
             <div className="flex items-center justify-between gap-4">

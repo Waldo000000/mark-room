@@ -42,3 +42,9 @@ Scenario diagrams share a ghosted-positions treatment across the viewer and
 editor: non-selected keyframes render semi-transparent for sequence context,
 while the selected keyframe remains primary. Ghost labels are hidden until a
 later issue proves a readable label treatment.
+
+Viewer and editor timelines share a native range control with one step per
+recorded keyframe and the active keyframe label adjacent to it. This is discrete
+selection, not interpolated motion. Direct position controls remain available.
+Viewer selection updates the position URL while preserving quiz/question state
+and page scroll, including when a direct position link is used.
