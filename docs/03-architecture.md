@@ -78,6 +78,9 @@ Existing mark controls also edit its optional label, positive physical radius
 in hull lengths, and optional required rounding side. Clearing the label uses
 the stable mark ID for display; unspecified rounding side makes no course
 requirement claim. The physical radius does not change the rules-zone radius.
+The editor can add marks with unused course-feature IDs and remove individual
+marks, including the last one. Removing a mark detaches optional layline links
+to it while preserving those laylines' geometry and all other Scenario data.
 
 Release 1 viewer: React + SVG.
 
