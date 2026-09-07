@@ -25,7 +25,7 @@ import type { Scenario } from '@/src/domain/scenario/schema';
 const DIAGRAM_FONT_SIZE = 0.24;
 const BOAT_LABEL_X_OFFSET = 0.66;
 const BOAT_LABEL_Y_OFFSET = 0.3;
-const BOAT_DRAG_THRESHOLD_PIXELS = 4;
+const EDITOR_DRAG_THRESHOLD_PIXELS = 4;
 const EDITOR_DRAFT_STORAGE_KEY = 'mark-room.editor.scenario-draft.v1';
 
 const initialScenario: Scenario = {
@@ -143,8 +143,9 @@ type SavedEditorDraft = {
   selectedBoatId: string;
 };
 
-type BoatDrag = {
-  boatId: string;
+type EditorDrag = {
+  targetId: string;
+  targetType: 'boat' | 'mark';
   pointerId: number;
   startClientX: number;
   startClientY: number;
@@ -183,7 +184,7 @@ export function ScenarioEditorSpike() {
   const [importError, setImportError] = useState('');
   const [draftLoaded, setDraftLoaded] = useState(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const boatDragRef = useRef<BoatDrag | null>(null);
+  const editorDragRef = useRef<EditorDrag | null>(null);
   const skipNextDraftSaveRef = useRef(false);
 
   const activeKeyframe =
@@ -329,17 +330,16 @@ export function ScenarioEditorSpike() {
     }));
   }
 
-  function setBoatPositionFromPointer(
+  function getScenarioPositionFromPointer(
     event: React.PointerEvent<SVGElement>,
-    boatId = selectedBoatId,
-  ) {
-    if (!svgRef.current) return;
+  ): { x: number; y: number } | null {
+    if (!svgRef.current) return null;
 
     const point = svgRef.current.createSVGPoint();
     point.x = event.clientX;
     point.y = event.clientY;
     const matrix = svgRef.current.getScreenCTM()?.inverse();
-    if (!matrix) return;
+    if (!matrix) return null;
 
     const cursor = point.matrixTransform(matrix);
     const x = roundCoordinate(clamp(cursor.x, 0, scenario.sailingArea.width));
@@ -351,10 +351,30 @@ export function ScenarioEditorSpike() {
       ),
     );
 
+    return { x, y };
+  }
+
+  function setBoatPositionFromPointer(
+    event: React.PointerEvent<SVGElement>,
+    boatId = selectedBoatId,
+  ) {
+    const position = getScenarioPositionFromPointer(event);
+    if (!position) return;
+
     updateBoatState(boatId, (state) => ({
       ...state,
-      position: { x, y },
+      position,
     }));
+  }
+
+  function setMarkPositionFromPointer(
+    event: React.PointerEvent<SVGElement>,
+    markId: string,
+  ) {
+    const position = getScenarioPositionFromPointer(event);
+    if (!position) return;
+
+    updateMarkPosition(markId, position);
   }
 
   function beginBoatPointerInteraction(
@@ -364,8 +384,9 @@ export function ScenarioEditorSpike() {
     event.stopPropagation();
     setSelectedBoatId(boatId);
     event.currentTarget.setPointerCapture(event.pointerId);
-    boatDragRef.current = {
-      boatId,
+    editorDragRef.current = {
+      targetId: boatId,
+      targetType: 'boat',
       dragging: false,
       pointerId: event.pointerId,
       startClientX: event.clientX,
@@ -373,24 +394,48 @@ export function ScenarioEditorSpike() {
     };
   }
 
-  function updateBoatPointerInteraction(event: React.PointerEvent<SVGElement>) {
-    const drag = boatDragRef.current;
+  function beginMarkPointerInteraction(
+    event: React.PointerEvent<SVGGElement>,
+    markId: string,
+  ) {
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    editorDragRef.current = {
+      targetId: markId,
+      targetType: 'mark',
+      dragging: false,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+    };
+  }
+
+  function updateEditorPointerInteraction(
+    event: React.PointerEvent<SVGElement>,
+  ) {
+    const drag = editorDragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
 
     const pointerDistance = Math.hypot(
       event.clientX - drag.startClientX,
       event.clientY - drag.startClientY,
     );
-    if (!drag.dragging && pointerDistance < BOAT_DRAG_THRESHOLD_PIXELS) return;
+    if (!drag.dragging && pointerDistance < EDITOR_DRAG_THRESHOLD_PIXELS) {
+      return;
+    }
 
-    boatDragRef.current = { ...drag, dragging: true };
-    setBoatPositionFromPointer(event, drag.boatId);
+    editorDragRef.current = { ...drag, dragging: true };
+    if (drag.targetType === 'boat') {
+      setBoatPositionFromPointer(event, drag.targetId);
+    } else {
+      setMarkPositionFromPointer(event, drag.targetId);
+    }
   }
 
-  function endBoatPointerInteraction(event: React.PointerEvent<SVGElement>) {
-    const drag = boatDragRef.current;
+  function endEditorPointerInteraction(event: React.PointerEvent<SVGElement>) {
+    const drag = editorDragRef.current;
     if (drag?.pointerId === event.pointerId) {
-      boatDragRef.current = null;
+      editorDragRef.current = null;
     }
   }
 
@@ -626,6 +671,10 @@ export function ScenarioEditorSpike() {
             {selectedBoat?.label ?? selectedBoatId} selected
           </p>
         </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Drag a boat or mark to reposition it. Use the numeric fields for
+          precise keyboard input.
+        </p>
 
         <div
           className="mt-3 aspect-square w-full overflow-hidden rounded-md border border-border bg-cyan-50 p-3 sm:p-5"
@@ -639,9 +688,9 @@ export function ScenarioEditorSpike() {
             className="size-full touch-none"
             viewBox={`0 0 ${scenario.sailingArea.width} ${scenario.sailingArea.height}`}
             onPointerDown={setBoatPositionFromPointer}
-            onPointerMove={updateBoatPointerInteraction}
-            onPointerUp={endBoatPointerInteraction}
-            onPointerCancel={endBoatPointerInteraction}
+            onPointerMove={updateEditorPointerInteraction}
+            onPointerUp={endEditorPointerInteraction}
+            onPointerCancel={endEditorPointerInteraction}
           >
             <title id="editor-diagram-title">Editable scenario diagram</title>
             <defs>
@@ -731,9 +780,14 @@ export function ScenarioEditorSpike() {
               return (
                 <g
                   key={mark.id}
+                  className="cursor-pointer"
                   data-position-x={mark.position.x}
                   data-position-y={mark.position.y}
                   data-testid={`editor-mark-${mark.id}`}
+                  onPointerDown={(event) =>
+                    beginMarkPointerInteraction(event, mark.id)
+                  }
+                  pointerEvents="all"
                 >
                   <circle
                     cx={mark.position.x}
@@ -755,6 +809,14 @@ export function ScenarioEditorSpike() {
                       ? ` (leave to ${mark.requiredSide})`
                       : ''}
                   </text>
+                  <circle
+                    cx={mark.position.x}
+                    cy={screenY}
+                    data-testid={`editor-mark-hit-target-${mark.id}`}
+                    fill="transparent"
+                    pointerEvents="all"
+                    r="0.72"
+                  />
                 </g>
               );
             })}

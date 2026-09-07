@@ -70,6 +70,11 @@ Do:
 
 ## Rendering
 
+The editor moves existing course marks through pointer/touch dragging or numeric
+X/Y controls. Both paths update the same bounded Scenario coordinates, so the
+mark, derived zone, local draft, and JSON export agree across every keyframe.
+Dragging a mark does not change the selected boat or any boat state.
+
 Release 1 viewer: React + SVG.
 
 Reasoning:
