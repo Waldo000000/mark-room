@@ -92,6 +92,9 @@ with the default movement-alignment behavior.
 New keyframes receive the first unused `position-N` identity, including after
 deletion or import with sparse IDs. Existing keyframe identities remain stable;
 the new position is appended and selected.
+Deleting a position also removes its observed events and manual-heading
+settings. The delete action explains related events in advance and protects
+the final position; events on remaining positions retain their original meaning.
 
 Removing a boat removes its identity, states in every keyframe, observed events
 that require its boat ID, and editor-only manual-heading settings. The action

@@ -441,6 +441,9 @@ export function ScenarioEditorSpike({
   );
   const scenarioDownloadFileName = `${scenario.id}.json`;
   const canDeleteKeyframe = scenario.keyframes.length > 1;
+  const activeKeyframeEventCount = scenario.observedEvents.filter(
+    (event) => event.atKeyframe === activeKeyframe.id,
+  ).length;
   const canRemoveBoat = scenario.boats.length > 1;
   const selectedBoatEventCount = scenario.observedEvents.filter(
     (event) => event.boatId === selectedBoatId,
@@ -1227,6 +1230,9 @@ export function ScenarioEditorSpike({
   function removeActiveKeyframe() {
     if (!canDeleteKeyframe) return;
 
+    editorDragRef.current = null;
+    wheelRemainderPixelsRef.current = 0;
+
     const remainingKeyframes = scenario.keyframes.filter(
       (keyframe) => keyframe.id !== activeKeyframe.id,
     );
@@ -1244,6 +1250,9 @@ export function ScenarioEditorSpike({
       ...currentScenario,
       keyframes: currentScenario.keyframes.filter(
         (keyframe) => keyframe.id !== activeKeyframe.id,
+      ),
+      observedEvents: currentScenario.observedEvents.filter(
+        (event) => event.atKeyframe !== activeKeyframe.id,
       ),
     }));
     setActiveKeyframeId(remainingKeyframes[nextIndex].id);
@@ -1376,6 +1385,7 @@ export function ScenarioEditorSpike({
             <button
               className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               data-testid="delete-keyframe"
+              aria-describedby="delete-keyframe-description"
               disabled={!canDeleteKeyframe}
               type="button"
               onClick={removeActiveKeyframe}
@@ -1391,6 +1401,17 @@ export function ScenarioEditorSpike({
               Reset draft
             </button>
           </div>
+          <p
+            className="mt-2 text-sm text-muted-foreground"
+            id="delete-keyframe-description"
+            data-testid="delete-keyframe-description"
+          >
+            {!canDeleteKeyframe
+              ? 'A scenario must keep at least one position.'
+              : activeKeyframeEventCount > 0
+                ? `Deleting this position also removes ${activeKeyframeEventCount} related ${activeKeyframeEventCount === 1 ? 'event' : 'events'}.`
+                : 'This position has no related events.'}
+          </p>
           <div className="mt-4">
             <KeyframeScrubber
               activeKeyframeId={activeKeyframe.id}
