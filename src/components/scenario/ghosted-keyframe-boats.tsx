@@ -59,7 +59,6 @@ export function KeyframeTrackLines({ scenario }: KeyframeTrackLinesProps) {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="0.055"
-            vectorEffect="non-scaling-stroke"
           />
         );
       })}
