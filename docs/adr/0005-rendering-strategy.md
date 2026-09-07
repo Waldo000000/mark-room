@@ -60,3 +60,12 @@ Handle drags use whole-degree headings to match that control. The handle's hit
 target is at least 44 pixels across, scales with the SVG, and is inset from the
 diagram edges. Its connector may move around the boat to retain separation
 from the hull's move target.
+
+On desktop, Left Shift plus wheel over the editor diagram rotates the selected
+boat without translation: up is clockwise and down is counterclockwise. Wheel
+distance accumulates at 20 CSS pixels per degree; line deltas use 20 pixels per
+line and page deltas use the diagram height. Fractional remainder is retained
+during the gesture and cleared when shortcut conditions end or selection
+changes. Other modifiers, focused form controls, and an active pointer gesture
+exclude the shortcut. Releasing Left Shift or leaving the window clears its
+activation. Ordinary scrolling remains available outside those conditions.

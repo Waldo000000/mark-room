@@ -34,6 +34,8 @@ const DEFAULT_MARK_RADIUS = 0.18;
 const ROTATION_HANDLE_MIN_TARGET_RADIUS = 0.72;
 const ROTATION_HANDLE_TARGET_RADIUS_PIXELS = 22;
 const ROTATION_HANDLE_VISIBLE_RADIUS_RATIO = 0.28;
+const WHEEL_PIXELS_PER_DEGREE = 20;
+const WHEEL_LINE_HEIGHT_PIXELS = 20;
 
 type MarkFeature = Extract<CourseFeature, { type: 'mark' }>;
 
@@ -144,6 +146,35 @@ function withUpdatedBoatState(
         : keyframe,
     ),
   };
+}
+
+function withUpdatedBoatHeading(
+  scenario: Scenario,
+  keyframeId: string,
+  boatId: string,
+  headingDegrees: number,
+): Scenario {
+  return withUpdatedBoatState(scenario, keyframeId, boatId, (state) => {
+    const normalizedHeading = normalizeDegrees(headingDegrees);
+    const inferredTack = inferTackFromHeading(
+      normalizedHeading,
+      scenario.wind.fromDegrees,
+    );
+
+    return {
+      ...state,
+      headingDegrees: normalizedHeading,
+      tack: inferredTack ?? state.tack,
+    };
+  });
+}
+
+function isFormControl(element: Element | null): boolean {
+  return Boolean(
+    element?.matches(
+      'input, select, textarea, [contenteditable]:not([contenteditable="false"])',
+    ),
+  );
 }
 
 type SavedEditorDraft = {
@@ -278,8 +309,11 @@ export function ScenarioEditorSpike({
       startingScenario.sailingArea.height / 4,
     ),
   );
+  const diagramRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const editorDragRef = useRef<EditorDrag | null>(null);
+  const leftShiftPressedRef = useRef(false);
+  const wheelRemainderPixelsRef = useRef(0);
   const skipNextDraftSaveRef = useRef(false);
 
   const activeKeyframe =
@@ -345,6 +379,116 @@ export function ScenarioEditorSpike({
   );
   const scenarioDownloadFileName = `${scenario.id}.json`;
   const canDeleteKeyframe = scenario.keyframes.length > 1;
+
+  useEffect(() => {
+    const resetWheelRotation = () => {
+      leftShiftPressedRef.current = false;
+      wheelRemainderPixelsRef.current = 0;
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code === 'ShiftLeft') {
+        leftShiftPressedRef.current = true;
+      }
+    };
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.code === 'ShiftLeft') {
+        resetWheelRotation();
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        resetWheelRotation();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', resetWheelRotation);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', resetWheelRotation);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    wheelRemainderPixelsRef.current = 0;
+  }, [activeKeyframe.id, selectedBoatId]);
+
+  useEffect(() => {
+    const diagram = diagramRef.current;
+    if (!diagram) return;
+
+    const resetWheelRemainder = () => {
+      wheelRemainderPixelsRef.current = 0;
+    };
+
+    const handleWheel = (event: WheelEvent) => {
+      const canRotate =
+        leftShiftPressedRef.current &&
+        event.shiftKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !isFormControl(document.activeElement) &&
+        !editorDragRef.current &&
+        Boolean(selectedBoatState);
+
+      if (!canRotate) {
+        wheelRemainderPixelsRef.current = 0;
+        return;
+      }
+
+      const diagramHeight = diagram.getBoundingClientRect().height;
+      const pixelDelta =
+        event.deltaMode === WheelEvent.DOM_DELTA_LINE
+          ? event.deltaY * WHEEL_LINE_HEIGHT_PIXELS
+          : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+            ? event.deltaY * diagramHeight
+            : event.deltaY;
+      if (!Number.isFinite(pixelDelta) || pixelDelta === 0) return;
+
+      event.preventDefault();
+      const accumulatedPixels = wheelRemainderPixelsRef.current - pixelDelta;
+      const wholeDegrees = Math.trunc(
+        accumulatedPixels / WHEEL_PIXELS_PER_DEGREE,
+      );
+      wheelRemainderPixelsRef.current =
+        accumulatedPixels - wholeDegrees * WHEEL_PIXELS_PER_DEGREE;
+
+      if (wholeDegrees === 0) return;
+
+      setScenario((currentScenario) => {
+        const currentKeyframe = currentScenario.keyframes.find(
+          (keyframe) => keyframe.id === activeKeyframe.id,
+        );
+        const currentBoatState = currentKeyframe?.boatStates.find(
+          (state) => state.boatId === selectedBoatId,
+        );
+        if (!currentBoatState) return currentScenario;
+
+        return withUpdatedBoatHeading(
+          currentScenario,
+          activeKeyframe.id,
+          selectedBoatId,
+          Math.round(currentBoatState.headingDegrees + wholeDegrees),
+        );
+      });
+    };
+
+    diagram.addEventListener('wheel', handleWheel, { passive: false });
+    diagram.addEventListener('mouseleave', resetWheelRemainder);
+    diagram.addEventListener('pointerleave', resetWheelRemainder);
+
+    return () => {
+      diagram.removeEventListener('wheel', handleWheel);
+      diagram.removeEventListener('mouseleave', resetWheelRemainder);
+      diagram.removeEventListener('pointerleave', resetWheelRemainder);
+    };
+  }, [activeKeyframe.id, selectedBoatId, selectedBoatState]);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -663,6 +807,7 @@ export function ScenarioEditorSpike({
   function beginDiagramPointerInteraction(
     event: React.PointerEvent<SVGSVGElement>,
   ) {
+    wheelRemainderPixelsRef.current = 0;
     if (event.isPrimary === false || editorDragRef.current) return;
     setBoatPositionFromPointer(event);
   }
@@ -682,6 +827,7 @@ export function ScenarioEditorSpike({
     boatId: string,
   ) {
     event.stopPropagation();
+    wheelRemainderPixelsRef.current = 0;
     if (event.isPrimary === false || editorDragRef.current) return;
 
     setSelectedBoatId(boatId);
@@ -701,6 +847,7 @@ export function ScenarioEditorSpike({
     markId: string,
   ) {
     event.stopPropagation();
+    wheelRemainderPixelsRef.current = 0;
     if (event.isPrimary === false || editorDragRef.current) return;
 
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -730,6 +877,7 @@ export function ScenarioEditorSpike({
     boatState: BoatState,
   ) {
     event.stopPropagation();
+    wheelRemainderPixelsRef.current = 0;
     if (event.isPrimary === false || editorDragRef.current) return;
 
     const pointer = getRawScenarioPositionFromPointer(event);
@@ -769,25 +917,11 @@ export function ScenarioEditorSpike({
     if (pointerHeading === null) return;
 
     setScenario((currentScenario) =>
-      withUpdatedBoatState(
+      withUpdatedBoatHeading(
         currentScenario,
         drag.keyframeId,
         drag.targetId,
-        (state) => {
-          const headingDegrees = normalizeDegrees(
-            Math.round(pointerHeading + drag.headingOffsetDegrees),
-          );
-          const inferredTack = inferTackFromHeading(
-            headingDegrees,
-            currentScenario.wind.fromDegrees,
-          );
-
-          return {
-            ...state,
-            headingDegrees,
-            tack: inferredTack ?? state.tack,
-          };
-        },
+        Math.round(pointerHeading + drag.headingOffsetDegrees),
       ),
     );
   }
@@ -843,19 +977,14 @@ export function ScenarioEditorSpike({
   }
 
   function updateHeading(headingDegrees: number) {
-    updateSelectedBoat((state) => {
-      const normalizedHeading = normalizeDegrees(headingDegrees);
-      const inferredTack = inferTackFromHeading(
-        normalizedHeading,
-        scenario.wind.fromDegrees,
-      );
-
-      return {
-        ...state,
-        headingDegrees: normalizedHeading,
-        tack: inferredTack ?? state.tack,
-      };
-    });
+    setScenario((currentScenario) =>
+      withUpdatedBoatHeading(
+        currentScenario,
+        activeKeyframe.id,
+        selectedBoatId,
+        headingDegrees,
+      ),
+    );
   }
 
   function updateWindDirection(windFromDegrees: number) {
@@ -1122,9 +1251,12 @@ export function ScenarioEditorSpike({
         <p className="mt-1 text-sm text-muted-foreground">
           Drag a boat or mark to reposition it, or use the selected boat&apos;s
           round handle to rotate it. Use the fields for precise keyboard input.
+          On desktop, hold Left Shift and scroll over the diagram to rotate the
+          selected boat.
         </p>
 
         <div
+          ref={diagramRef}
           className="mt-3 aspect-square w-full overflow-hidden rounded-md border border-border bg-cyan-50 p-3 sm:p-5"
           data-active-keyframe-id={activeKeyframe.id}
           data-selected-boat-id={selectedBoatId}
