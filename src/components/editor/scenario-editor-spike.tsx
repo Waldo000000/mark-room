@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import {
   BoatGlyph,
@@ -170,13 +171,28 @@ function resolveBoatId(scenario: Scenario, requestedId: string): string {
   );
 }
 
-export function ScenarioEditorSpike() {
-  const [scenario, setScenario] = useState<Scenario>(initialScenario);
-  const [activeKeyframeId, setActiveKeyframeId] = useState(
-    initialScenario.keyframes[0].id,
-  );
+type ScenarioEditorSpikeProps = {
+  incomingKeyframeId?: string;
+  incomingScenario?: Scenario;
+};
+
+function scenariosMatch(first: Scenario, second: Scenario): boolean {
+  return JSON.stringify(first) === JSON.stringify(second);
+}
+
+export function ScenarioEditorSpike({
+  incomingKeyframeId,
+  incomingScenario,
+}: ScenarioEditorSpikeProps) {
+  const router = useRouter();
+  const startingScenario = incomingScenario ?? initialScenario;
+  const startingKeyframeId = incomingScenario
+    ? resolveKeyframeId(incomingScenario, incomingKeyframeId ?? '')
+    : initialScenario.keyframes[0].id;
+  const [scenario, setScenario] = useState<Scenario>(startingScenario);
+  const [activeKeyframeId, setActiveKeyframeId] = useState(startingKeyframeId);
   const [selectedBoatId, setSelectedBoatId] = useState(
-    initialScenario.boats[0].id,
+    startingScenario.boats[0].id,
   );
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>(
     'idle',
@@ -187,6 +203,7 @@ export function ScenarioEditorSpike() {
   >('idle');
   const [importError, setImportError] = useState('');
   const [draftLoaded, setDraftLoaded] = useState(false);
+  const [draftConflict, setDraftConflict] = useState(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const editorDragRef = useRef<EditorDrag | null>(null);
   const skipNextDraftSaveRef = useRef(false);
@@ -229,22 +246,78 @@ export function ScenarioEditorSpike() {
         const savedDraft = window.localStorage.getItem(
           EDITOR_DRAFT_STORAGE_KEY,
         );
-        if (!savedDraft) return;
+        let parsedDraft: Partial<SavedEditorDraft> | undefined;
+        let savedScenario: Scenario | undefined;
 
-        const parsedDraft = JSON.parse(savedDraft) as Partial<SavedEditorDraft>;
-        const parsedScenario = scenarioSchema.safeParse(parsedDraft.scenario);
-        if (!parsedScenario.success) return;
+        if (savedDraft) {
+          try {
+            parsedDraft = JSON.parse(savedDraft) as Partial<SavedEditorDraft>;
+            const parsedScenario = scenarioSchema.safeParse(
+              parsedDraft.scenario,
+            );
+            if (parsedScenario.success) {
+              savedScenario = parsedScenario.data;
+            } else {
+              window.localStorage.removeItem(EDITOR_DRAFT_STORAGE_KEY);
+            }
+          } catch {
+            window.localStorage.removeItem(EDITOR_DRAFT_STORAGE_KEY);
+          }
+        }
 
-        setScenario(parsedScenario.data);
-        setActiveKeyframeId(
-          resolveKeyframeId(
-            parsedScenario.data,
-            parsedDraft.activeKeyframeId ?? '',
-          ),
-        );
-        setSelectedBoatId(
-          resolveBoatId(parsedScenario.data, parsedDraft.selectedBoatId ?? ''),
-        );
+        if (
+          incomingScenario &&
+          savedScenario &&
+          !scenariosMatch(savedScenario, incomingScenario)
+        ) {
+          setScenario(savedScenario);
+          setActiveKeyframeId(
+            resolveKeyframeId(
+              savedScenario,
+              parsedDraft?.activeKeyframeId ?? '',
+            ),
+          );
+          setSelectedBoatId(
+            resolveBoatId(savedScenario, parsedDraft?.selectedBoatId ?? ''),
+          );
+          setDraftConflict(true);
+          return;
+        }
+
+        if (incomingScenario) {
+          const requestedKeyframeId = resolveKeyframeId(
+            incomingScenario,
+            incomingKeyframeId ?? '',
+          );
+          const incomingDraft: SavedEditorDraft = {
+            activeKeyframeId: requestedKeyframeId,
+            scenario: incomingScenario,
+            selectedBoatId: incomingScenario.boats[0].id,
+          };
+
+          setScenario(incomingScenario);
+          setActiveKeyframeId(requestedKeyframeId);
+          setSelectedBoatId(incomingScenario.boats[0].id);
+          window.localStorage.setItem(
+            EDITOR_DRAFT_STORAGE_KEY,
+            JSON.stringify(incomingDraft),
+          );
+          router.replace('/editor', { scroll: false });
+          return;
+        }
+
+        if (savedScenario) {
+          setScenario(savedScenario);
+          setActiveKeyframeId(
+            resolveKeyframeId(
+              savedScenario,
+              parsedDraft?.activeKeyframeId ?? '',
+            ),
+          );
+          setSelectedBoatId(
+            resolveBoatId(savedScenario, parsedDraft?.selectedBoatId ?? ''),
+          );
+        }
       } catch {
         window.localStorage.removeItem(EDITOR_DRAFT_STORAGE_KEY);
       } finally {
@@ -253,7 +326,7 @@ export function ScenarioEditorSpike() {
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [incomingKeyframeId, incomingScenario, router]);
 
   useEffect(() => {
     if (!draftLoaded) return;
@@ -586,8 +659,67 @@ export function ScenarioEditorSpike() {
     setImportError('');
   }
 
+  function replaceSavedDraft() {
+    if (!incomingScenario) return;
+
+    const requestedKeyframeId = resolveKeyframeId(
+      incomingScenario,
+      incomingKeyframeId ?? '',
+    );
+    const replacementDraft: SavedEditorDraft = {
+      activeKeyframeId: requestedKeyframeId,
+      scenario: incomingScenario,
+      selectedBoatId: incomingScenario.boats[0].id,
+    };
+
+    window.localStorage.setItem(
+      EDITOR_DRAFT_STORAGE_KEY,
+      JSON.stringify(replacementDraft),
+    );
+    setScenario(incomingScenario);
+    setActiveKeyframeId(requestedKeyframeId);
+    setSelectedBoatId(incomingScenario.boats[0].id);
+    setDraftConflict(false);
+    router.replace('/editor', { scroll: false });
+  }
+
+  function keepSavedDraft() {
+    setDraftConflict(false);
+    router.replace('/editor', { scroll: false });
+  }
+
   return (
     <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
+      {draftConflict && incomingScenario ? (
+        <section
+          aria-labelledby="saved-draft-choice-heading"
+          className="rounded-md border border-amber-600 bg-amber-50 p-4 text-amber-950 lg:col-span-2 sm:p-5"
+        >
+          <h2 id="saved-draft-choice-heading" className="text-lg font-semibold">
+            Keep your saved scenario or open {incomingScenario.title}?
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6">
+            Your saved draft “{scenario.title}” has different edits. Choose
+            which scenario to continue editing.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
+              type="button"
+              onClick={replaceSavedDraft}
+            >
+              Replace saved draft
+            </button>
+            <button
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-amber-700 bg-white px-4 text-sm font-semibold text-amber-950 transition-colors hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-offset-2"
+              type="button"
+              onClick={keepSavedDraft}
+            >
+              Keep saved draft
+            </button>
+          </div>
+        </section>
+      ) : null}
       <section className="min-w-0">
         <nav aria-label="Scenario position" className="mb-5">
           <div className="flex flex-wrap items-center gap-3">

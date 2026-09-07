@@ -14,6 +14,13 @@ Do not use a runtime database for initial milestones.
 
 Store canonical corpus data in Git as validated files. Use browser storage for anonymous local quiz progress and draft scenarios.
 
+Opening a corpus scenario from the viewer creates an editable local draft and
+retains the selected keyframe. If a valid saved draft differs from the incoming
+Scenario, the editor offers explicit replacement or retention before changing
+it, including when both records have the same ID. After the choice, consume the
+incoming URL request so reloading cannot overwrite subsequent local edits.
+This path never writes back to the corpus or changes verification status.
+
 Use OpenAI only initially for AI features, behind a small internal AI service boundary. Do not add multi-provider abstraction before it solves a demonstrated problem.
 
 ## Consequences

@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import path from 'node:path';
 
 import { ScenarioEditorSpike } from '@/src/components/editor/scenario-editor-spike';
+import { validateCorpusDirectory } from '@/src/domain/corpus/validate';
 
 export const metadata: Metadata = {
   title: 'Scenario editor spike | MarkRoom',
@@ -9,7 +12,39 @@ export const metadata: Metadata = {
     'A mobile-first MarkRoom spike for editing Scenario geometry across keyframes.',
 };
 
-export default function EditorPage() {
+type EditorPageProps = {
+  searchParams: Promise<{
+    position?: string | string[];
+    scenario?: string | string[];
+  }>;
+};
+
+export default async function EditorPage({ searchParams }: EditorPageProps) {
+  const query = await searchParams;
+  const requestedSlug = Array.isArray(query.scenario)
+    ? query.scenario[0]
+    : query.scenario;
+  const requestedPosition = Array.isArray(query.position)
+    ? query.position[0]
+    : query.position;
+
+  let incomingScenario;
+  let incomingKeyframeId;
+
+  if (requestedSlug) {
+    const entries = await validateCorpusDirectory(
+      path.resolve(process.cwd(), 'corpus'),
+    );
+    const entry = entries.find((candidate) => candidate.slug === requestedSlug);
+    if (!entry) notFound();
+
+    incomingScenario = entry.trainingExample.scenario;
+    incomingKeyframeId =
+      incomingScenario.keyframes.find(
+        (keyframe) => keyframe.id === requestedPosition,
+      )?.id ?? incomingScenario.keyframes[0].id;
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
@@ -29,7 +64,15 @@ export default function EditorPage() {
           </h1>
         </header>
 
-        <ScenarioEditorSpike />
+        <ScenarioEditorSpike
+          key={
+            requestedSlug
+              ? `${requestedSlug}:${incomingKeyframeId}`
+              : 'saved-editor-draft'
+          }
+          incomingKeyframeId={incomingKeyframeId}
+          incomingScenario={incomingScenario}
+        />
       </div>
     </main>
   );
