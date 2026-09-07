@@ -1192,7 +1192,11 @@ export function ScenarioEditorSpike({
   }
 
   function addKeyframe() {
-    const nextIndex = scenario.keyframes.length + 1;
+    const existingIds = new Set(
+      scenario.keyframes.map((keyframe) => keyframe.id),
+    );
+    let nextIndex = 1;
+    while (existingIds.has(`position-${nextIndex}`)) nextIndex += 1;
     const copiedStates = activeKeyframe.boatStates.map((state) => ({
       ...state,
       position: {
