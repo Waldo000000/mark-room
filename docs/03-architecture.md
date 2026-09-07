@@ -74,6 +74,10 @@ The editor moves existing course marks through pointer/touch dragging or numeric
 X/Y controls. Both paths update the same bounded Scenario coordinates, so the
 mark, derived zone, local draft, and JSON export agree across every keyframe.
 Dragging a mark does not change the selected boat or any boat state.
+Existing mark controls also edit its optional label, positive physical radius
+in hull lengths, and optional required rounding side. Clearing the label uses
+the stable mark ID for display; unspecified rounding side makes no course
+requirement claim. The physical radius does not change the rules-zone radius.
 
 Release 1 viewer: React + SVG.
 

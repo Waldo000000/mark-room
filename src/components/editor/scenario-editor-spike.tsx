@@ -19,6 +19,7 @@ import {
   scenarioSchema,
   type Boat,
   type BoatState,
+  type CourseFeature,
 } from '@/src/domain/scenario/schema';
 import type { Scenario } from '@/src/domain/scenario/schema';
 
@@ -27,6 +28,9 @@ const BOAT_LABEL_X_OFFSET = 0.66;
 const BOAT_LABEL_Y_OFFSET = 0.3;
 const EDITOR_DRAG_THRESHOLD_PIXELS = 4;
 const EDITOR_DRAFT_STORAGE_KEY = 'mark-room.editor.scenario-draft.v1';
+const DEFAULT_MARK_RADIUS = 0.18;
+
+type MarkFeature = Extract<CourseFeature, { type: 'mark' }>;
 
 const initialScenario: Scenario = {
   schemaVersion: '0.5.0',
@@ -305,17 +309,24 @@ export function ScenarioEditorSpike() {
     markId: string,
     position: Partial<{ x: number; y: number }>,
   ) {
+    updateMark(markId, (mark) => ({
+      ...mark,
+      position: {
+        ...mark.position,
+        ...position,
+      },
+    }));
+  }
+
+  function updateMark(
+    markId: string,
+    update: (mark: MarkFeature) => MarkFeature,
+  ) {
     setScenario((currentScenario) => ({
       ...currentScenario,
       courseFeatures: currentScenario.courseFeatures.map((feature) =>
         feature.type === 'mark' && feature.id === markId
-          ? {
-              ...feature,
-              position: {
-                ...feature.position,
-                ...position,
-              },
-            }
+          ? update(feature)
           : feature,
       ),
     }));
@@ -1004,6 +1015,28 @@ export function ScenarioEditorSpike() {
                 <h3 className="text-base font-semibold">
                   {mark.label ?? mark.id}
                 </h3>
+                <label className="grid gap-2 text-sm font-semibold">
+                  Label
+                  <input
+                    className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                    data-testid={`mark-label-input-${mark.id}`}
+                    maxLength={200}
+                    type="text"
+                    value={mark.label ?? ''}
+                    onChange={(event) => {
+                      const label = event.currentTarget.value;
+                      updateMark(mark.id, (currentMark) => {
+                        if (label.trim().length > 0) {
+                          return { ...currentMark, label };
+                        }
+
+                        const { label: _label, ...markWithoutLabel } =
+                          currentMark;
+                        return markWithoutLabel;
+                      });
+                    }}
+                  />
+                </label>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="grid gap-2 text-sm font-semibold">
                     X
@@ -1052,6 +1085,60 @@ export function ScenarioEditorSpike() {
                     />
                   </label>
                 </div>
+                <label className="grid gap-2 text-sm font-semibold">
+                  Physical radius (hull lengths)
+                  <input
+                    className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                    data-testid={`mark-radius-input-${mark.id}`}
+                    inputMode="decimal"
+                    min="0"
+                    step="any"
+                    type="number"
+                    value={mark.radius ?? DEFAULT_MARK_RADIUS}
+                    onChange={(event) => {
+                      const radius = Number(event.currentTarget.value);
+                      if (Number.isFinite(radius) && radius > 0) {
+                        updateMark(mark.id, (currentMark) => ({
+                          ...currentMark,
+                          radius,
+                        }));
+                      }
+                    }}
+                  />
+                </label>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Radius describes the mark itself. The rules determine the
+                  surrounding zone size.
+                </p>
+                <label className="grid gap-2 text-sm font-semibold">
+                  Required side
+                  <select
+                    className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                    data-testid={`mark-required-side-input-${mark.id}`}
+                    value={mark.requiredSide ?? ''}
+                    onChange={(event) => {
+                      const requiredSide = event.currentTarget.value;
+                      updateMark(mark.id, (currentMark) => {
+                        if (
+                          requiredSide === 'port' ||
+                          requiredSide === 'starboard'
+                        ) {
+                          return { ...currentMark, requiredSide };
+                        }
+
+                        const {
+                          requiredSide: _requiredSide,
+                          ...markWithoutRequiredSide
+                        } = currentMark;
+                        return markWithoutRequiredSide;
+                      });
+                    }}
+                  >
+                    <option value="">Unspecified</option>
+                    <option value="port">Port</option>
+                    <option value="starboard">Starboard</option>
+                  </select>
+                </label>
               </div>
             ))}
           </div>
