@@ -440,7 +440,7 @@ export function TrainingExampleView({
 
           <aside className="min-w-0 border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
             {quizMode ? (
-              quizQuestionType === 'mark-room' && markRoomQuizQuestion ? (
+              markRoomQuizQuestion ? (
                 <MarkRoomQuiz
                   question={markRoomQuizQuestion}
                   reviewHref={reviewHref}
@@ -483,7 +483,7 @@ export function TrainingExampleView({
               data-testid="ruling-statements"
               hidden={quizMode}
             >
-              {quizQuestion ? (
+              {quizQuestion || markRoomQuizQuestion ? (
                 <Link
                   className="mb-5 inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2"
                   data-testid="start-quiz"

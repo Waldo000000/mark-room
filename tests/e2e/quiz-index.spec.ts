@@ -19,7 +19,7 @@ test('discovers an eligible keep-clear question from the home screen', async ({
   const questions = page.getByRole('region', {
     name: 'Available keep-clear questions',
   });
-  await expect(questions.getByRole('article')).toHaveCount(9);
+  await expect(questions.getByRole('article')).toHaveCount(5);
   await expect(questions).not.toContainText('must keep clear of');
 
   const positionOne = questions
@@ -37,7 +37,7 @@ test('discovers an eligible keep-clear question from the home screen', async ({
   await page.getByRole('link', { name: 'Back to practice questions' }).click();
 
   await expect(page).toHaveURL('/quiz');
-  await expect(questions.getByRole('article')).toHaveCount(9);
+  await expect(questions.getByRole('article')).toHaveCount(5);
   await expect(page.locator('html')).toHaveJSProperty(
     'scrollWidth',
     await page.locator('html').evaluate((element) => element.clientWidth),
@@ -59,7 +59,7 @@ test('discovers and scores an applicable-rule question without revealing its ans
   const questions = page.getByRole('region', {
     name: 'Available rule questions',
   });
-  await expect(questions.getByRole('article')).toHaveCount(9);
+  await expect(questions.getByRole('article')).toHaveCount(5);
   await expect(questions).not.toContainText('RRS 10');
   await expect(questions).not.toContainText('RRS 11');
   await expect(questions).not.toContainText('RRS 12');
@@ -182,4 +182,32 @@ test('discovers and retries a mark-room question without revealing its answer', 
     await page.locator('html').evaluate((element) => element.clientWidth),
   );
   expect(runtimeErrors).toEqual([]);
+});
+
+test('prioritizes mark-room for existing quiz links and explains cross-obligations', async ({
+  page,
+}) => {
+  for (const question of ['', '&question=rule', '&question=mark-room']) {
+    await page.goto(
+      `/scenarios/leeward-mark-clear-ahead?position=position-2&mode=quiz${question}`,
+    );
+    await expect(
+      page.getByRole('heading', {
+        name: 'Which boat is owed mark-room at Later leeward inside overlap?',
+      }),
+    ).toBeVisible();
+    await expect(page.getByTestId('keep-clear-quiz')).toHaveCount(0);
+    await expect(page.getByTestId('rule-quiz')).toHaveCount(0);
+  }
+  await page.getByRole('radio', { name: 'Blue', exact: true }).check();
+  await page.getByRole('button', { name: 'Check answer' }).click();
+  await expect(page.getByTestId('mark-room-quiz-feedback')).toContainText(
+    'Blue must still keep clear of Yellow under RRS 11',
+  );
+  await expect(page.getByTestId('mark-room-quiz-feedback')).toContainText(
+    'RRS 18.2(a)(2)',
+  );
+  await page.goto('/scenarios/leeward-mark-clear-ahead?position=position-2');
+  await page.getByTestId('start-quiz').click();
+  await expect(page.getByTestId('mark-room-quiz')).toBeVisible();
 });

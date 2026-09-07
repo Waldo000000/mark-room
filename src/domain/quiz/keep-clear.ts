@@ -35,6 +35,15 @@ export function deriveKeepClearQuestion(
   trainingExample: TrainingExample,
   momentId: string,
 ): KeepClearQuizQuestion | null {
+  if (
+    trainingExample.rulings.obligations.some(
+      (obligation) =>
+        obligation.atMoment === momentId &&
+        obligation.type === 'give-mark-room',
+    )
+  )
+    return null;
+
   const obligations = trainingExample.rulings.obligations.filter(
     (obligation) =>
       obligation.atMoment === momentId && obligation.type === 'keep-clear',
