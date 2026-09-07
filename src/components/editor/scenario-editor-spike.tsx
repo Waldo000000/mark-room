@@ -406,6 +406,72 @@ export function ScenarioEditorSpike({
     }));
   }
 
+  function addMark() {
+    setScenario((currentScenario) => {
+      const courseFeatureIds = new Set(
+        currentScenario.courseFeatures.map((feature) => feature.id),
+      );
+      let markNumber = 1;
+
+      while (courseFeatureIds.has(`mark-${markNumber}`)) {
+        markNumber += 1;
+      }
+
+      const column = (markNumber - 1) % 4;
+      const row = Math.floor((markNumber - 1) / 4) % 4;
+      const newMark: MarkFeature = {
+        type: 'mark',
+        id: `mark-${markNumber}`,
+        label: `Mark ${markNumber}`,
+        position: {
+          x: clamp(
+            roundCoordinate(
+              (currentScenario.sailingArea.width * (column + 1)) / 5,
+            ),
+            0,
+            currentScenario.sailingArea.width,
+          ),
+          y: clamp(
+            roundCoordinate(
+              (currentScenario.sailingArea.height * (row + 1)) / 5,
+            ),
+            0,
+            currentScenario.sailingArea.height,
+          ),
+        },
+        radius: DEFAULT_MARK_RADIUS,
+      };
+
+      return {
+        ...currentScenario,
+        courseFeatures: [...currentScenario.courseFeatures, newMark],
+      };
+    });
+  }
+
+  function removeMark(markId: string) {
+    setScenario((currentScenario) => ({
+      ...currentScenario,
+      courseFeatures: currentScenario.courseFeatures.reduce<CourseFeature[]>(
+        (remainingFeatures, feature) => {
+          if (feature.type === 'mark' && feature.id === markId) {
+            return remainingFeatures;
+          }
+
+          if (feature.type === 'layline' && feature.markId === markId) {
+            const { markId: _markId, ...laylineWithoutMark } = feature;
+            remainingFeatures.push(laylineWithoutMark);
+            return remainingFeatures;
+          }
+
+          remainingFeatures.push(feature);
+          return remainingFeatures;
+        },
+        [],
+      ),
+    }));
+  }
+
   function updateActiveKeyframeLabel(label: string) {
     setScenario((currentScenario) => ({
       ...currentScenario,
@@ -1125,141 +1191,183 @@ export function ScenarioEditorSpike({
           <p className="text-sm font-semibold uppercase text-muted-foreground">
             Course features
           </p>
-          <h2 id="mark-controls-heading" className="mt-2 text-xl font-semibold">
-            Marks
-          </h2>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+            <h2 id="mark-controls-heading" className="text-xl font-semibold">
+              Marks
+            </h2>
+            <button
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
+              data-testid="add-mark"
+              type="button"
+              onClick={addMark}
+            >
+              Add mark
+            </button>
+          </div>
           <div className="mt-4 grid gap-4">
-            {marks.map((mark) => (
-              <div key={mark.id} className="grid gap-3">
-                <h3 className="text-base font-semibold">
-                  {mark.label ?? mark.id}
-                </h3>
-                <label className="grid gap-2 text-sm font-semibold">
-                  Label
-                  <input
-                    className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
-                    data-testid={`mark-label-input-${mark.id}`}
-                    maxLength={200}
-                    type="text"
-                    value={mark.label ?? ''}
-                    onChange={(event) => {
-                      const label = event.currentTarget.value;
-                      updateMark(mark.id, (currentMark) => {
-                        if (label.trim().length > 0) {
-                          return { ...currentMark, label };
-                        }
+            {marks.length === 0 ? (
+              <p className="text-sm leading-6 text-muted-foreground">
+                No marks in this scenario.
+              </p>
+            ) : null}
+            {marks.map((mark) => {
+              const linkedLaylineCount = scenario.courseFeatures.filter(
+                (feature) =>
+                  feature.type === 'layline' && feature.markId === mark.id,
+              ).length;
 
-                        const { label: _label, ...markWithoutLabel } =
-                          currentMark;
-                        return markWithoutLabel;
-                      });
-                    }}
-                  />
-                </label>
-                <div className="grid grid-cols-2 gap-3">
+              return (
+                <div
+                  key={mark.id}
+                  className="grid gap-3 rounded-md border border-border p-4"
+                >
+                  <h3 className="text-base font-semibold">
+                    {mark.label ?? mark.id}
+                  </h3>
                   <label className="grid gap-2 text-sm font-semibold">
-                    X
+                    Label
                     <input
                       className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
-                      data-testid={`mark-x-input-${mark.id}`}
-                      inputMode="decimal"
-                      max={scenario.sailingArea.width}
-                      min="0"
-                      step="0.1"
-                      type="number"
-                      value={mark.position.x}
+                      data-testid={`mark-label-input-${mark.id}`}
+                      maxLength={200}
+                      type="text"
+                      value={mark.label ?? ''}
                       onChange={(event) => {
-                        const nextX = Number(event.currentTarget.value);
-                        if (Number.isFinite(nextX)) {
-                          updateMarkPosition(mark.id, {
-                            x: roundCoordinate(
-                              clamp(nextX, 0, scenario.sailingArea.width),
-                            ),
-                          });
+                        const label = event.currentTarget.value;
+                        updateMark(mark.id, (currentMark) => {
+                          if (label.trim().length > 0) {
+                            return { ...currentMark, label };
+                          }
+
+                          const { label: _label, ...markWithoutLabel } =
+                            currentMark;
+                          return markWithoutLabel;
+                        });
+                      }}
+                    />
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="grid gap-2 text-sm font-semibold">
+                      X
+                      <input
+                        className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                        data-testid={`mark-x-input-${mark.id}`}
+                        inputMode="decimal"
+                        max={scenario.sailingArea.width}
+                        min="0"
+                        step="0.1"
+                        type="number"
+                        value={mark.position.x}
+                        onChange={(event) => {
+                          const nextX = Number(event.currentTarget.value);
+                          if (Number.isFinite(nextX)) {
+                            updateMarkPosition(mark.id, {
+                              x: roundCoordinate(
+                                clamp(nextX, 0, scenario.sailingArea.width),
+                              ),
+                            });
+                          }
+                        }}
+                      />
+                    </label>
+                    <label className="grid gap-2 text-sm font-semibold">
+                      Y
+                      <input
+                        className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                        data-testid={`mark-y-input-${mark.id}`}
+                        inputMode="decimal"
+                        max={scenario.sailingArea.height}
+                        min="0"
+                        step="0.1"
+                        type="number"
+                        value={mark.position.y}
+                        onChange={(event) => {
+                          const nextY = Number(event.currentTarget.value);
+                          if (Number.isFinite(nextY)) {
+                            updateMarkPosition(mark.id, {
+                              y: roundCoordinate(
+                                clamp(nextY, 0, scenario.sailingArea.height),
+                              ),
+                            });
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <label className="grid gap-2 text-sm font-semibold">
+                    Physical radius (hull lengths)
+                    <input
+                      className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
+                      data-testid={`mark-radius-input-${mark.id}`}
+                      inputMode="decimal"
+                      min="0"
+                      step="any"
+                      type="number"
+                      value={mark.radius ?? DEFAULT_MARK_RADIUS}
+                      onChange={(event) => {
+                        const radius = Number(event.currentTarget.value);
+                        if (Number.isFinite(radius) && radius > 0) {
+                          updateMark(mark.id, (currentMark) => ({
+                            ...currentMark,
+                            radius,
+                          }));
                         }
                       }}
                     />
                   </label>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    Radius describes the mark itself. The rules determine the
+                    surrounding zone size.
+                  </p>
                   <label className="grid gap-2 text-sm font-semibold">
-                    Y
-                    <input
+                    Required side
+                    <select
                       className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
-                      data-testid={`mark-y-input-${mark.id}`}
-                      inputMode="decimal"
-                      max={scenario.sailingArea.height}
-                      min="0"
-                      step="0.1"
-                      type="number"
-                      value={mark.position.y}
+                      data-testid={`mark-required-side-input-${mark.id}`}
+                      value={mark.requiredSide ?? ''}
                       onChange={(event) => {
-                        const nextY = Number(event.currentTarget.value);
-                        if (Number.isFinite(nextY)) {
-                          updateMarkPosition(mark.id, {
-                            y: roundCoordinate(
-                              clamp(nextY, 0, scenario.sailingArea.height),
-                            ),
-                          });
-                        }
-                      }}
-                    />
-                  </label>
-                </div>
-                <label className="grid gap-2 text-sm font-semibold">
-                  Physical radius (hull lengths)
-                  <input
-                    className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
-                    data-testid={`mark-radius-input-${mark.id}`}
-                    inputMode="decimal"
-                    min="0"
-                    step="any"
-                    type="number"
-                    value={mark.radius ?? DEFAULT_MARK_RADIUS}
-                    onChange={(event) => {
-                      const radius = Number(event.currentTarget.value);
-                      if (Number.isFinite(radius) && radius > 0) {
-                        updateMark(mark.id, (currentMark) => ({
-                          ...currentMark,
-                          radius,
-                        }));
-                      }
-                    }}
-                  />
-                </label>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  Radius describes the mark itself. The rules determine the
-                  surrounding zone size.
-                </p>
-                <label className="grid gap-2 text-sm font-semibold">
-                  Required side
-                  <select
-                    className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
-                    data-testid={`mark-required-side-input-${mark.id}`}
-                    value={mark.requiredSide ?? ''}
-                    onChange={(event) => {
-                      const requiredSide = event.currentTarget.value;
-                      updateMark(mark.id, (currentMark) => {
-                        if (
-                          requiredSide === 'port' ||
-                          requiredSide === 'starboard'
-                        ) {
-                          return { ...currentMark, requiredSide };
-                        }
+                        const requiredSide = event.currentTarget.value;
+                        updateMark(mark.id, (currentMark) => {
+                          if (
+                            requiredSide === 'port' ||
+                            requiredSide === 'starboard'
+                          ) {
+                            return { ...currentMark, requiredSide };
+                          }
 
-                        const {
-                          requiredSide: _requiredSide,
-                          ...markWithoutRequiredSide
-                        } = currentMark;
-                        return markWithoutRequiredSide;
-                      });
-                    }}
+                          const {
+                            requiredSide: _requiredSide,
+                            ...markWithoutRequiredSide
+                          } = currentMark;
+                          return markWithoutRequiredSide;
+                        });
+                      }}
+                    >
+                      <option value="">Unspecified</option>
+                      <option value="port">Port</option>
+                      <option value="starboard">Starboard</option>
+                    </select>
+                  </label>
+                  {linkedLaylineCount > 0 ? (
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      Removing this mark keeps its {linkedLaylineCount} linked{' '}
+                      {linkedLaylineCount === 1 ? 'layline' : 'laylines'} and
+                      clears {linkedLaylineCount === 1 ? 'its' : 'their'} mark
+                      reference.
+                    </p>
+                  ) : null}
+                  <button
+                    aria-label={`Remove ${mark.label ?? mark.id}`}
+                    className="inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-destructive px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
+                    data-testid={`remove-mark-${mark.id}`}
+                    type="button"
+                    onClick={() => removeMark(mark.id)}
                   >
-                    <option value="">Unspecified</option>
-                    <option value="port">Port</option>
-                    <option value="starboard">Starboard</option>
-                  </select>
-                </label>
-              </div>
-            ))}
+                    Remove mark
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </section>
 
