@@ -48,3 +48,15 @@ recorded keyframe and the active keyframe label adjacent to it. This is discrete
 selection, not interpolated motion. Direct position controls remain available.
 Viewer selection updates the position URL while preserving quiz/question state
 and page scroll, including when a direct position link is used.
+
+The editor exposes a connected rotation handle for the selected boat. Hull
+gestures move the boat; handle gestures rotate around its stored position in
+the active keyframe. A gesture retains its initial pointer-to-heading offset
+so grabbing away from the handle center does not jump the heading. Pointer
+cancellation restores the starting boat state. The existing heading control
+remains the keyboard alternative, and both paths use the same tack inference
+while retaining explicit tack at head-to-wind and dead-downwind headings.
+Handle drags use whole-degree headings to match that control. The handle's hit
+target is at least 44 pixels across, scales with the SVG, and is inset from the
+diagram edges. Its connector may move around the boat to retain separation
+from the hull's move target.
