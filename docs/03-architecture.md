@@ -89,6 +89,10 @@ come from the previously selected boat in each keyframe. Existing geometry and
 manual-heading settings remain intact, while the new boat's positions start
 with the default movement-alignment behavior.
 
+New keyframes receive the first unused `position-N` identity, including after
+deletion or import with sparse IDs. Existing keyframe identities remain stable;
+the new position is appended and selected.
+
 Removing a boat removes its identity, states in every keyframe, observed events
 that require its boat ID, and editor-only manual-heading settings. The action
 explains any related events beforehand, retains unrelated data, and selects a
