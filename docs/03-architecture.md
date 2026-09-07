@@ -82,6 +82,13 @@ The editor can add marks with unused course-feature IDs and remove individual
 marks, including the last one. Removing a mark detaches optional layline links
 to it while preserving those laylines' geometry and all other Scenario data.
 
+Adding a boat creates an unused identity and one state in every keyframe, then
+selects it at the current position. Default placement is deterministic and
+bounded, favoring separation where space permits; initial heading and tack
+come from the previously selected boat in each keyframe. Existing geometry and
+manual-heading settings remain intact, while the new boat's positions start
+with the default movement-alignment behavior.
+
 Release 1 viewer: React + SVG.
 
 Reasoning:
