@@ -56,6 +56,12 @@ so grabbing away from the handle center does not jump the heading. Pointer
 cancellation restores the starting boat state. The existing heading control
 remains the keyboard alternative, and both paths use the same tack inference
 while retaining explicit tack at head-to-wind and dead-downwind headings.
+At those two ambiguous headings the editor also exposes a port/starboard tack
+choice for the selected boat/keyframe. At other headings the control displays
+the inferred tack and is disabled. Choosing tack changes only the stored tack,
+not heading, position, or movement-alignment settings; sail presentation follows
+the existing rendering convention. Heading and wind edits continue to infer
+tack wherever their geometry is unambiguous.
 Handle drags use whole-degree headings to match that control. The handle's hit
 target is at least 44 pixels across, scales with the SVG, and is inset from the
 diagram edges. Its connector may move around the boat to retain separation
