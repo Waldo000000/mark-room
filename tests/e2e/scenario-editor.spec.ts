@@ -114,10 +114,11 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   await expect(
     page.getByRole('heading', { level: 2, name: 'Gold' }),
   ).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Gold' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(
+    page
+      .getByTestId('boat-picker')
+      .getByRole('button', { name: 'Gold', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('editor-boat-yellow')).toContainText('Gold');
   await expect(
     page.getByTestId('editor-boat-yellow').locator('[data-testid="boat-hull"]'),
@@ -176,7 +177,10 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     'Inside overlap',
   );
 
-  await page.getByRole('button', { name: 'Gold' }).click();
+  await page
+    .getByTestId('boat-picker')
+    .getByRole('button', { name: 'Gold', exact: true })
+    .click();
   await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
     'data-selected-boat-id',
     'yellow',
