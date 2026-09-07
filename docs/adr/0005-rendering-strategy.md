@@ -69,3 +69,18 @@ during the gesture and cleared when shortcut conditions end or selection
 changes. Other modifiers, focused form controls, and an active pointer gesture
 exclude the shortcut. Releasing Left Shift or leaving the window clears its
 activation. Ordinary scrolling remains available outside those conditions.
+
+Boat movement initially aligns heading to displacement from the same boat's
+position in the immediately preceding keyframe. This is an authoring aid, not
+a physical relationship: it runs only on pointer or numeric position edits,
+never on loading, selecting, or scrubbing. No preceding position, or a distance
+of at most 0.01 hull lengths, preserves the last valid heading. Other moves use
+the clockwise-from-north displacement angle rounded to whole degrees and the
+established tack policy. Earlier edits never rewrite later headings.
+
+Manual heading adjustment by field, handle, or wheel disables alignment for
+that boat in that keyframe. Other boat/keyframe pairs remain eligible. A
+cancelled boat move restores position and heading together; a cancelled
+rotation also restores its prior alignment setting. A contextual explanation
+describes the current behavior without adding a boolean control. ADR 0006
+owns persistence of these editor settings separately from Scenario data.
