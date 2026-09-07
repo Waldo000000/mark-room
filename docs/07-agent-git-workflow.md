@@ -300,6 +300,21 @@ High-collision files:
 - global styles
 - CI workflows
 
+## Writing GitHub Markdown
+
+Send issue and PR bodies or comments with actual line breaks. Prefer a UTF-8
+body file with `gh ... --body-file <path>`, or a structured API payload. In
+PowerShell, a single-quoted here-string preserves Markdown backticks; do not
+build multiline bodies with literal backslash-n sequences or double-quoted
+strings that interpret Markdown as shell escapes.
+
+After writing, read the saved body back and check a rendered sample when
+formatting is significant. For historical repairs, inspect each match before
+editing: code examples may intentionally contain escape sequences. Preserve
+links, checklists, closing references, and decision meaning; do not blindly
+decode all escapes or delete historical context. Re-fetch before updating to
+avoid overwriting a concurrent edit.
+
 ## PR Requirements
 
 A PR needs:
