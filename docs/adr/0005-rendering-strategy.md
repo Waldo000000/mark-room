@@ -50,6 +50,13 @@ Viewer selection updates the position URL while preserving quiz/question state
 and page scroll, including when a direct position link is used.
 
 The editor exposes a connected rotation handle for the selected boat. Hull
+clicks/taps select a boat without moving it; blank-water clicks/taps clear
+selection without editing Scenario. Mark interaction also clears boat selection.
+Boat and mark movement requires dragging or numeric field edits, so empty-water
+input cannot teleport a selected boat. An empty selection hides boat-specific
+controls until a boat is selected again; ADR 0006 owns draft persistence.
+
+Hull
 gestures move the boat; handle gestures rotate around its stored position in
 the active keyframe. A gesture retains its initial pointer-to-heading offset
 so grabbing away from the handle center does not jump the heading. Pointer

@@ -27,6 +27,9 @@ pairs. This optional editor metadata stays outside Scenario JSON and exports.
 Older drafts without it start with alignment enabled; malformed or stale pairs
 are ignored. Import, reset, and incoming-draft replacement start fresh settings,
 while retaining a conflicting saved draft retains its settings too.
+Draft selection also distinguishes an explicitly empty boat selection from a
+missing or invalid saved boat ID. Empty selection survives reload; missing or
+invalid IDs fall back to the first boat. Scenario JSON is unaffected.
 
 Use OpenAI only initially for AI features, behind a small internal AI service boundary. Do not add multi-provider abstraction before it solves a demonstrated problem.
 
