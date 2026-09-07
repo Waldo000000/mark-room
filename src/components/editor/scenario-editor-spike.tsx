@@ -393,6 +393,12 @@ export function ScenarioEditorSpike({
   const selectedBoatState = activeKeyframe.boatStates.find(
     (state) => state.boatId === selectedBoatId,
   );
+  const canChooseTack = selectedBoatState
+    ? inferTackFromHeading(
+        selectedBoatState.headingDegrees,
+        scenario.wind.fromDegrees,
+      ) === null
+    : false;
   const selectedBoatScreenPosition = selectedBoatState
     ? {
         x: selectedBoatState.position.x,
@@ -1192,6 +1198,18 @@ export function ScenarioEditorSpike({
         })),
       })),
     }));
+  }
+
+  function updateAmbiguousTack(tack: 'port' | 'starboard') {
+    if (!canChooseTack) return;
+    setScenario((currentScenario) =>
+      withUpdatedBoatState(
+        currentScenario,
+        activeKeyframe.id,
+        selectedBoatId,
+        (state) => ({ ...state, tack }),
+      ),
+    );
   }
 
   function addKeyframe() {
@@ -2210,6 +2228,33 @@ export function ScenarioEditorSpike({
               >
                 {selectedBoatState.headingDegrees} degrees,{' '}
                 {selectedBoatState.tack} tack
+              </p>
+              <label className="grid gap-2 text-sm font-semibold">
+                Tack
+                <select
+                  className="min-h-11 rounded-md border border-input bg-background px-3 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 sm:text-sm"
+                  aria-describedby="tack-description"
+                  data-testid="tack-input"
+                  disabled={!canChooseTack}
+                  value={selectedBoatState.tack}
+                  onChange={(event) => {
+                    const tack = event.currentTarget.value;
+                    if (tack === 'port' || tack === 'starboard')
+                      updateAmbiguousTack(tack);
+                  }}
+                >
+                  <option value="port">Port</option>
+                  <option value="starboard">Starboard</option>
+                </select>
+              </label>
+              <p
+                className="text-sm leading-6 text-muted-foreground"
+                id="tack-description"
+                data-testid="tack-description"
+              >
+                {canChooseTack
+                  ? 'Heading alone does not determine tack here. Choose the tack for this position.'
+                  : 'Tack follows the heading and wind direction. Choose it directly when pointing into or directly away from the wind.'}
               </p>
               <p
                 className="text-sm leading-6 text-muted-foreground"
