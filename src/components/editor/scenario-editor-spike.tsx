@@ -11,6 +11,7 @@ import {
   GhostedKeyframeBoats,
   KeyframeTrackLines,
 } from '@/src/components/scenario/ghosted-keyframe-boats';
+import { KeyframeScrubber } from '@/src/components/scenario/keyframe-scrubber';
 import {
   inferTackFromHeading,
   normalizeDegrees,
@@ -560,11 +561,6 @@ export function ScenarioEditorSpike({
     }));
   }
 
-  function selectKeyframeByIndex(index: number) {
-    const nextIndex = clamp(index, 0, scenario.keyframes.length - 1);
-    setActiveKeyframeId(scenario.keyframes[nextIndex].id);
-  }
-
   function addKeyframe() {
     const nextIndex = scenario.keyframes.length + 1;
     const copiedStates = activeKeyframe.boatStates.map((state) => ({
@@ -752,22 +748,13 @@ export function ScenarioEditorSpike({
               Reset draft
             </button>
           </div>
-          <label className="mt-4 grid gap-2 text-sm font-semibold">
-            {activeKeyframe.label} of {scenario.keyframes.length}
-            <input
-              aria-label="Select scenario position"
-              className="w-full accent-primary"
-              data-testid="keyframe-slider"
-              max={scenario.keyframes.length}
-              min="1"
-              step="1"
-              type="range"
-              value={activeKeyframeIndex + 1}
-              onChange={(event) =>
-                selectKeyframeByIndex(Number(event.currentTarget.value) - 1)
-              }
+          <div className="mt-4">
+            <KeyframeScrubber
+              activeKeyframeId={activeKeyframe.id}
+              keyframes={scenario.keyframes}
+              onSelect={setActiveKeyframeId}
             />
-          </label>
+          </div>
           <label className="mt-4 grid gap-2 text-sm font-semibold">
             Keyframe label
             <input
