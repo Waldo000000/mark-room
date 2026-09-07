@@ -99,6 +99,7 @@ export function TrainingExampleView({
     .join(' and ')} approaching each other in wind from ${windDirection}`;
   const reviewHref = `/scenarios/${scenarioSlug}?position=${encodeURIComponent(keyframe.id)}`;
   const quizHref = `${reviewHref}&mode=quiz`;
+  const editorHref = `/editor?scenario=${encodeURIComponent(scenarioSlug)}&position=${encodeURIComponent(keyframe.id)}`;
   const quizQuestionQuery = {
     'applicable-rule': '&question=rule',
     'keep-clear': '',
@@ -127,6 +128,12 @@ export function TrainingExampleView({
           <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">
             {scenario.title}
           </h1>
+          <Link
+            className="mt-4 inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
+            href={editorHref}
+          >
+            Edit scenario
+          </Link>
         </header>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
