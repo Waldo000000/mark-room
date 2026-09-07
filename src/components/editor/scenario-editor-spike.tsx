@@ -13,6 +13,13 @@ import {
 } from '@/src/components/scenario/ghosted-keyframe-boats';
 import { KeyframeScrubber } from '@/src/components/scenario/keyframe-scrubber';
 import {
+  alignedHeadingForBoatMove,
+  isHeadingAlignmentDisabled,
+  parseDisabledHeadingAlignmentPairs,
+  withHeadingAlignmentDisabled,
+  type HeadingAlignmentPair,
+} from '@/src/components/editor/heading-alignment';
+import {
   inferTackFromHeading,
   normalizeDegrees,
 } from '@/src/domain/scenario/geometry';
@@ -169,6 +176,37 @@ function withUpdatedBoatHeading(
   });
 }
 
+function withUpdatedBoatPosition(
+  scenario: Scenario,
+  keyframeId: string,
+  boatId: string,
+  position: DiagramPoint,
+  headingAlignmentDisabled: boolean,
+): Scenario {
+  return withUpdatedBoatState(scenario, keyframeId, boatId, (state) => {
+    const headingDegrees = headingAlignmentDisabled
+      ? state.headingDegrees
+      : alignedHeadingForBoatMove({
+          boatId,
+          currentHeadingDegrees: state.headingDegrees,
+          keyframeId,
+          nextPosition: position,
+          scenario,
+        });
+    const inferredTack = inferTackFromHeading(
+      headingDegrees,
+      scenario.wind.fromDegrees,
+    );
+
+    return {
+      ...state,
+      headingDegrees,
+      position,
+      tack: inferredTack ?? state.tack,
+    };
+  });
+}
+
 function isFormControl(element: Element | null): boolean {
   return Boolean(
     element?.matches(
@@ -179,13 +217,27 @@ function isFormControl(element: Element | null): boolean {
 
 type SavedEditorDraft = {
   activeKeyframeId: string;
+  metadata?: {
+    disabledHeadingAlignmentPairs?: unknown;
+  };
   scenario: Scenario;
   selectedBoatId: string;
 };
 
-type PositionDrag = {
+type BoatPositionDrag = {
   targetId: string;
-  targetType: 'boat' | 'mark';
+  targetType: 'boat';
+  keyframeId: string;
+  originalBoatState: BoatState;
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  dragging: boolean;
+};
+
+type MarkPositionDrag = {
+  targetId: string;
+  targetType: 'mark';
   pointerId: number;
   startClientX: number;
   startClientY: number;
@@ -197,6 +249,7 @@ type RotationDrag = {
   targetType: 'rotation';
   keyframeId: string;
   originalBoatState: BoatState;
+  alignmentWasDisabled: boolean;
   headingOffsetDegrees: number;
   pointerId: number;
   startClientX: number;
@@ -204,7 +257,7 @@ type RotationDrag = {
   dragging: boolean;
 };
 
-type EditorDrag = PositionDrag | RotationDrag;
+type EditorDrag = BoatPositionDrag | MarkPositionDrag | RotationDrag;
 
 type DiagramPoint = { x: number; y: number };
 
@@ -302,6 +355,10 @@ export function ScenarioEditorSpike({
   const [importError, setImportError] = useState('');
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [draftConflict, setDraftConflict] = useState(false);
+  const [
+    draftDisabledHeadingAlignmentPairs,
+    setDraftDisabledHeadingAlignmentPairs,
+  ] = useState<HeadingAlignmentPair[]>([]);
   const [rotationHandleTargetRadius, setRotationHandleTargetRadius] = useState(
     Math.min(
       ROTATION_HANDLE_MIN_TARGET_RADIUS,
@@ -312,6 +369,7 @@ export function ScenarioEditorSpike({
   const diagramRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const editorDragRef = useRef<EditorDrag | null>(null);
+  const disabledHeadingAlignmentPairsRef = useRef<HeadingAlignmentPair[]>([]);
   const leftShiftPressedRef = useRef(false);
   const wheelRemainderPixelsRef = useRef(0);
   const skipNextDraftSaveRef = useRef(false);
@@ -379,6 +437,39 @@ export function ScenarioEditorSpike({
   );
   const scenarioDownloadFileName = `${scenario.id}.json`;
   const canDeleteKeyframe = scenario.keyframes.length > 1;
+  const disabledHeadingAlignmentPairs = draftDisabledHeadingAlignmentPairs;
+  const activeHeadingAlignmentPair = {
+    boatId: selectedBoatId,
+    keyframeId: activeKeyframe.id,
+  };
+  const headingAlignmentDisabled = isHeadingAlignmentDisabled(
+    disabledHeadingAlignmentPairs,
+    activeHeadingAlignmentPair,
+  );
+  const previousBoatState =
+    activeKeyframeIndex > 0
+      ? scenario.keyframes[activeKeyframeIndex - 1].boatStates.find(
+          (state) => state.boatId === selectedBoatId,
+        )
+      : undefined;
+
+  function replaceDisabledHeadingAlignmentPairs(pairs: HeadingAlignmentPair[]) {
+    disabledHeadingAlignmentPairsRef.current = pairs;
+    setDraftDisabledHeadingAlignmentPairs(pairs);
+  }
+
+  function setHeadingAlignmentDisabled(
+    pair: HeadingAlignmentPair,
+    disabled: boolean,
+  ) {
+    replaceDisabledHeadingAlignmentPairs(
+      withHeadingAlignmentDisabled(
+        disabledHeadingAlignmentPairsRef.current,
+        pair,
+        disabled,
+      ),
+    );
+  }
 
   useEffect(() => {
     const resetWheelRotation = () => {
@@ -460,6 +551,14 @@ export function ScenarioEditorSpike({
         accumulatedPixels - wholeDegrees * WHEEL_PIXELS_PER_DEGREE;
 
       if (wholeDegrees === 0) return;
+
+      setHeadingAlignmentDisabled(
+        {
+          boatId: selectedBoatId,
+          keyframeId: activeKeyframe.id,
+        },
+        true,
+      );
 
       setScenario((currentScenario) => {
         const currentKeyframe = currentScenario.keyframes.find(
@@ -550,6 +649,12 @@ export function ScenarioEditorSpike({
           savedScenario &&
           !scenariosMatch(savedScenario, incomingScenario)
         ) {
+          replaceDisabledHeadingAlignmentPairs(
+            parseDisabledHeadingAlignmentPairs(
+              parsedDraft?.metadata?.disabledHeadingAlignmentPairs,
+              savedScenario,
+            ),
+          );
           setScenario(savedScenario);
           setActiveKeyframeId(
             resolveKeyframeId(
@@ -571,10 +676,12 @@ export function ScenarioEditorSpike({
           );
           const incomingDraft: SavedEditorDraft = {
             activeKeyframeId: requestedKeyframeId,
+            metadata: { disabledHeadingAlignmentPairs: [] },
             scenario: incomingScenario,
             selectedBoatId: incomingScenario.boats[0].id,
           };
 
+          replaceDisabledHeadingAlignmentPairs([]);
           setScenario(incomingScenario);
           setActiveKeyframeId(requestedKeyframeId);
           setSelectedBoatId(incomingScenario.boats[0].id);
@@ -587,6 +694,12 @@ export function ScenarioEditorSpike({
         }
 
         if (savedScenario) {
+          replaceDisabledHeadingAlignmentPairs(
+            parseDisabledHeadingAlignmentPairs(
+              parsedDraft?.metadata?.disabledHeadingAlignmentPairs,
+              savedScenario,
+            ),
+          );
           setScenario(savedScenario);
           setActiveKeyframeId(
             resolveKeyframeId(
@@ -618,6 +731,10 @@ export function ScenarioEditorSpike({
 
     const draft: SavedEditorDraft = {
       activeKeyframeId: activeKeyframe.id,
+      metadata:
+        disabledHeadingAlignmentPairs.length > 0
+          ? { disabledHeadingAlignmentPairs }
+          : undefined,
       scenario,
       selectedBoatId,
     };
@@ -625,20 +742,13 @@ export function ScenarioEditorSpike({
       EDITOR_DRAFT_STORAGE_KEY,
       JSON.stringify(draft),
     );
-  }, [activeKeyframe.id, draftLoaded, scenario, selectedBoatId]);
-
-  function updateBoatState(
-    boatId: string,
-    update: (state: BoatState) => BoatState,
-  ) {
-    setScenario((currentScenario) =>
-      withUpdatedBoatState(currentScenario, activeKeyframe.id, boatId, update),
-    );
-  }
-
-  function updateSelectedBoat(update: (state: BoatState) => BoatState) {
-    updateBoatState(selectedBoatId, update);
-  }
+  }, [
+    activeKeyframe.id,
+    disabledHeadingAlignmentPairs,
+    draftLoaded,
+    scenario,
+    selectedBoatId,
+  ]);
 
   function updateSelectedBoatDefinition(update: (boat: Boat) => Boat) {
     setScenario((currentScenario) => ({
@@ -794,14 +904,25 @@ export function ScenarioEditorSpike({
   function setBoatPositionFromPointer(
     event: React.PointerEvent<SVGElement>,
     boatId = selectedBoatId,
+    keyframeId = activeKeyframe.id,
   ) {
     const position = getScenarioPositionFromPointer(event);
     if (!position) return;
 
-    updateBoatState(boatId, (state) => ({
-      ...state,
-      position,
-    }));
+    const pair = { boatId, keyframeId };
+    const alignmentDisabled = isHeadingAlignmentDisabled(
+      disabledHeadingAlignmentPairsRef.current,
+      pair,
+    );
+    setScenario((currentScenario) =>
+      withUpdatedBoatPosition(
+        currentScenario,
+        pair.keyframeId,
+        pair.boatId,
+        position,
+        alignmentDisabled,
+      ),
+    );
   }
 
   function beginDiagramPointerInteraction(
@@ -831,10 +952,19 @@ export function ScenarioEditorSpike({
     if (event.isPrimary === false || editorDragRef.current) return;
 
     setSelectedBoatId(boatId);
+    const boatState = activeKeyframe.boatStates.find(
+      (state) => state.boatId === boatId,
+    );
+    if (!boatState) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     editorDragRef.current = {
       targetId: boatId,
       targetType: 'boat',
+      keyframeId: activeKeyframe.id,
+      originalBoatState: {
+        ...boatState,
+        position: { ...boatState.position },
+      },
       dragging: false,
       pointerId: event.pointerId,
       startClientX: event.clientX,
@@ -894,6 +1024,10 @@ export function ScenarioEditorSpike({
         ...boatState,
         position: { ...boatState.position },
       },
+      alignmentWasDisabled: isHeadingAlignmentDisabled(
+        disabledHeadingAlignmentPairsRef.current,
+        { boatId: boatState.boatId, keyframeId: activeKeyframe.id },
+      ),
       headingOffsetDegrees: normalizeDegrees(
         boatState.headingDegrees - pointerHeading,
       ),
@@ -916,12 +1050,22 @@ export function ScenarioEditorSpike({
     );
     if (pointerHeading === null) return;
 
+    const headingDegrees = normalizeDegrees(
+      Math.round(pointerHeading + drag.headingOffsetDegrees),
+    );
+    if (headingDegrees !== drag.originalBoatState.headingDegrees) {
+      setHeadingAlignmentDisabled(
+        { boatId: drag.targetId, keyframeId: drag.keyframeId },
+        true,
+      );
+    }
+
     setScenario((currentScenario) =>
       withUpdatedBoatHeading(
         currentScenario,
         drag.keyframeId,
         drag.targetId,
-        Math.round(pointerHeading + drag.headingOffsetDegrees),
+        headingDegrees,
       ),
     );
   }
@@ -944,7 +1088,7 @@ export function ScenarioEditorSpike({
     if (drag.targetType === 'rotation') {
       setBoatHeadingFromPointer(event, drag);
     } else if (drag.targetType === 'boat') {
-      setBoatPositionFromPointer(event, drag.targetId);
+      setBoatPositionFromPointer(event, drag.targetId, drag.keyframeId);
     } else {
       setMarkPositionFromPointer(event, drag.targetId);
     }
@@ -963,7 +1107,7 @@ export function ScenarioEditorSpike({
     const drag = editorDragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
 
-    if (drag.targetType === 'rotation') {
+    if (drag.targetType === 'rotation' || drag.targetType === 'boat') {
       setScenario((currentScenario) =>
         withUpdatedBoatState(
           currentScenario,
@@ -973,16 +1117,26 @@ export function ScenarioEditorSpike({
         ),
       );
     }
+    if (drag.targetType === 'rotation') {
+      setHeadingAlignmentDisabled(
+        { boatId: drag.targetId, keyframeId: drag.keyframeId },
+        drag.alignmentWasDisabled,
+      );
+    }
     editorDragRef.current = null;
   }
 
   function updateHeading(headingDegrees: number) {
+    const normalizedHeading = normalizeDegrees(headingDegrees);
+    if (normalizedHeading === selectedBoatState?.headingDegrees) return;
+
+    setHeadingAlignmentDisabled(activeHeadingAlignmentPair, true);
     setScenario((currentScenario) =>
       withUpdatedBoatHeading(
         currentScenario,
         activeKeyframe.id,
         selectedBoatId,
-        headingDegrees,
+        normalizedHeading,
       ),
     );
   }
@@ -1048,6 +1202,11 @@ export function ScenarioEditorSpike({
       remainingKeyframes.length - 1,
     );
 
+    replaceDisabledHeadingAlignmentPairs(
+      disabledHeadingAlignmentPairsRef.current.filter(
+        (pair) => pair.keyframeId !== activeKeyframe.id,
+      ),
+    );
     setScenario((currentScenario) => ({
       ...currentScenario,
       keyframes: currentScenario.keyframes.filter(
@@ -1080,6 +1239,7 @@ export function ScenarioEditorSpike({
       }
 
       setScenario(parsedScenario.data);
+      replaceDisabledHeadingAlignmentPairs([]);
       setActiveKeyframeId(parsedScenario.data.keyframes[0].id);
       setSelectedBoatId(parsedScenario.data.boats[0].id);
       setCopyStatus('idle');
@@ -1095,6 +1255,7 @@ export function ScenarioEditorSpike({
     skipNextDraftSaveRef.current = true;
     window.localStorage.removeItem(EDITOR_DRAFT_STORAGE_KEY);
     setScenario(initialScenario);
+    replaceDisabledHeadingAlignmentPairs([]);
     setActiveKeyframeId(initialScenario.keyframes[0].id);
     setSelectedBoatId(initialScenario.boats[0].id);
     setCopyStatus('idle');
@@ -1111,10 +1272,12 @@ export function ScenarioEditorSpike({
     );
     const replacementDraft: SavedEditorDraft = {
       activeKeyframeId: requestedKeyframeId,
+      metadata: { disabledHeadingAlignmentPairs: [] },
       scenario: incomingScenario,
       selectedBoatId: incomingScenario.boats[0].id,
     };
 
+    replaceDisabledHeadingAlignmentPairs([]);
     window.localStorage.setItem(
       EDITOR_DRAFT_STORAGE_KEY,
       JSON.stringify(replacementDraft),
@@ -1887,15 +2050,21 @@ export function ScenarioEditorSpike({
                   onChange={(event) => {
                     const nextX = Number(event.currentTarget.value);
                     if (Number.isFinite(nextX)) {
-                      updateSelectedBoat((state) => ({
-                        ...state,
-                        position: {
-                          ...state.position,
-                          x: roundCoordinate(
-                            clamp(nextX, 0, scenario.sailingArea.width),
-                          ),
-                        },
-                      }));
+                      const position = {
+                        ...selectedBoatState.position,
+                        x: roundCoordinate(
+                          clamp(nextX, 0, scenario.sailingArea.width),
+                        ),
+                      };
+                      setScenario((currentScenario) =>
+                        withUpdatedBoatPosition(
+                          currentScenario,
+                          activeKeyframe.id,
+                          selectedBoatId,
+                          position,
+                          headingAlignmentDisabled,
+                        ),
+                      );
                     }
                   }}
                 />
@@ -1914,15 +2083,21 @@ export function ScenarioEditorSpike({
                   onChange={(event) => {
                     const nextY = Number(event.currentTarget.value);
                     if (Number.isFinite(nextY)) {
-                      updateSelectedBoat((state) => ({
-                        ...state,
-                        position: {
-                          ...state.position,
-                          y: roundCoordinate(
-                            clamp(nextY, 0, scenario.sailingArea.height),
-                          ),
-                        },
-                      }));
+                      const position = {
+                        ...selectedBoatState.position,
+                        y: roundCoordinate(
+                          clamp(nextY, 0, scenario.sailingArea.height),
+                        ),
+                      };
+                      setScenario((currentScenario) =>
+                        withUpdatedBoatPosition(
+                          currentScenario,
+                          activeKeyframe.id,
+                          selectedBoatId,
+                          position,
+                          headingAlignmentDisabled,
+                        ),
+                      );
                     }
                   }}
                 />
@@ -1948,6 +2123,17 @@ export function ScenarioEditorSpike({
               >
                 {selectedBoatState.headingDegrees} degrees,{' '}
                 {selectedBoatState.tack} tack
+              </p>
+              <p
+                className="text-sm leading-6 text-muted-foreground"
+                data-alignment-enabled={String(!headingAlignmentDisabled)}
+                data-testid="heading-alignment-status"
+              >
+                {headingAlignmentDisabled
+                  ? 'Movement preserves your manually chosen heading.'
+                  : previousBoatState
+                    ? `Movement aligns heading with travel from ${scenario.keyframes[activeKeyframeIndex - 1].label}. A manual heading change preserves your choice.`
+                    : 'No previous position is available, so movement preserves heading.'}
               </p>
             </div>
           ) : null}
