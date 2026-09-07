@@ -81,6 +81,23 @@ verification cannot be covered remotely. Manual full-page visual inspection is
 needed only when visible layout changed. Keep semantic Playwright and domain
 checks whenever the affected behavior requires them.
 
+Scale local coverage to the change. Exercise the changed rule or interaction
+and the adjacent regression risk, using existing helpers and assertions rather
+than cloning whole flows. CI owns the broad suite; a parent and subagent should
+not each rerun it. Documentation-only workflow changes need project consistency,
+link/diff checks and the required remote gate, not local browser screenshots.
+
+Capture a readable image of the changed control/diagram for review, while still
+inspecting the full page for layout problems. Avoid repeatedly sending enormous
+full-page JSON panels to the model. Reuse passing visual evidence until a new
+change affects it.
+
+When a pointer test fails, inspect the actual event target, screen-coordinate
+conversion and viewport stability before changing the product. Separate a test
+setup error from a real interaction defect; record a hypothesis as unconfirmed
+until evidence isolates it. A narrow reproduction should fail before the fix and
+pass afterward whenever practical.
+
 ## Mobile Viewports
 
 Test at least:

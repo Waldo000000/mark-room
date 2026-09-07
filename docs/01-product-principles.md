@@ -41,3 +41,9 @@ No durable project knowledge should live only in ChatGPT, Codex, or another chat
 Prefer the simplest implementation that delivers the required user experience. Add abstraction or sophistication only when it solves a demonstrated problem.
 
 This applies especially to rendering, persistence, AI provider architecture, and workflow automation.
+
+Apply YAGNI to roadmap refinement as well as code. A possible capability or an
+"if needed" control is not a requirement. Prefer the smallest demonstrated
+user workflow; justify additional state and interaction costs before building
+them. Removing an unnecessary product concept is often simpler than introducing
+abstractions to maintain it.

@@ -1,41 +1,18 @@
-# Pull Request
+Closes #<!-- issue -->
 
-## Why
+## Outcome
 
-<!-- In a few plain-language sentences, explain the user or domain problem and the outcome this change should create. -->
-
-## Sailor-Facing Review Path
-
-<!-- Where can a sailor see or try the smallest honest product slice? Include the route or scenario and brief review steps. For changes with no sailor-visible path, explain why. -->
+<!-- Explain the concrete problem and resulting behavior once. Include the
+sailor-facing review path for a feature; workflow-only changes need no product UI. -->
 
 ## Verification
 
-<!-- What did you run or check? Include relevant automated tests and manual or domain checks. For visible UI changes, add phone and desktop screenshots or a recording. -->
+<!-- Relevant checks and their results; focused phone/desktop images for visible
+UI changes. Name unverified behavior or material limitations, if any. -->
 
-- 
+## Decisions
 
-## Provenance
-
-<!-- For scenario, source, or rules changes, cite sources and note transcription and verification status. Otherwise, write "Not applicable." -->
-
-## Docs
-
-<!-- Link docs or ADRs changed, or briefly say why none were needed. -->
-
-## Known Gaps
-
-<!-- Note limitations or follow-ups, or write "None known." -->
-
-## Merge Authorization
-
-<!-- A human approval is required unless this is an explicitly authorized
-     I'm Feeling Lucky run. That mode may merge only its own green PR. -->
-
-- [ ] A human reviewer has approved this pull request, or this is an explicitly
-  authorized I'm Feeling Lucky run with a complete issue decision record.
-
-## What Changed
-
-<!-- Brief implementation summary. Keep implementation detail here, after the reviewer-facing context. -->
-
-- 
+<!-- Include only applicable information: source/provenance notes, changed owner
+docs/ADRs, or a material trade-off. Delete this section when unnecessary.
+Human approval is required to merge unless this is an active explicitly
+requested I'm Feeling Lucky run merging its own green PR. -->

@@ -4,7 +4,7 @@ Status: Accepted
 
 Date: 2026-08-30
 
-Amended: 2026-09-02
+Amended: 2026-09-07
 
 ## Context
 
@@ -45,6 +45,15 @@ Use:
   model and reasoning settings chosen from a conservative confidence ladder
 - a sailor-facing deployed proof as part of the definition of done for every feature slice
 - domain-semantic browser assertions for scenario diagram changes, alongside visual inspection
+- proportional execution: routine changes stay with one agent; independent
+  review is driven by risk, not by a fixed agent count per PR
+- YAGNI during issue refinement: roadmap possibilities do not become required
+  features merely because an agent can specify them; confirmed user value must
+  justify extra state, persistence, history or management UI
+- concise entry instructions that link to one workflow owner, one scope/decision
+  record per issue and a PR that owns verification evidence
+- bounded CI waits with backoff/change-only output instead of repeated model
+  interpretation of unchanged pending checks
 
 ## Consequences
 
@@ -80,6 +89,14 @@ Subagents can protect the parent context from noisy intermediate work, but each
 also consumes its own context and tool calls. Delegation is therefore justified
 by context isolation, parallel progress, or a confidently cheaper model rather
 than an assumption that spawning always reduces total usage.
+
+The session review found avoidable work in discarded optional feature scope,
+repeated status polls, duplicated instructions/evidence and routine agent
+handoffs. These observations justify reducing overhead, but do not establish an
+exact token-saving percentage. Safety, provenance, meaningful verification and
+merge authorization remain unchanged. Optional product behavior is removed or
+deferred before adding abstractions to manage its complexity; a large component
+alone does not justify an unrelated refactor.
 
 A GitHub Project is deferred until custom priority fields, dates, iterations,
 or cross-repository planning would repay its additional maintenance. Milestones
