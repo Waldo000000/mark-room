@@ -31,6 +31,9 @@ const BOAT_LABEL_Y_OFFSET = 0.3;
 const EDITOR_DRAG_THRESHOLD_PIXELS = 4;
 const EDITOR_DRAFT_STORAGE_KEY = 'mark-room.editor.scenario-draft.v1';
 const DEFAULT_MARK_RADIUS = 0.18;
+const ROTATION_HANDLE_MIN_TARGET_RADIUS = 0.72;
+const ROTATION_HANDLE_TARGET_RADIUS_PIXELS = 22;
+const ROTATION_HANDLE_VISIBLE_RADIUS_RATIO = 0.28;
 
 type MarkFeature = Extract<CourseFeature, { type: 'mark' }>;
 
@@ -149,7 +152,7 @@ type SavedEditorDraft = {
   selectedBoatId: string;
 };
 
-type EditorDrag = {
+type PositionDrag = {
   targetId: string;
   targetType: 'boat' | 'mark';
   pointerId: number;
@@ -157,6 +160,69 @@ type EditorDrag = {
   startClientY: number;
   dragging: boolean;
 };
+
+type RotationDrag = {
+  targetId: string;
+  targetType: 'rotation';
+  keyframeId: string;
+  originalBoatState: BoatState;
+  headingOffsetDegrees: number;
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  dragging: boolean;
+};
+
+type EditorDrag = PositionDrag | RotationDrag;
+
+type DiagramPoint = { x: number; y: number };
+
+function squaredDistance(first: DiagramPoint, second: DiagramPoint): number {
+  return (first.x - second.x) ** 2 + (first.y - second.y) ** 2;
+}
+
+function rotationHandlePosition(
+  boatPosition: DiagramPoint,
+  headingDegrees: number,
+  sailingArea: { width: number; height: number },
+  targetRadius: number,
+): DiagramPoint {
+  const headingRadians = (headingDegrees * Math.PI) / 180;
+  const marginX = Math.min(targetRadius, sailingArea.width / 2);
+  const marginY = Math.min(targetRadius, sailingArea.height / 2);
+  const handleDistance = targetRadius + 0.92;
+  const directionOffsets = [0, 180, 45, -45, 90, -90, 135, -135];
+  const candidates = directionOffsets.map((offset) => {
+    const radians = headingRadians + (offset * Math.PI) / 180;
+
+    return {
+      x: clamp(
+        boatPosition.x + Math.sin(radians) * handleDistance,
+        marginX,
+        sailingArea.width - marginX,
+      ),
+      y: clamp(
+        boatPosition.y - Math.cos(radians) * handleDistance,
+        marginY,
+        sailingArea.height - marginY,
+      ),
+    };
+  });
+  const minimumDistanceSquared = (targetRadius + 0.72) ** 2;
+
+  return (
+    candidates.find(
+      (candidate) =>
+        squaredDistance(candidate, boatPosition) >= minimumDistanceSquared,
+    ) ??
+    candidates.reduce((farthest, candidate) =>
+      squaredDistance(candidate, boatPosition) >
+      squaredDistance(farthest, boatPosition)
+        ? candidate
+        : farthest,
+    )
+  );
+}
 
 function resolveKeyframeId(scenario: Scenario, requestedId: string): string {
   return (
@@ -205,6 +271,9 @@ export function ScenarioEditorSpike({
   const [importError, setImportError] = useState('');
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [draftConflict, setDraftConflict] = useState(false);
+  const [rotationHandleTargetRadius, setRotationHandleTargetRadius] = useState(
+    ROTATION_HANDLE_MIN_TARGET_RADIUS,
+  );
   const svgRef = useRef<SVGSVGElement | null>(null);
   const editorDragRef = useRef<EditorDrag | null>(null);
   const skipNextDraftSaveRef = useRef(false);
@@ -224,6 +293,36 @@ export function ScenarioEditorSpike({
   const selectedBoatState = activeKeyframe.boatStates.find(
     (state) => state.boatId === selectedBoatId,
   );
+  const selectedBoatScreenPosition = selectedBoatState
+    ? {
+        x: selectedBoatState.position.x,
+        y: scenario.sailingArea.height - selectedBoatState.position.y,
+      }
+    : undefined;
+  const selectedBoatRotationHandle =
+    selectedBoatState && selectedBoatScreenPosition
+      ? rotationHandlePosition(
+          selectedBoatScreenPosition,
+          selectedBoatState.headingDegrees,
+          scenario.sailingArea,
+          rotationHandleTargetRadius,
+        )
+      : undefined;
+  const selectedBoatRotationConnectorStart =
+    selectedBoatScreenPosition && selectedBoatRotationHandle
+      ? (() => {
+          const deltaX =
+            selectedBoatRotationHandle.x - selectedBoatScreenPosition.x;
+          const deltaY =
+            selectedBoatRotationHandle.y - selectedBoatScreenPosition.y;
+          const distance = Math.hypot(deltaX, deltaY);
+
+          return {
+            x: selectedBoatScreenPosition.x + (deltaX / distance) * 0.64,
+            y: selectedBoatScreenPosition.y + (deltaY / distance) * 0.64,
+          };
+        })()
+      : undefined;
   const zones = deriveMarkZones(scenario);
   const marks = scenario.courseFeatures.filter(
     (feature) => feature.type === 'mark',
@@ -240,6 +339,32 @@ export function ScenarioEditorSpike({
   );
   const scenarioDownloadFileName = `${scenario.id}.json`;
   const canDeleteKeyframe = scenario.keyframes.length > 1;
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const updateRotationHandleTargetRadius = () => {
+      const matrix = svg.getScreenCTM();
+      if (!matrix) return;
+
+      const pixelsPerScenarioUnit = Math.hypot(matrix.a, matrix.b);
+      if (pixelsPerScenarioUnit <= 0) return;
+
+      setRotationHandleTargetRadius(
+        Math.max(
+          ROTATION_HANDLE_MIN_TARGET_RADIUS,
+          ROTATION_HANDLE_TARGET_RADIUS_PIXELS / pixelsPerScenarioUnit,
+        ),
+      );
+    };
+
+    updateRotationHandleTargetRadius();
+    const resizeObserver = new ResizeObserver(updateRotationHandleTargetRadius);
+    resizeObserver.observe(svg);
+
+    return () => resizeObserver.disconnect();
+  }, [scenario.sailingArea.height, scenario.sailingArea.width]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -483,7 +608,19 @@ export function ScenarioEditorSpike({
 
   function getScenarioPositionFromPointer(
     event: React.PointerEvent<SVGElement>,
-  ): { x: number; y: number } | null {
+  ): DiagramPoint | null {
+    const cursor = getRawScenarioPositionFromPointer(event);
+    if (!cursor) return null;
+
+    return {
+      x: roundCoordinate(clamp(cursor.x, 0, scenario.sailingArea.width)),
+      y: roundCoordinate(clamp(cursor.y, 0, scenario.sailingArea.height)),
+    };
+  }
+
+  function getRawScenarioPositionFromPointer(
+    event: React.PointerEvent<SVGElement>,
+  ): DiagramPoint | null {
     if (!svgRef.current) return null;
 
     const point = svgRef.current.createSVGPoint();
@@ -493,16 +630,11 @@ export function ScenarioEditorSpike({
     if (!matrix) return null;
 
     const cursor = point.matrixTransform(matrix);
-    const x = roundCoordinate(clamp(cursor.x, 0, scenario.sailingArea.width));
-    const y = roundCoordinate(
-      clamp(
-        scenario.sailingArea.height - cursor.y,
-        0,
-        scenario.sailingArea.height,
-      ),
-    );
 
-    return { x, y };
+    return {
+      x: cursor.x,
+      y: scenario.sailingArea.height - cursor.y,
+    };
   }
 
   function setBoatPositionFromPointer(
@@ -561,6 +693,82 @@ export function ScenarioEditorSpike({
     };
   }
 
+  function pointerHeadingDegrees(
+    pointer: DiagramPoint,
+    boatPosition: DiagramPoint,
+  ): number | null {
+    const deltaX = pointer.x - boatPosition.x;
+    const deltaY = pointer.y - boatPosition.y;
+    if (Math.hypot(deltaX, deltaY) < 0.0001) return null;
+
+    return normalizeDegrees((Math.atan2(deltaX, deltaY) * 180) / Math.PI);
+  }
+
+  function beginRotationPointerInteraction(
+    event: React.PointerEvent<SVGCircleElement>,
+    boatState: BoatState,
+  ) {
+    event.stopPropagation();
+    const pointer = getRawScenarioPositionFromPointer(event);
+    if (!pointer) return;
+    const pointerHeading = pointerHeadingDegrees(pointer, boatState.position);
+    if (pointerHeading === null) return;
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    editorDragRef.current = {
+      targetId: boatState.boatId,
+      targetType: 'rotation',
+      keyframeId: activeKeyframe.id,
+      originalBoatState: {
+        ...boatState,
+        position: { ...boatState.position },
+      },
+      headingOffsetDegrees: normalizeDegrees(
+        boatState.headingDegrees - pointerHeading,
+      ),
+      dragging: false,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+    };
+  }
+
+  function setBoatHeadingFromPointer(
+    event: React.PointerEvent<SVGElement>,
+    drag: RotationDrag,
+  ) {
+    const pointer = getRawScenarioPositionFromPointer(event);
+    if (!pointer) return;
+    const pointerHeading = pointerHeadingDegrees(
+      pointer,
+      drag.originalBoatState.position,
+    );
+    if (pointerHeading === null) return;
+
+    setScenario((currentScenario) =>
+      withUpdatedBoatState(
+        currentScenario,
+        drag.keyframeId,
+        drag.targetId,
+        (state) => {
+          const headingDegrees = normalizeDegrees(
+            Math.round(pointerHeading + drag.headingOffsetDegrees),
+          );
+          const inferredTack = inferTackFromHeading(
+            headingDegrees,
+            currentScenario.wind.fromDegrees,
+          );
+
+          return {
+            ...state,
+            headingDegrees,
+            tack: inferredTack ?? state.tack,
+          };
+        },
+      ),
+    );
+  }
+
   function updateEditorPointerInteraction(
     event: React.PointerEvent<SVGElement>,
   ) {
@@ -576,7 +784,9 @@ export function ScenarioEditorSpike({
     }
 
     editorDragRef.current = { ...drag, dragging: true };
-    if (drag.targetType === 'boat') {
+    if (drag.targetType === 'rotation') {
+      setBoatHeadingFromPointer(event, drag);
+    } else if (drag.targetType === 'boat') {
       setBoatPositionFromPointer(event, drag.targetId);
     } else {
       setMarkPositionFromPointer(event, drag.targetId);
@@ -588,6 +798,25 @@ export function ScenarioEditorSpike({
     if (drag?.pointerId === event.pointerId) {
       editorDragRef.current = null;
     }
+  }
+
+  function cancelEditorPointerInteraction(
+    event: React.PointerEvent<SVGElement>,
+  ) {
+    const drag = editorDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    if (drag.targetType === 'rotation') {
+      setScenario((currentScenario) =>
+        withUpdatedBoatState(
+          currentScenario,
+          drag.keyframeId,
+          drag.targetId,
+          () => drag.originalBoatState,
+        ),
+      );
+    }
+    editorDragRef.current = null;
   }
 
   function updateHeading(headingDegrees: number) {
@@ -868,8 +1097,8 @@ export function ScenarioEditorSpike({
           </p>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Drag a boat or mark to reposition it. Use the numeric fields for
-          precise keyboard input.
+          Drag a boat or mark to reposition it, or use the selected boat&apos;s
+          round handle to rotate it. Use the fields for precise keyboard input.
         </p>
 
         <div
@@ -886,7 +1115,7 @@ export function ScenarioEditorSpike({
             onPointerDown={setBoatPositionFromPointer}
             onPointerMove={updateEditorPointerInteraction}
             onPointerUp={endEditorPointerInteraction}
-            onPointerCancel={endEditorPointerInteraction}
+            onPointerCancel={cancelEditorPointerInteraction}
           >
             <title id="editor-diagram-title">Editable scenario diagram</title>
             <defs>
@@ -1116,6 +1345,53 @@ export function ScenarioEditorSpike({
                 strokeWidth="0.035"
               />
             </g>
+
+            {selectedBoatState &&
+            selectedBoatScreenPosition &&
+            selectedBoatRotationHandle &&
+            selectedBoatRotationConnectorStart ? (
+              <g
+                data-handle-x={selectedBoatRotationHandle.x}
+                data-handle-y={selectedBoatRotationHandle.y}
+                data-testid={`rotation-control-${selectedBoatState.boatId}`}
+              >
+                <line
+                  pointerEvents="none"
+                  stroke="#0f172a"
+                  strokeDasharray="0.08 0.08"
+                  strokeWidth="0.045"
+                  x1={selectedBoatRotationConnectorStart.x}
+                  x2={selectedBoatRotationHandle.x}
+                  y1={selectedBoatRotationConnectorStart.y}
+                  y2={selectedBoatRotationHandle.y}
+                />
+                <circle
+                  cx={selectedBoatRotationHandle.x}
+                  cy={selectedBoatRotationHandle.y}
+                  fill="#f8fafc"
+                  pointerEvents="none"
+                  r={
+                    rotationHandleTargetRadius *
+                    ROTATION_HANDLE_VISIBLE_RADIUS_RATIO
+                  }
+                  stroke="#0f172a"
+                  strokeWidth="0.07"
+                />
+                <circle
+                  aria-label={`Rotate ${selectedBoat?.label ?? selectedBoatState.boatId}`}
+                  className="cursor-grab"
+                  cx={selectedBoatRotationHandle.x}
+                  cy={selectedBoatRotationHandle.y}
+                  data-testid={`rotation-handle-${selectedBoatState.boatId}`}
+                  fill="transparent"
+                  onPointerDown={(event) =>
+                    beginRotationPointerInteraction(event, selectedBoatState)
+                  }
+                  pointerEvents="all"
+                  r={rotationHandleTargetRadius}
+                />
+              </g>
+            ) : null}
           </svg>
         </div>
       </section>
