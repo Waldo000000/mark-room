@@ -19,6 +19,7 @@ import {
   withHeadingAlignmentDisabled,
   type HeadingAlignmentPair,
 } from '@/src/components/editor/heading-alignment';
+import { addBoatToScenario } from '@/src/components/editor/boat-management';
 import {
   inferTackFromHeading,
   normalizeDegrees,
@@ -757,6 +758,12 @@ export function ScenarioEditorSpike({
         boat.id === selectedBoatId ? update(boat) : boat,
       ),
     }));
+  }
+
+  function addBoat() {
+    const result = addBoatToScenario(scenario, selectedBoatId);
+    setScenario(result.scenario);
+    setSelectedBoatId(result.boatId);
   }
 
   function updateScenarioIdentity(
@@ -2000,6 +2007,15 @@ export function ScenarioEditorSpike({
               );
             })}
           </div>
+
+          <button
+            className="mt-3 inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
+            data-testid="add-boat"
+            type="button"
+            onClick={addBoat}
+          >
+            Add boat
+          </button>
 
           {selectedBoatState ? (
             <div className="mt-5 grid gap-4">
