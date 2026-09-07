@@ -191,6 +191,9 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
     throw new Error('Expected editor SVG bounds');
   }
 
+  const beforeBlankTap = parseScenarioJson(
+    await page.getByTestId('editor-scenario-json').textContent(),
+  );
   await diagramSvg.click({
     position: {
       x: diagramSvgBox.width * 0.25,
@@ -201,14 +204,15 @@ test('edits scenario geometry across keyframes', async ({ page }) => {
   const tappedScenario = parseScenarioJson(
     await page.getByTestId('editor-scenario-json').textContent(),
   );
-  const tappedYellow = tappedScenario.keyframes[2].boatStates.find(
-    (state) => state.boatId === 'yellow',
+  expect(tappedScenario).toEqual(beforeBlankTap);
+  await expect(page.getByTestId('editor-diagram')).toHaveAttribute(
+    'data-selected-boat-id',
+    '',
   );
-
-  expect(tappedYellow?.position.x).toBeGreaterThan(1.5);
-  expect(tappedYellow?.position.x).toBeLessThan(2.5);
-  expect(tappedYellow?.position.y).toBeGreaterThan(5.5);
-  expect(tappedYellow?.position.y).toBeLessThan(6.5);
+  await page
+    .getByTestId('boat-picker')
+    .getByRole('button', { name: 'Gold', exact: true })
+    .click();
 
   await page.getByTestId('boat-x-input').fill('5.2');
   await page.getByTestId('boat-y-input').fill('3.4');

@@ -319,10 +319,13 @@ function resolveKeyframeId(scenario: Scenario, requestedId: string): string {
   );
 }
 
-function resolveBoatId(scenario: Scenario, requestedId: string): string {
+function resolveBoatId(scenario: Scenario, requestedId: unknown): string {
+  if (requestedId === '') return '';
+
   return (
-    scenario.boats.find((boat) => boat.id === requestedId)?.id ??
-    scenario.boats[0].id
+    scenario.boats.find(
+      (boat) => typeof requestedId === 'string' && boat.id === requestedId,
+    )?.id ?? scenario.boats[0].id
   );
 }
 
@@ -450,7 +453,7 @@ export function ScenarioEditorSpike({
   const activeKeyframeEventCount = scenario.observedEvents.filter(
     (event) => event.atKeyframe === activeKeyframe.id,
   ).length;
-  const canRemoveBoat = scenario.boats.length > 1;
+  const canRemoveBoat = Boolean(selectedBoat) && scenario.boats.length > 1;
   const selectedBoatEventCount = scenario.observedEvents.filter(
     (event) => event.boatId === selectedBoatId,
   ).length;
@@ -680,7 +683,7 @@ export function ScenarioEditorSpike({
             ),
           );
           setSelectedBoatId(
-            resolveBoatId(savedScenario, parsedDraft?.selectedBoatId ?? ''),
+            resolveBoatId(savedScenario, parsedDraft?.selectedBoatId),
           );
           setDraftConflict(true);
           return;
@@ -725,7 +728,7 @@ export function ScenarioEditorSpike({
             ),
           );
           setSelectedBoatId(
-            resolveBoatId(savedScenario, parsedDraft?.selectedBoatId ?? ''),
+            resolveBoatId(savedScenario, parsedDraft?.selectedBoatId),
           );
         }
       } catch {
@@ -967,8 +970,14 @@ export function ScenarioEditorSpike({
     event: React.PointerEvent<SVGSVGElement>,
   ) {
     wheelRemainderPixelsRef.current = 0;
-    if (event.isPrimary === false || editorDragRef.current) return;
-    setBoatPositionFromPointer(event);
+    if (
+      event.isPrimary === false ||
+      event.button !== 0 ||
+      editorDragRef.current
+    )
+      return;
+
+    setSelectedBoatId('');
   }
 
   function setMarkPositionFromPointer(
@@ -1018,6 +1027,7 @@ export function ScenarioEditorSpike({
     wheelRemainderPixelsRef.current = 0;
     if (event.isPrimary === false || editorDragRef.current) return;
 
+    setSelectedBoatId('');
     event.currentTarget.setPointerCapture(event.pointerId);
     editorDragRef.current = {
       targetId: markId,
@@ -1480,14 +1490,17 @@ export function ScenarioEditorSpike({
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-base font-semibold">{activeKeyframe.label}</h2>
           <p className="text-sm text-muted-foreground">
-            {selectedBoat?.label ?? selectedBoatId} selected
+            {selectedBoat
+              ? `${selectedBoat.label} selected`
+              : 'No boat selected'}
           </p>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Drag a boat or mark to reposition it, or use the selected boat&apos;s
-          round handle to rotate it. Use the fields for precise keyboard input.
-          On desktop, hold Left Shift and scroll over the diagram to rotate the
-          selected boat.
+          Drag a boat or mark to reposition it. Tap or click a boat to select
+          it, or tap or click blank water to clear the selection. Use the
+          selected boat&apos;s round handle to rotate it and the fields for
+          precise keyboard input. On desktop, hold Left Shift and scroll over
+          the diagram to rotate the selected boat.
         </p>
 
         <div
@@ -2045,7 +2058,7 @@ export function ScenarioEditorSpike({
             Selected boat
           </p>
           <h2 id="boat-controls-heading" className="mt-2 text-xl font-semibold">
-            {selectedBoat?.label ?? selectedBoatId}
+            {selectedBoat?.label ?? 'No boat selected'}
           </h2>
 
           <div
@@ -2084,7 +2097,9 @@ export function ScenarioEditorSpike({
             </button>
             <button
               aria-describedby="remove-boat-description"
-              aria-label={`Remove ${selectedBoat?.label ?? selectedBoatId}`}
+              aria-label={
+                selectedBoat ? `Remove ${selectedBoat.label}` : 'Remove boat'
+              }
               className="inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-destructive px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-destructive"
               data-testid="remove-boat"
               disabled={!canRemoveBoat}
@@ -2099,11 +2114,13 @@ export function ScenarioEditorSpike({
             data-testid="remove-boat-description"
             id="remove-boat-description"
           >
-            {canRemoveBoat
-              ? selectedBoatEventCount > 0
-                ? `Removing this boat also removes ${selectedBoatEventCount} related ${selectedBoatEventCount === 1 ? 'event' : 'events'}.`
-                : 'This boat has no related events.'
-              : 'A scenario must keep at least one boat.'}
+            {!selectedBoat
+              ? 'Select a boat to edit or remove it.'
+              : canRemoveBoat
+                ? selectedBoatEventCount > 0
+                  ? `Removing this boat also removes ${selectedBoatEventCount} related ${selectedBoatEventCount === 1 ? 'event' : 'events'}.`
+                  : 'This boat has no related events.'
+                : 'A scenario must keep at least one boat.'}
           </p>
 
           {selectedBoatState ? (
