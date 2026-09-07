@@ -41,8 +41,8 @@ Use:
   repository-scoped branches, commits, and normal pull-request evidence across
   successive issues while excluding destination changes, secrets, unrelated
   user files, and files outside the repository
-- a Sol High parent for hands-free orchestration, with explicit per-subagent
-  model and reasoning settings chosen from a conservative confidence ladder
+- role-based parent and subagent defaults defined only in the workflow's
+  [model profiles](../07-agent-git-workflow.md#model-profiles)
 - a sailor-facing deployed proof as part of the definition of done for every feature slice
 - domain-semantic browser assertions for scenario diagram changes, alongside visual inspection
 - proportional execution: routine changes stay with one agent; independent
@@ -89,14 +89,6 @@ Subagents can protect the parent context from noisy intermediate work, but each
 also consumes its own context and tool calls. Delegation is therefore justified
 by context isolation, parallel progress, or a confidently cheaper model rather
 than an assumption that spawning always reduces total usage.
-
-The session review found avoidable work in discarded optional feature scope,
-repeated status polls, duplicated instructions/evidence and routine agent
-handoffs. These observations justify reducing overhead, but do not establish an
-exact token-saving percentage. Safety, provenance, meaningful verification and
-merge authorization remain unchanged. Optional product behavior is removed or
-deferred before adding abstractions to manage its complexity; a large component
-alone does not justify an unrelated refactor.
 
 A GitHub Project is deferred until custom priority fields, dates, iterations,
 or cross-repository planning would repay its additional maintenance. Milestones

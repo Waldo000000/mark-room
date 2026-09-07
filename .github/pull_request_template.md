@@ -7,8 +7,8 @@ sailor-facing review path for a feature; workflow-only changes need no product U
 
 ## Verification
 
-<!-- Relevant checks and their results; focused phone/desktop images for visible
-UI changes. Name unverified behavior or material limitations, if any. -->
+<!-- Relevant checks and their results; visual evidence when required by
+docs/06-testing-strategy.md. Name unverified behavior or material limitations. -->
 
 ## Decisions
 

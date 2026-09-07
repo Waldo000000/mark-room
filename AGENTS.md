@@ -70,9 +70,9 @@ checks while developing, then required GitHub and Vercel checks on the exact
 pushed commit. Do not duplicate a full local CI suite without a concrete need.
 
 For changed diagrams, assert the affected geometry and sailing semantics, not
-just a nonblank render. Inspect phone and desktop layouts when visibly changed.
-Use focused screenshots of the changed surface plus a full-page layout check;
-not repeated giant JSON screenshots. Keep meaningful failure evidence.
+just a nonblank render. Follow the testing strategy's
+[visual evidence policy](docs/06-testing-strategy.md#visual-evidence) for scoped
+inspection and screenshots. Keep meaningful failure evidence.
 
 Diagnose a failing test before changing product code. In pointer tests, confirm
 the viewport, coordinate transform and actual hit target. Do not promote an

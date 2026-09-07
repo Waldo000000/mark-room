@@ -64,19 +64,33 @@ control, documentation edit or obvious local fix. Select the risk to review;
 one bounded pass normally suffices. Re-review only the changed risk or unresolved
 finding, not the entire implementation after each patch.
 
-Keep at most two subagents active concurrently. For an authorized Lucky run,
-retain the existing user-selected parent profile (`gpt-5.6-sol`, high, unless
-the user selected otherwise). The run cannot assume it can change its parent
-profile. When delegating, set model/effort explicitly:
+Keep at most two subagents active concurrently. Delegation may isolate context
+but does not guarantee lower total usage. Do not install new orchestration to
+avoid a small amount of routine work.
 
-- Sol Medium for bounded work requiring judgment.
-- Terra Medium for objectively specified scans, tests, docs or isolated edits.
-- Luna Low for mechanical work whose output is cheap to verify.
+### Model Profiles
 
-Use the lower tier only when the task and checks are clear; otherwise work
-locally or use Sol Medium. Delegation may isolate context but does not guarantee
-lower total usage. Do not change global app settings or install new orchestration
-to avoid a small amount of routine work.
+Define model names and reasoning defaults only in this table; other guidance
+should refer to roles. Explicit user selections take precedence. The preferred
+parent profile applies when starting a session; a running agent must not assume
+it can switch itself or change global app settings. Set model/effort explicitly
+when delegating, using only profiles available on the host.
+
+| Role | Model | Reasoning |
+| --- | --- | --- |
+| Preferred parent / difficult judgment | `gpt-6-astra` | low |
+| Bounded judgment subagent | `gpt-5.6-sol` | medium |
+| Objectively specified scans, tests, docs or isolated edits | `gpt-5.6-terra` | medium |
+| Mechanical work with cheap verification | `gpt-5.6-luna` | low |
+
+Use cheaper profiles only when scope and checks are clear; otherwise work
+locally or use the judgment role. Escalate reasoning only for an identified
+failure or unresolved risk. These are starting defaults, not proven quality or
+cost equivalents. As of 2026-09-07, the preferred parent's standard token rate
+is 2.5 times the bounded judgment profile's in the
+[Codex rate card](https://learn.chatgpt.com/docs/pricing). Lower reasoning may
+reduce output usage, but does not guarantee a cheaper task. Retain the bounded
+judgment profile until representative work supports replacing it.
 
 Read each owner once per session and use narrow excerpts thereafter. Start a
 fresh session per PR when the user is managing sessions. In a continuing
@@ -147,9 +161,9 @@ when formatting warrants it.
 
 A PR needs its closing issue, concrete result, relevant verification, and any
 material limitations. Include source/provenance notes for corpus work and docs
-changed when relevant. For visible UI changes, inspect phone/desktop full-page
-layout and attach focused evidence that is readable without a huge JSON dump.
-Do not create screenshots for text-only workflow changes.
+changed when relevant. Choose visual inspection and PR images using the
+[testing strategy](06-testing-strategy.md#visual-evidence); UI work does not
+automatically require full-page screenshots.
 
 Human approval is required outside an active explicitly authorized Lucky run.
 Required GitHub/Vercel checks and provenance/domain safeguards are never waived
