@@ -1,356 +1,175 @@
 # Agent Git Workflow
 
-## Source Of Truth
+## Source Of Truth And Scope
 
-GitHub is the permanent project memory. ChatGPT and Codex conversations are temporary working spaces.
+GitHub owns live delivery state: issues and milestones describe planned work,
+`ready` marks defined slices, sub-issues/dependencies express blocking, and PRs
+and checks show work in progress. Git history owns what shipped. Owner docs and
+ADRs hold durable decisions, not copied commit/PR lists or next-work ledgers.
 
-GitHub owns all live planning and delivery state:
+Start with open PR summaries, then unblocked `ready` issues in number order
+unless the user reprioritizes. Read only the selected issue and relevant docs.
+Continue existing work rather than opening a duplicate.
 
-- milestones preserve release scope and order
-- `roadmap` issues describe broad product outcomes
-- area labels such as `browse`, `quiz`, `editor`, and `derive` group enduring
-  product streams
-- `ready` issues are small, sufficiently defined slices suitable for one PR
-- sub-issues decompose roadmap outcomes
-- issue dependencies express blocking order
-- pull requests and checks show work in progress
-- Git history shows what shipped
+A roadmap's "likely capabilities" are possibilities, not blanket authorization
+to build every feature. Before refinement, identify a demonstrated user problem
+and the smallest current mechanism that solves it. Apply YAGNI to new state,
+persistence, history, management UI and abstractions. Routine implementation
+choices stay autonomous; optional new product scope needs evidence. Do not add
+`ready` merely because an agent has written acceptance criteria for its own idea.
 
-Do not maintain a Markdown roadmap, backlog status list, current commit, merged
-PR list, or next-work ledger. Durable product constraints and architecture still
-belong in owner docs and ADRs.
+Keep one coherent outcome per PR. Split independently useful outcomes, but do
+not fragment a small feature's necessary validation/reference cleanup into
+separate PRs merely to minimize line count. Internal workflow changes do not
+need an invented sailor-facing screen.
 
-## Selecting The Next Issue
+## Normal Delivery
 
-When resuming in a fresh session:
+1. Check conflicts and select the issue. Record the branch, outcome and any
+   material decision once in a short issue comment; do not repeat the body.
+2. Use a dedicated `codex/<issue>-short-name` branch or isolated worktree.
+   Parallel editors need disjoint ownership; preserve all unrelated changes.
+3. Implement the smallest complete slice. Follow the targeted local verification
+   ladder in [the testing strategy](06-testing-strategy.md).
+4. Push to the configured repository and open a focused PR closing the issue.
+   Its description owns the final outcome and verification evidence.
+5. Read the exact pushed commit's required checks. Prefer a bounded watch/wait
+   with change-only output and backoff to repeated model-driven status polls.
+   After a failure, read the failing step once and rerun only what diagnoses it.
+6. Merge only with the required approval, green exact-commit checks and no
+   unresolved blocker. Fetch updated main and leave the checkout clean.
 
-1. Inspect open pull requests and avoid duplicating active work.
-2. Query open `ready` issues and their milestones, dependencies, and linked
-   work.
-3. Choose the lowest-numbered unblocked `ready` issue unless the user changes
-   priority.
-4. Read only the owner docs and ADRs relevant to that issue.
-5. Restate one title-sized PR outcome, its sailor-facing review path, and its
-   verification needs before implementation.
+One scope/decision comment plus the PR is enough for a routine change. Add an
+issue comment when a material choice changes, a blocker needs a handoff, or an
+unattended run finishes the issue; link the PR's tests instead of duplicating
+its narrative. Optional PR sections may be omitted rather than filled with
+repeated "not applicable" text.
 
-If no `ready` issue is suitable, inspect `roadmap` issues in the earliest open
-milestone and propose a small sub-issue. Add `ready` only when its scope,
-dependencies, and sailor-facing done criteria are clear.
+A compact decision record is: **choice; evidence/trade-off; reversal cost;
+follow-up if any**. Do not repeat unchanged alternatives and reasoning at every
+checkpoint. GitHub remains sufficient for morning review.
 
-Use milestones for release scope rather than labels. Use area labels for
-product streams rather than priority. A GitHub Project is intentionally deferred
-until custom priority fields, dates, iterations, or a cross-repository view
-would justify its maintenance cost.
+## Delegation And Context
+
+Default to local work for a routine, contained change. Use a subagent only for
+an independent deliverable while the parent can make useful progress elsewhere.
+State its question, file ownership, expected output and verification boundary.
+Use minimal context; do not fork an entire overnight history for a small task.
+Do not have parent and agent independently repeat the same tests or exploration.
+
+An independent review is valuable for schemas/provenance, sailing geometry,
+persistence migrations, cross-gesture state, destructive operations or a
+substantial multi-file change. It is not mandatory for a simple label, small
+control, documentation edit or obvious local fix. Select the risk to review;
+one bounded pass normally suffices. Re-review only the changed risk or unresolved
+finding, not the entire implementation after each patch.
+
+Keep at most two subagents active concurrently. Delegation may isolate context
+but does not guarantee lower total usage. Do not install new orchestration to
+avoid a small amount of routine work.
+
+### Model Profiles
+
+Define model names and reasoning defaults only in this table; other guidance
+should refer to roles. Explicit user selections take precedence. The preferred
+parent profile applies when starting a session; a running agent must not assume
+it can switch itself or change global app settings. Set model/effort explicitly
+when delegating, using only profiles available on the host.
+
+| Role | Model | Reasoning |
+| --- | --- | --- |
+| Preferred parent / difficult judgment | `gpt-6-astra` | low |
+| Bounded judgment subagent | `gpt-5.6-sol` | medium |
+| Objectively specified scans, tests, docs or isolated edits | `gpt-5.6-terra` | medium |
+| Mechanical work with cheap verification | `gpt-5.6-luna` | low |
+
+Use cheaper profiles only when scope and checks are clear; otherwise work
+locally or use the judgment role. Escalate reasoning only for an identified
+failure or unresolved risk. These are starting defaults, not proven quality or
+cost equivalents. As of 2026-09-07, the preferred parent's standard token rate
+is 2.5 times the bounded judgment profile's in the
+[Codex rate card](https://learn.chatgpt.com/docs/pricing). Lower reasoning may
+reduce output usage, but does not guarantee a cheaper task. Retain the bounded
+judgment profile until representative work supports replacing it.
+
+Read each owner once per session and use narrow excerpts thereafter. Start a
+fresh session per PR when the user is managing sessions. In a continuing
+unattended run, keep handoff/context focused on the active issue and reusable
+constraints, not a cumulative retelling of every merged PR. Do not create new
+user-visible tasks or assume a session reset without user authorization.
 
 ## I'm Feeling Lucky Mode
 
-"I'm Feeling Lucky" mode is the explicit, hands-free version of this workflow.
-Use it only when the user asks Codex to progress through the GitHub Issues queue
-unattended, for example overnight.
-
-It optimizes for steady, reviewable progress rather than maximum throughput:
-
-- one issue at a time, not one issue total
-- one focused branch and pull request per issue
-- GitHub Issues as the durable delivery state and decision record
-- early refinement and splitting of work that is too large or unclear
-- low-conflict, independently verifiable slices
-- best-judgment decisions when evidence is sufficient and reversal remains
-  practical
-
-A run normally advances through multiple focused issues and pull requests.
-Completing one per-issue loop does not complete the run. After each merge,
-recheck usage, select the next safe issue from updated `main`, and repeat until
-a documented stop condition applies.
-
-It may merge its own pull requests after the required checks pass. It does not
-bypass branch protection, merge another agent's work, or turn a roadmap issue
-into code without first making its delivery scope clear.
-
-### Trigger And Single Question
-
-The user starts this mode by saying "I'm feeling lucky." Do not require a
-longer launch prompt or repeat the workflow back to the user.
-
-Before doing any work, ask exactly one question:
-
-```text
-At what percentage of your weekly Codex allowance should this run stop?
-```
-
-Treat the answer as the run's usage-stop percentage. For example, `50%` means
-stop when the account's reported weekly usage is at or above 50%; it does not
-mean spend an additional 50 percentage points. Treat a plain number such as
-`50` as a percentage.
-
-Do not ask further setup questions: use this workflow, the repository docs,
-GitHub Issues, and best judgment to proceed hands-free.
-
-The trigger is advance authorization for the run's normal GitHub delivery
-operations. For the duration of the multi-issue loop, Codex may push
-repository-scoped branches, commits, and ordinary pull-request evidence such as
-app screenshots to the Git remote already configured as `origin` when the run
-starts. That authorization applies to each successive issue and does not require
-confirmation before every push, pull-request update, or authorized merge.
-
-The authorization is destination- and content-bounded. It does not permit
-changing or adding a remote, pushing to a different repository, publishing
-credentials or secrets, uploading unrelated user files, or uploading files from
-outside the repository. Stop for explicit approval if the destination must
-change or a safeguard identifies specific sensitive content. Do not treat the
-repository's ordinary source code, generated app screenshots, or a normal push
-to its preconfigured origin as a blocker merely because the content originated
-in the local workspace.
-
-Usage reporting is not a real-time token meter, so a check may observe the
-threshold shortly after it is crossed. Recheck at the defined checkpoints and
-do not begin another costly step after reaching it.
-
-### Session Settings
-
-Before sending the trigger, start the parent task with `gpt-5.6-sol` at `high`
-reasoning. The parent owns issue selection, planning, product and domain
-decisions, integration, verification, pull requests, and merges. Do not assume
-the run can change its own parent model or reasoning effort after launch.
-
-Set the model and reasoning effort explicitly for every subagent; otherwise a
-subagent may inherit the parent's Sol High settings. Use this confidence ladder:
-
-- `gpt-5.6-sol` at `medium` for bounded implementation, debugging, or review
-  that still needs strong judgment
-- `gpt-5.6-terra` at `medium` for well-specified codebase scans, tests,
-  documentation, or isolated implementation with objective done criteria
-- `gpt-5.6-luna` at `low` only for mechanical, repetitive work whose output the
-  parent can verify cheaply
-
-Use a lower tier only when the parent can state the bounded task, write scope,
-expected output, and verification criteria with confidence. When uncertain,
-use Sol Medium or keep the work with the Sol High parent.
-
-Give every subagent one question or deliverable. When subagents edit, give them
-disjoint file boundaries. Use a read-only sandbox unless editing is necessary.
-Keep at most two subagents active concurrently.
-
-Delegation can keep raw exploration, logs, and intermediate work out of the
-parent thread and return a concise summary, reducing growth of the expensive
-parent context. It does not guarantee lower total token use: every subagent has
-its own context and tool calls. Delegate when context isolation, independent
-parallel progress, or a confidently lower model outweighs that overhead, not
-because spawning an agent is assumed to be cheaper.
-
-### Issue Selection
-
-Before taking work, inspect open pull requests, active worktrees or branches,
-and open issues. Then:
-
-1. Prefer the lowest-numbered unblocked `ready` issue.
-2. Prefer issues with a narrow ownership boundary and a clear sailor-facing
-   review path.
-3. Avoid work likely to collide with an active pull request, especially shared
-   schemas, global styles, dependencies, lockfiles, CI, and root documents.
-4. If no `ready` issue is suitable, inspect the earliest relevant `roadmap`
-   issue and refine it into one or more small sub-issues. Do not begin coding
-   the broad issue in the same step unless the resulting slice is plainly
-   independent and ready.
-
-If no safe issue exists, record why on the relevant issue and stop. Waiting is
-better than fabricating parallelism or creating a conflict for the next agent.
-Do not classify ordinary ambiguity as unsafe before applying Decision Authority.
-
-### Refining Larger Issues
-
-Treat an issue as too large when it has multiple independently reviewable
-outcomes, crosses several ownership boundaries, lacks sailor-facing done
-criteria, or cannot fit one title-sized pull request.
-
-Before coding a large or ambiguous issue:
-
-1. Comment with the inferred outcome, assumptions, likely files, smallest
-   sailor-facing proof, and verification needs.
-2. Create focused sub-issues for independently deliverable pieces, with clear
-   dependencies and `ready` only where the scope is sufficient.
-3. Link the sub-issues to the parent and select one unblocked child.
-4. Apply Decision Authority to any priority, product, architecture, or
-   source-authority choice revealed by the split. Prefer a documented,
-   reversible decision that keeps work moving.
-
-The issue and its sub-issues, rather than a repository status document, are the
-durable record of the plan.
-
-### Decision Authority
-
-Make the best available decision without waiting for a human when the evidence
-is sufficient, the outcome stays within the selected issue, and reversal is
-practical. Record material choices with the decision record below so they are
-easy to inspect or reverse in the morning.
-
-Stop rather than guessing when a decision requires unavailable authoritative
-source material, credentials or external access, changes the release boundary,
-or would be expensive to reverse. A human is not a default approval gate for a
-safe, well-documented implementation choice.
-
-### Per-Issue Loop
-
-1. Recheck weekly usage. If it is at or above the user-selected usage-stop
-   percentage, or usage is unavailable, do not start the issue.
-2. Claim the selected issue in a comment with the branch name, intended
-   outcome, and conflict scan.
-3. Read its owner docs and ADRs. Restate the smallest PR outcome, sailor-facing
-   review path, concise implementation plan, delegation boundaries, and
-   verification plan in the issue before delegating or editing.
-4. Create an isolated branch or worktree. Delegate only bounded supporting work
-   that materially reduces uncertainty.
-5. Before spawning subagents or beginning another costly phase, recheck usage.
-   If the stop percentage has been reached, preserve and push a clear,
-   recoverable checkpoint, record the handoff on the issue, and stop.
-6. Implement the smallest complete slice. Run targeted checks while developing.
-7. Push the exact commit and open a pull request that closes the issue. Include
-   tests, screenshots for UI work, documentation, and provenance notes as the
-   normal workflow requires.
-8. When the exact pushed commit has all required checks green, no unresolved
-   blocking review or conflict, and a complete issue decision record, merge the
-   agent's own pull request using the repository's configured merge method.
-9. Post the closing decision log on the issue. Fetch the updated `main`, remove
-   or leave the completed worktree cleanly, return to issue selection, and
-   repeat this loop with the next safe issue from the new `main`.
-
-Never begin a second coding issue while the first has uncommitted work, an
-unexplained failure, or an unresolved decision.
-
-Never treat one completed issue, green pull request, or successful merge as the
-end of the overall run. Those events complete one loop iteration only.
-
-### Decision Record
-
-Use an issue comment for every material decision. Keep it short and reversible
-where possible:
-
-```text
-Codex decision log:
-- Decision: <what changed or was chosen>
-- Reasoning: <evidence and trade-off>
-- Alternatives not taken: <briefly>
-- Reversal cost: low | medium | high
-- Follow-up: <issue, PR, or none>
-```
-
-The final comment for an issue should link the pull request and state what was
-verified, what remains uncertain, and the next safe action. This is the
-morning-review list: the user can inspect GitHub Issues to see the choices made
-without reconstructing them from chat history.
-
-### Stop Conditions
-
-Completing an issue or merging a pull request is not a stop condition. Do not
-send the run's final response at that boundary; continue the per-issue loop
-unless one of the conditions below applies.
-
-Stop after recording a concise GitHub handoff when any of these applies:
-
-- reported weekly usage is at or above the percentage selected by the user at
-  the start of the run
-- usage cannot be inspected
-- no unblocked, low-conflict issue is available after attempting roadmap
-  refinement
-- credentials, unavailable authoritative source material, or an external
-  service is needed
-- the next decision would be unsafe or expensive to reverse
-- an active pull request or branch creates a material conflict
-- a pull request is failing and there is no safe, contained fix
-- branch protection or a required review prevents the agent's authorized merge
-
-Do not silently skip blocked issues. Record the blocker, its impact, and the
-next safe action on the issue or parent roadmap issue before stopping. If a
-stop occurs mid-issue, leave all useful work committed and pushed on its branch
-with a draft pull request when that makes the checkpoint easier to review.
-
-## Branching
-
-Use protected `main`.
-
-Every change should happen on a branch and enter `main` through a pull request.
-
-Suggested branch names:
-
-- `feature/<issue-number>-short-name`
-- `fix/<issue-number>-short-name`
-- `docs/<issue-number>-short-name`
-- `corpus/<issue-number>-short-name`
-- `spike/<issue-number>-short-name`
-
-## Worktrees
-
-Parallel agents should use one worktree per issue or PR.
-
-Each worktree should have:
-
-- one branch
-- one focused task
-- independent test runs
-- no unrelated refactors
-
-Avoid multiple agents editing the same shared files at the same time unless the work is coordinated.
-
-High-collision files:
-
-- `package.json`
-- lockfile
-- root docs
-- scenario schema files
-- global styles
-- CI workflows
-
-## Writing GitHub Markdown
-
-Send issue and PR bodies or comments with actual line breaks. Prefer a UTF-8
-body file with `gh ... --body-file <path>`, or a structured API payload. In
-PowerShell, a single-quoted here-string preserves Markdown backticks; do not
-build multiline bodies with literal backslash-n sequences or double-quoted
-strings that interpret Markdown as shell escapes.
-
-After writing, read the saved body back and check a rendered sample when
-formatting is significant. For historical repairs, inspect each match before
-editing: code examples may intentionally contain escape sequences. Preserve
-links, checklists, closing references, and decision meaning; do not blindly
-decode all escapes or delete historical context. Re-fetch before updating to
-avoid overwriting a concurrent edit.
-
-## PR Requirements
-
-A PR needs:
-
-- concise summary
-- `Closes #<issue>` for its linked issue
-- screenshots for UI
-- tests run
-- docs updated
-- corpus provenance notes when relevant
-- known limitations
-
-Substantive PRs should get a second agent review when practical.
-
-Human approval is required outside explicitly requested "I'm Feeling Lucky"
-mode. That mode may merge its own pull request after the required checks pass,
-the issue decision record is complete, and branch protection permits it.
-
-## Cleanup
-
-After merge:
-
-- delete the branch if no longer needed
-- remove stale worktrees
-- let the merged PR close its issue
-- create focused follow-up issues instead of recording work in Markdown
-- ensure durable decisions are captured in docs or ADRs
-
-## Agent Review Stance
-
-Reviews should prioritize:
-
-- correctness bugs
-- schema drift
-- missing validation
-- mobile usability regressions
-- test gaps
-- hidden reliance on conversation-only context
-- overcomplicated abstractions
+The explicit "I'm feeling lucky" request starts a hands-free multi-issue loop.
+Ask once: **At what percentage of your weekly Codex allowance should this run
+stop?** Use an already supplied answer. This is an absolute reported weekly-used
+percentage, not an additional allowance. No further routine setup questions.
+
+The trigger authorizes normal repository-scoped commits, pushes and PR evidence
+to the `origin` configured at launch throughout the run. It also authorizes
+merging only the run's own PRs after required exact-commit checks pass and the
+issue decision record is complete. It does not authorize a different destination,
+secrets, unrelated user files, bypassing protection or another agent's merge.
+
+### Loop
+
+1. Inspect usage before selecting an issue. Stop if it is unavailable or at the
+   user's threshold. Select confirmed, unblocked work from updated main.
+2. Apply the normal delivery process. If no ready issue fits, inspect the earliest
+   relevant roadmap and do one bounded refinement pass. Prefer confirmed needs
+   and correctness fixes; defer optional agent-proposed features with a reason.
+3. Check usage before delegation or another costly phase. If the threshold has
+   been reached, preserve a clear committed/pushed checkpoint, record the issue
+   handoff and stop. Usage reporting can lag; do not treat it as a real-time meter.
+4. After its own green PR merges, leave a brief issue completion comment linking
+   the PR and any new uncertainty. Fetch main, recheck usage and repeat.
+
+One issue at a time is sequencing, not a one-issue run limit. A merge alone is
+not a stop condition, but unused allowance is not a target to consume: do not
+invent scope to keep the loop going. Do not start a second coding issue with
+uncommitted work or an unresolved failure in the first.
+
+### Decision Authority And Stops
+
+Make contained, reversible implementation decisions from available evidence and
+record material trade-offs. Do not default to asking the user for permission
+for routine choices. During unattended work, defer an optional requirement
+whose value is unconfirmed instead of implementing an elaborate guess.
+
+Stop with a concise GitHub handoff when:
+
+- usage is unavailable or at/above the requested threshold;
+- no confirmed, unblocked, low-conflict work remains after bounded refinement;
+- a necessary decision needs unavailable authoritative sources, credentials,
+  external access, a release-boundary change or an expensive-to-reverse choice;
+- active work materially conflicts, a failure has no safe contained fix, or
+  branch protection/required review prevents the authorized merge.
+
+Name the blocker and next safe action. Mid-issue stops leave useful work committed
+and pushed, with a draft PR when useful. Never call incomplete work done merely
+to fit a budget. A stopped Lucky run does not silently resume on later discussion;
+follow the user's new request at its stated scope.
+
+## GitHub Text And Review Evidence
+
+Use descriptive `type(scope): outcome` titles from `AGENTS.md`. Send multiline
+GitHub text via UTF-8 body files (`gh ... --body-file`) or structured payloads.
+PowerShell single-quoted here-strings preserve Markdown backticks; avoid literal
+backslash-n paragraphs and shell-interpreted strings. Re-fetch before editing
+existing text to preserve concurrent changes; inspect a rendered sample only
+when formatting warrants it.
+
+A PR needs its closing issue, concrete result, relevant verification, and any
+material limitations. Include source/provenance notes for corpus work and docs
+changed when relevant. Choose visual inspection and PR images using the
+[testing strategy](06-testing-strategy.md#visual-evidence); UI work does not
+automatically require full-page screenshots.
+
+Human approval is required outside an active explicitly authorized Lucky run.
+Required GitHub/Vercel checks and provenance/domain safeguards are never waived
+for token savings. Keep reviews focused on correctness, source authority,
+validation, small-screen usability and unnecessary complexity.
+
+After merge, remove completed branches/worktrees only when safe, and use issues
+for follow-ups. Do not introduce a new status ledger or a GitHub Project until
+its extra management capability solves a demonstrated problem.

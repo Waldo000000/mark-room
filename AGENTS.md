@@ -1,216 +1,99 @@
 # Agent Instructions
 
-This repository is designed for parallel coding agents. Treat Git as the project memory and leave the repo clearer than you found it.
+Build the smallest useful MarkRoom change. GitHub owns delivery state; Git owns
+shipped code and durable decisions. Preserve user and other-agent work.
 
-## Prime Directives
+## Start Here
 
-- Read the relevant Markdown docs before making changes.
-- Do not rely on conversation-only context for durable decisions.
-- Preserve user-authored and other-agent changes unless explicitly asked to change them.
-- Keep changes scoped to the issue or task.
-- Prefer simple, inspectable code over clever abstraction.
-- Update docs, ADRs, schemas, examples, and tests when your change alters durable behavior.
-- Open a pull request for every change. Only an explicitly requested "I'm
-  Feeling Lucky" run may merge its own green pull requests into `main`.
+1. Read [vision](docs/00-vision.md) and
+   [product principles](docs/01-product-principles.md) once per session.
+2. Check open PRs before issues. Select the lowest-numbered unblocked `ready`
+   issue unless the user gives another priority. Fetch summaries first, then
+   only the selected issue's body and relevant owner docs.
+3. State one user-visible outcome and its verification path. Use a dedicated
+   branch/worktree and open a PR for every repository change.
+4. For delivery details and explicitly requested overnight runs, read
+   [the workflow](docs/07-agent-git-workflow.md). Outside an active, explicitly
+   requested "I'm Feeling Lucky" run, human approval is required to merge.
 
-## Product Principles
+## Spend Complexity Carefully
 
-- Correctness beats breadth and speed.
-- Authoritative source material beats generated confidence.
-- The user experience must be excellent on small touch screens.
-- Scenario data must be inspectable, diffable, testable, and provenance-aware.
-- AI may assist, but deterministic validated data should power Release 1.
+- Apply YAGNI: implement demonstrated needs, not everything a roadmap lists as
+  possible. "If needed" is not a requirement. Prefer removing an unnecessary
+  concept to making its implementation more elaborate.
+- Before adding a feature, identify the concrete user problem, the smallest
+  existing mechanism that solves it, and the new state/interaction burden.
+  Challenge optional persistence, history, management UI, abstractions and
+  configuration before implementation. A smaller implementation choice needs
+  no permission; a new product requirement needs evidence.
+- Do not mark agent-invented optional scope `ready` just to keep a run busy.
+  During unattended work, defer it with a brief reason and select confirmed
+  work; stop if none remains after bounded roadmap refinement.
+- Default to one agent for routine changes. Delegate only an independent,
+  bounded task that repays its setup and integration cost. A small control or
+  straightforward fix does not automatically need implementation plus review
+  agents. Risk-based review guidance lives in the workflow.
+- Read owner docs once; recover facts with narrow searches. Do not dump full
+  histories, all issue bodies, or whole logs. Pass agents file names, scope and
+  acceptance criteria instead of the entire conversation.
+- Keep one concise issue scope/decision record and one PR explanation. Link
+  existing evidence instead of copying it into multiple comments. Use a short
+  handoff at a real stop; do not maintain a repository delivery ledger.
+- Wait for CI through bounded watch/wait tools, with backoff and change-only
+  output. Do not repeatedly ask the model to interpret the same pending checks.
+  Progress updates should convey new information, subject to host requirements.
+- Do not claim precise token savings from elapsed time or account usage
+  percentages. Prefer observable evidence: removed work, smaller instruction
+  payloads, fewer duplicated checks, or fewer integration boundaries.
 
-## Before You Start
+## Product And Domain Invariants
 
-1. Read [docs/00-vision.md](docs/00-vision.md).
-2. Read [docs/01-product-principles.md](docs/01-product-principles.md).
-3. Check open pull requests and GitHub Issues to avoid duplicate work.
-4. Read the relevant architecture or workflow docs for your task.
-5. Create or use a dedicated branch/worktree for your task.
+- Correctness beats breadth. Official World Sailing material owns rules truth;
+  community examples are secondary. Never strengthen a source ruling silently.
+- Provenance and verification are separate. Do not call a transcription
+  canonical or human-verified without its required verification record.
+- Use TypeScript; keep domain logic independent of React where practical.
+  Initial corpus data stays validated and diffable in Git.
+- Do not add runtime databases, auth, payments, native apps or offline service
+  workers without an accepted ADR. AI calls belong behind a small service
+  boundary, not scattered through UI code.
+- Optimize for small touch screens. Feature slices need a minimal sailor-facing
+  review path; workflow-only changes do not need an artificial product UI.
+- All linear Scenario dimensions use hull lengths; every hull is one Scenario
+  unit long. Boat glyphs use rounded plan-view hulls, sails offset to leeward,
+  appropriate trim and wavy luffing sails, not generic navigation symbols.
 
-## Context Budget
+## Verification And Delivery
 
-- Read each authoritative owner document once at the start of a task. After
-  that, use `rg`, file lists, and narrow excerpts to recover specific facts.
-- Do not repeatedly dump whole files, long logs, or closed pull requests after
-  their relevant facts have been captured.
-- Prefer bounded command output when it preserves the evidence needed to act.
-  Do not spend time micro-optimizing output when the saving is speculative or
-  immaterial.
-- Optimize for a fresh ChatGPT or Codex session for each pull request. Put
-  durable state in Git instead of relying on conversation history.
+Follow [the testing strategy](docs/06-testing-strategy.md): targeted local
+checks while developing, then required GitHub and Vercel checks on the exact
+pushed commit. Do not duplicate a full local CI suite without a concrete need.
 
-## Resuming Work
+For changed diagrams, assert the affected geometry and sailing semantics, not
+just a nonblank render. Follow the testing strategy's
+[visual evidence policy](docs/06-testing-strategy.md#visual-evidence) for scoped
+inspection and screenshots. Keep meaningful failure evidence.
 
-GitHub owns live delivery state. Do not copy the current commit, merged pull
-request list, or next-work order into Markdown files.
+Diagnose a failing test before changing product code. In pointer tests, confirm
+the viewport, coordinate transform and actual hit target. Do not promote an
+unverified hypothesis into a product fix. State unavailable verification in the PR.
 
-When asked what to implement next in a fresh session:
+Use `type(scope): concise lowercase outcome` PR titles. Types: `feat`, `fix`,
+`docs`, `test`, `refactor`, `chore`. Scopes: `browse`, `quiz`, `editor`, `derive`,
+`model`, `corpus`, `render`, `ci`, `deploy`, `workflow`. Each PR closes its issue,
+explains the outcome and records relevant validation, limitations and sources.
+Do not omit required checks or approval to save tokens.
 
-1. Check open pull requests first. Continue or resolve relevant existing work
-   before opening a duplicate change.
-2. List open issues labelled `ready`. Select the lowest-numbered issue whose
-   documented dependencies are complete, unless the user gives another
-   priority.
-3. Read only the owner docs and ADRs relevant to that issue.
-4. Summarize the issue's outcome, sailor-facing review path, and one
-   title-sized pull-request scope before implementation.
-5. If no `ready` issue is suitable, use `roadmap` issues to propose the next
-   small issue.
+## Documentation Owners
 
-Pull requests should reference and close their issue. GitHub Issues own planned
-work and priority; pull requests and checks own work in progress; Git history
-owns what shipped.
+- ADRs: durable decisions and rationale; use [the template](docs/adr/0000-template.md)
+  for framework/dependency, schema, rendering, verification, deployment,
+  workflow, persistence/auth/offline changes. Amend the relevant ADR when apt.
+- [Scenario model](docs/04-scenario-model.md): vocabulary and schema.
+- [Corpus policy](docs/05-corpus-provenance-verification.md): provenance and verification.
+- [Testing](docs/06-testing-strategy.md): verification policy.
+- [Workflow](docs/07-agent-git-workflow.md): selection, delegation and delivery.
+- [Non-goals](docs/13-non-goals.md): deferred scope and product limitations.
 
-Use GitHub metadata consistently:
-
-- milestones preserve release scope and release order
-- `roadmap` marks broad outcomes that must be decomposed before implementation
-- `browse`, `quiz`, `editor`, `derive`, and other area labels group product
-  streams without implying delivery order
-- `ready` marks small, sufficiently defined issues suitable for one focused PR
-- sub-issues and dependencies express decomposition and blocking relationships
-
-See [docs/07-agent-git-workflow.md](docs/07-agent-git-workflow.md) for the full
-issue-selection and delivery workflow, including hands-free "I'm Feeling Lucky"
-mode when the user explicitly requests it.
-
-An explicitly requested "I'm Feeling Lucky" run is a multi-issue loop. "One
-issue at a time" describes sequencing, not a one-issue run limit. After each
-green pull request is merged, recheck usage and return to issue selection from
-updated `main`. Do not end the run merely because one issue or pull request is
-complete; continue until a stop condition in the workflow applies.
-
-Starting an "I'm Feeling Lucky" run also authorizes its normal repository
-delivery for the duration of the run. Push the run's repository-scoped branches,
-commits, and pull-request evidence to the Git remote already configured as
-`origin` when the run starts, across successive issues, without asking for
-confirmation before each push. This does not authorize changing the destination
-or uploading credentials, secrets, unrelated user files, or files outside the
-repository. A safeguard that identifies specific sensitive content remains a
-blocker; the ordinary configured-origin push is not one by itself.
-
-## Documentation Ownership
-
-- ADRs own durable decisions and their rationale.
-- [docs/04-scenario-model.md](docs/04-scenario-model.md) owns the current domain
-  vocabulary and model.
-- [docs/05-corpus-provenance-verification.md](docs/05-corpus-provenance-verification.md)
-  owns corpus provenance and verification policy.
-- [docs/06-testing-strategy.md](docs/06-testing-strategy.md) owns testing policy
-  and the verification ladder.
-- [docs/13-non-goals.md](docs/13-non-goals.md) owns deferred scope and initial
-  product limitations.
-
-Other docs should link to these owners instead of restating their content when
-practical. Update an owner document or create an ADR when its durable truth
-changes. Do not create a delivery-status ledger in the repository.
-
-## Development Expectations
-
-- Use TypeScript for app and domain code.
-- Keep domain logic independent of React where practical.
-- Store canonical corpus data as validated files in Git during the initial milestones.
-- Do not introduce a runtime database, authentication, payments, native apps, or offline service worker support unless an accepted ADR says to do so.
-- Do not scatter OpenAI API calls through UI code. Use a small internal AI service boundary.
-- Do not label a scenario as canonical or human-verified unless the required verification record exists.
-
-## Testing Expectations
-
-Every substantive PR should include appropriate verification:
-
-- unit tests for schema validation, geometry, findings, quiz scoring, and pure rules helpers
-- Playwright tests for mobile-first user flows and scenario viewer behavior
-- accessibility checks for core screens where possible
-- manual full-page visual inspection when visible layout changes
-- corpus validation for any data changes
-
-For scenario diagrams, verify domain semantics as well as pixels: rendered wind
-direction, headings, tack, positions, labels, and findings must agree with the
-validated scenario record. A nonblank, responsive screenshot is not sufficient.
-Use browser assertions for machine-checkable geometry. When visible scenario
-layout changes, also inspect the result at phone and desktop sizes with sailing
-meaning in mind.
-
-All linear Scenario dimensions use hull lengths. Until an accepted ADR changes
-the limitation, all boats are the same size and every rendered hull is exactly
-one Scenario unit long.
-
-Boat glyphs must use the established plan-view sailing-diagram convention:
-rounded hull silhouette, sail visibly offset to leeward, trim appropriate to the
-depicted point of sail, and a curved/wavy sail when luffing. Do not substitute a
-generic triangle, diamond, or navigation arrow for a boat.
-
-Every feature slice must also expose the smallest honest sailor-facing path in
-the deployed app that lets a domain user assess whether the product is moving
-in the right direction. Developer-only tooling or internal plumbing does not
-satisfy the definition of done by itself.
-
-If a test cannot be run, say so in the PR with the reason.
-
-## Scenario And Corpus Rules
-
-- Official World Sailing material is the authoritative source for rules content.
-- Community examples and competitor apps are secondary references only.
-- Every scenario needs provenance.
-- Provenance and verification are separate.
-- An official source can still have an unverified MarkRoom transcription.
-- Preserve raw source references and extraction notes.
-- Never silently rewrite a source-derived ruling into a stronger claim than the source supports.
-
-## Pull Request Rules
-
-Each pull request should deliver one title-sized outcome. Exploratory work may
-range broadly, but restack it into small, self-contained pull requests before
-review. Treat a title containing "and" as a scope warning, not an absolute ban.
-
-Use descriptive Conventional Commit-style PR titles in the form
-`type(scope): outcome`:
-
-- Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`.
-- Product scopes: `browse`, `quiz`, `editor`, `derive`, `model`, `corpus`,
-  `render`, `ci`, `deploy`, `workflow`.
-- Use one delivered outcome, written as a concise lowercase imperative.
-- Keep the title understandable without an issue ID or reading the diff; avoid
-  vague outcomes such as `updates`, `cleanup`, or `more work`.
-
-Examples: `feat(browse): list validated training examples`,
-`fix(render): offset sails to leeward`,
-`test(derive): cover same-tack overlap`, and
-`docs(model): define training example vocabulary`.
-
-Follow the verification ladder in
-[docs/06-testing-strategy.md](docs/06-testing-strategy.md): run targeted local
-checks while developing, then use the required GitHub and Vercel checks on the
-exact pushed commit as the merge gate. Do not rerun an equivalent full local
-suite unless diagnosing a failure, handling a high-risk change, or covering
-visual or domain verification that remote checks cannot provide.
-
-PRs should include:
-
-- the GitHub issue they close
-- what changed
-- why it changed
-- screenshots or recordings for UI work
-- tests run
-- source/provenance notes for corpus changes
-- docs updated or a reason docs were not needed
-
-Outside explicitly requested "I'm Feeling Lucky" mode, human approval is
-required before merging to `main`. That mode may merge only its own pull request
-after all required checks pass and its issue decision record is complete.
-
-## ADR Rules
-
-Create or update an ADR when a task changes:
-
-- framework or major dependency choices
-- scenario or corpus schema
-- rendering approach
-- verification model
-- deployment model
-- agent workflow
-- persistence/auth/offline strategy
-
-Use [docs/adr/0000-template.md](docs/adr/0000-template.md).
+Update the owner when its durable truth changes; link to it elsewhere instead
+of repeating its policy. Do not load unrelated owners just because they exist.

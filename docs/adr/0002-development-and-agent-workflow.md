@@ -4,7 +4,7 @@ Status: Accepted
 
 Date: 2026-08-30
 
-Amended: 2026-09-02
+Amended: 2026-09-07
 
 ## Context
 
@@ -41,10 +41,19 @@ Use:
   repository-scoped branches, commits, and normal pull-request evidence across
   successive issues while excluding destination changes, secrets, unrelated
   user files, and files outside the repository
-- a Sol High parent for hands-free orchestration, with explicit per-subagent
-  model and reasoning settings chosen from a conservative confidence ladder
+- role-based parent and subagent defaults defined only in the workflow's
+  [model profiles](../07-agent-git-workflow.md#model-profiles)
 - a sailor-facing deployed proof as part of the definition of done for every feature slice
 - domain-semantic browser assertions for scenario diagram changes, alongside visual inspection
+- proportional execution: routine changes stay with one agent; independent
+  review is driven by risk, not by a fixed agent count per PR
+- YAGNI during issue refinement: roadmap possibilities do not become required
+  features merely because an agent can specify them; confirmed user value must
+  justify extra state, persistence, history or management UI
+- concise entry instructions that link to one workflow owner, one scope/decision
+  record per issue and a PR that owns verification evidence
+- bounded CI waits with backoff/change-only output instead of repeated model
+  interpretation of unchanged pending checks
 
 ## Consequences
 

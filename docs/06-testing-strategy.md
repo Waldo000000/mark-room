@@ -67,7 +67,7 @@ Each PR should run:
 - Playwright smoke tests
 - build
 
-UI PRs should include screenshots or recordings, especially for mobile viewports.
+Use the [visual evidence policy](#visual-evidence) for UI review artifacts.
 
 ## Verification Ladder
 
@@ -77,9 +77,39 @@ Vercel pull-request checks on the exact pushed commit are the merge gate.
 
 Do not rerun a full local suite that CI already covers on that exact commit
 unless diagnosing a failure, the change is high-risk, or visual or domain
-verification cannot be covered remotely. Manual full-page visual inspection is
-needed only when visible layout changed. Keep semantic Playwright and domain
+verification cannot be covered remotely. Keep semantic Playwright and domain
 checks whenever the affected behavior requires them.
+
+Scale local coverage to the change. Exercise the changed rule or interaction
+and the adjacent regression risk, using existing helpers and assertions rather
+than cloning whole flows. CI owns the broad suite; a parent and subagent should
+not each rerun it. Documentation-only workflow changes need project consistency,
+link/diff checks and the required remote gate, not local browser screenshots.
+
+When a pointer test fails, inspect the actual event target, screen-coordinate
+conversion and viewport stability before changing the product. Separate a test
+setup error from a real interaction defect; record a hypothesis as unconfirmed
+until evidence isolates it. A narrow reproduction should fail before the fix and
+pass afterward whenever practical.
+
+## Visual Evidence
+
+Use DOM, state, accessibility and geometry assertions for machine-checkable
+behavior. Inspect images when appearance matters: changed glyphs, layout,
+styling, overlap or a visual failure those assertions cannot explain. A UI code
+change alone does not require screenshots; say when assertions suffice.
+
+Capture the smallest readable control, diagram or viewport that answers the
+visual question. Inspect phone and desktop when the change affects both layouts;
+use full-page images only for page-wide layout risks. Preserve the semantic and
+responsive checks above even when fewer images are needed.
+
+Saving a test artifact does not require loading it into model context. Load
+only relevant images, at sufficient resolution to judge the change; avoid giant
+JSON panels and repeated views of unchanged pixels. Reuse passing evidence until
+a subsequent change affects it. Keep failure artifacts, inspecting only those
+needed to diagnose the failure. Attach the useful inspected evidence to the PR
+instead of creating another set solely for the description.
 
 ## Mobile Viewports
 
@@ -106,7 +136,7 @@ Every PR description should include:
 
 - tests run
 - known gaps
-- screenshots for UI
+- visual evidence when required by the policy above
 - corpus validation notes for data changes
 
 ## Sailor-Facing Definition Of Done
