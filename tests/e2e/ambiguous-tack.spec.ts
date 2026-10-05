@@ -40,7 +40,7 @@ test('chooses by-the-lee tack for one boat and position and persists sail semant
     'by-the-lee-boat.png',
     {
       maxDiffPixelRatio: 0.015,
-      style: '[data-testid="editor-boat-blue"] > text { visibility: hidden; }',
+      stylePath: 'tests/e2e/boat-glyph-screenshot.css',
     },
   );
   await page.getByTestId('keyframe-tab-position-2').click();

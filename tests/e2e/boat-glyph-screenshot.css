@@ -1,0 +1,4 @@
+/* Keep neighbouring label font metrics out of the scoped hull/sail image. */
+[data-testid='editor-boat-blue'] > text {
+  visibility: hidden;
+}
