@@ -17,4 +17,14 @@ describe('scenario geometry', () => {
     expect(formatCompassDirection(0)).toBe('north');
     expect(formatCompassDirection(225)).toBe('south-west');
   });
+
+  it('preserves explicit tack across the inclusive by-the-lee range for any wind direction', () => {
+    for (const wind of [0, 45, 195, 350]) {
+      for (const offset of [150, 160, 180, 200, 210]) {
+        expect(inferTackFromHeading(wind + offset, wind)).toBeNull();
+      }
+      expect(inferTackFromHeading(wind + 149.99, wind)).toBe('port');
+      expect(inferTackFromHeading(wind + 210.01, wind)).toBe('starboard');
+    }
+  });
 });

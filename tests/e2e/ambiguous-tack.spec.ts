@@ -8,10 +8,11 @@ async function scenario(page: Page): Promise<Scenario> {
   );
 }
 
-test('chooses downwind tack for one boat and position and persists sail semantics', async ({
+test('chooses by-the-lee tack for one boat and position and persists sail semantics', async ({
   page,
 }) => {
   await page.goto('/editor');
+  await page.getByTestId('heading-input').fill('200');
   const before = await scenario(page);
   const input = page.getByTestId('tack-input');
   await expect(input).toBeEnabled();
@@ -23,22 +24,22 @@ test('chooses downwind tack for one boat and position and persists sail semantic
   expect(after).toEqual(expected);
   await expect(page.getByTestId('heading-alignment-status')).toHaveAttribute(
     'data-alignment-enabled',
-    'true',
+    'false',
   );
   const glyph = page.getByTestId('editor-boat-blue').getByTestId('boat-glyph');
   await expect(glyph).toHaveAttribute('data-sail-side', 'starboard');
   await expect(glyph).toHaveAttribute('data-trim-degrees', '75');
   await expect(glyph).toHaveAttribute('data-luffing', 'false');
   await expect(glyph).toHaveAttribute('data-hull-length', '1');
-  await expect(page.getByTestId('heading-input')).toHaveValue('180');
+  await expect(page.getByTestId('heading-input')).toHaveValue('200');
   await expect(page.getByTestId('scenario-validation')).toHaveAttribute(
     'data-valid',
     'true',
   );
-  await page.screenshot({
-    path: test.info().outputPath('chosen-downwind-tack.png'),
-    fullPage: true,
-  });
+  await expect(page.getByTestId('editor-boat-blue')).toHaveScreenshot(
+    'by-the-lee-boat.png',
+    { maxDiffPixelRatio: 0.015 },
+  );
   await page.getByTestId('keyframe-tab-position-2').click();
   await expect(input).toHaveValue('starboard');
   await page.getByTestId('keyframe-tab-position-1').click();
@@ -95,4 +96,30 @@ test('keeps inference authoritative away from ambiguous headings as wind changes
     'data-valid',
     'true',
   );
+});
+
+test('preserves a chosen tack while crossing downwind and changes it only outside the supported range', async ({
+  page,
+}) => {
+  await page.goto('/editor');
+  const heading = page.getByTestId('heading-input');
+  const tack = page.getByTestId('tack-input');
+  await tack.selectOption('starboard');
+  for (const value of [150, 180, 210]) {
+    await heading.fill(String(value));
+    await expect(tack).toBeEnabled();
+    await expect(tack).toHaveValue('starboard');
+  }
+  await heading.fill('149');
+  await expect(tack).toBeDisabled();
+  await expect(tack).toHaveValue('port');
+  await heading.fill('211');
+  await expect(tack).toBeDisabled();
+  await expect(tack).toHaveValue('starboard');
+  await page.getByTestId('wind-direction-input').fill('30');
+  await expect(tack).toBeEnabled();
+  await tack.selectOption('port');
+  await page.getByTestId('wind-direction-input').fill('60');
+  await expect(tack).toHaveValue('port');
+  await expect(tack).toBeEnabled();
 });

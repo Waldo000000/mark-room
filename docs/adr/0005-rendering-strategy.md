@@ -62,8 +62,14 @@ the active keyframe. A gesture retains its initial pointer-to-heading offset
 so grabbing away from the handle center does not jump the heading. Pointer
 cancellation restores the starting boat state. The existing heading control
 remains the keyboard alternative, and both paths use the same tack inference
-while retaining explicit tack at head-to-wind and dead-downwind headings.
-At those two ambiguous headings the editor also exposes a port/starboard tack
+while retaining explicit tack at head-to-wind and within the supported
+by-the-lee range: an inclusive 30 degrees either side of directly downwind.
+This range follows the owner's correction in
+[#134](https://github.com/Waldo000000/mark-room/issues/134#issuecomment-5570372348).
+It is an app convention, not a limit specified by the RRS. The official
+[Leeward and Windward definition](https://media.sailing.org/sailing/wp-content/uploads/2025/07/29083752/2025-2028-RRS-with-Changes-and-Corrections.pdf#page=14)
+uses mainsail side when sailing by the lee or directly downwind.
+At these headings the editor exposes a port/starboard tack
 choice for the selected boat/keyframe. At other headings the control displays
 the inferred tack and is disabled. Choosing tack changes only the stored tack,
 not heading, position, or movement-alignment settings; sail presentation follows
