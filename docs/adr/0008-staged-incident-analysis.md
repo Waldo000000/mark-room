@@ -332,11 +332,28 @@ This is a bounded favorable result, not proof of universal sufficiency. Supplied
 legal room/applicability assessments do not demonstrate their derivation. The
 physical model lacks calibrated handling and causal response evidence; Scenario
 lacks incident durations. Changing software boundaries would not recover those
-inputs. The next useful product step is the live editor observation subset;
-the next reasoning question is acquisition of right of way (Rule 15) with explicit
-event history, before expanding physical claims. Hail-dependent reasoning still
+inputs. Use the tested observation subset in the live editor and challenge
+event-history dependencies before expanding physical claims. Hail-dependent reasoning still
 needs a separate source-backed challenge before broader architecture acceptance.
 Production schemas and ADR 0004 remain unchanged.
+
+### Acquired-right-of-way follow-on
+
+The bounded Case 93 overlap/luff episode also crosses a detached fact boundary.
+Prior clear-astern and current leeward-overlap relationships establish a
+Rule 12 to Rule 11 transition. Rule 15's initial duty depends on that transition
+and the cause-of-acquisition exception; Rule 16.1's course-change duty does not
+depend on knowing the earlier relationship. Missing history therefore leaves
+the former unresolved without erasing the latter. The initial entitlement is
+scoped to its period, not carried forward indefinitely.
+
+Ordered events suffice for those dependencies without incident seconds. They
+do not establish the length of the initial period or available response time:
+the case supplies those assessments, together with seamanlike room and
+entitlement. Withholding response evidence withholds the related breach
+conclusions. Breach and exoneration remain separate, and the rest of Case 93 is
+outside this episode. This supports the baseline recommendation without solving
+the physical/input gaps or accepting a universal fact schema.
 
 ## Alternatives Considered
 
