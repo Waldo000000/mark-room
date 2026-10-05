@@ -53,8 +53,11 @@ the wind comes from. A north wind is therefore `0`, while its flow arrow points
 south.
 
 Each boat state records tack explicitly because heading cannot resolve it when
-the boat is head to wind or running square. Away from those ambiguous headings,
-tack is validated against heading and wind direction.
+the boat is head to wind, running square or sailing by the lee. The app allows
+either tack within an inclusive 30 degrees either side of directly downwind,
+as well as exactly head to wind. This supported range is an app convention,
+not an RRS numerical cutoff. Outside it, tack is validated against heading and
+wind direction. Changing heading or wind within the range preserves stored tack.
 
 Sail side, trim, and luffing are deterministic presentation derived from tack,
 heading, and wind. The renderer puts the sail to leeward, luffs it within 15

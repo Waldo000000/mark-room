@@ -10,6 +10,16 @@ const cloneValidFixture = (): unknown =>
   structuredClone(validDevelopmentScenario);
 
 describe('scenarioSchema', () => {
+  it('accepts either explicit tack in the supported by-the-lee range', () => {
+    for (const heading of [150, 160, 200, 210]) {
+      for (const tack of ['port', 'starboard'] as const) {
+        const scenario = structuredClone(validDevelopmentScenario);
+        scenario.keyframes[0].boatStates[0].headingDegrees = heading;
+        scenario.keyframes[0].boatStates[0].tack = tack;
+        expect(scenarioSchema.safeParse(scenario).success).toBe(true);
+      }
+    }
+  });
   it('validates a development scenario', () => {
     const scenario: Scenario = scenarioSchema.parse(validDevelopmentScenario);
 

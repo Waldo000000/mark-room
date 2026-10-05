@@ -2271,7 +2271,7 @@ export function ScenarioEditorSpike({
               >
                 {canChooseTack
                   ? 'Heading alone does not determine tack here. Choose the tack for this position.'
-                  : 'Tack follows the heading and wind direction. Choose it directly when pointing into or directly away from the wind.'}
+                  : 'Tack follows the heading and wind direction. Choose it directly when head to wind or within 30° of directly downwind, including sailing by the lee.'}
               </p>
               <p
                 className="text-sm leading-6 text-muted-foreground"
