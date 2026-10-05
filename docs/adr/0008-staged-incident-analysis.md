@@ -1,4 +1,4 @@
-# ADR 0008: Test Situation as an inspectable incident analysis
+# ADR 0008: Test fact boundaries with inspectable incident analysis
 
 Status: Proposed
 
@@ -23,10 +23,16 @@ production schemas remain in force pending a separate acceptance decision.
 
 ## Decision
 
-Test an incident analyzer with explicit stages and dependencies. Treat
-**Situation as the inspectable account of its findings**, and Ruling as the
-supported conclusions selected from that account. Stop requiring the proposed
-analyzer to finish all Situation work before any rule reasoning can begin.
+Preserve **Situation as the relevant sailing facts** and Ruling as the rule
+conclusions. Give the broader explanation its own name: the **analysis report**.
+It shows facts, obligations, response evidence and conclusions with their
+dependencies. Inspectability does not require changing Situation's meaning.
+
+Test the strict Scenario-to-Situation-to-Ruling boundary first. Consider a
+rule-directed assessment alternative only when a demonstrated dependency makes
+the strict implementation awkward or misleading. Neither Case 147 nor the
+clearance prototype disproves a strict boundary. The experiment must establish
+which facts a supported ruling needs and whether Scenario can supply them.
 
 Scenario remains the authored description of the incident. An analysis also
 identifies the applicable rules context, the input revision, and any additional
@@ -44,10 +50,11 @@ settings or an override mechanism.
 | Breach assessment           | Does the evidence establish a particular breach?               | Separate supported, conditional or unresolved findings                   |
 | Exoneration and disposition | What follows from each established breach?                     | Exoneration and any supported consequence, with unresolved prerequisites |
 
-The stages are explanation categories. Their execution order follows the
-specific question's dependencies. A candidate manoeuvre can introduce another
-event and therefore require a different obligation assessment. Some
-applicability conditions can themselves depend on what was possible.
+The stages are explanation categories. Test their execution order against the
+specific question's dependencies. A candidate manoeuvre introducing another
+event and obligation is a possible dependency to investigate, not a result
+demonstrated by Case 147. Establish such dependencies in a simultaneous
+multi-boat example before using them to justify an architectural change.
 
 Represent these dependencies explicitly in the report. Begin with ordinary
 TypeScript functions and a hand-written analysis sequence for one incident
@@ -66,7 +73,7 @@ unbounded iteration.
    a specified response under a named model. It does not decide what a boat was
    entitled to, whether handling was seamanlike, or whether a breach is
    exonerated. The rule analysis owns those questions and their source basis.
-3. **Supported conclusions versus explanation.** The Situation view displays
+3. **Supported conclusions versus explanation.** The analysis report displays
    the recorded findings and their dependencies; it does not silently run new
    geometry queries. A conclusion links to its evidence instead of being
    independently recreated for the UI.
@@ -78,9 +85,14 @@ response trace when that is necessary to inspect the claim.
 
 ### Where the geometry goes
 
-The incident-analysis coordinator can access the Scenario and invoke physical
-assessment. A rule function consumes named findings or states a missing
-assessment requirement; it does not receive an unrestricted geometry callback.
+In the strict candidate, a producer derives scoped Situation facts; the rule
+evaluator consumes only those facts with no Scenario or geometry access.
+Compare the next alternative only if the worked examples establish a need.
+
+In the rule-directed candidate, an incident-analysis coordinator can access
+Scenario and invoke physical assessment. A rule function consumes named
+findings or states a missing assessment requirement; it does not receive an
+unrestricted geometry callback.
 
 For the experiment, one assessment requirement identifies the duty being
 examined, boats, interval, actual or hypothetical branch, response assumptions
@@ -89,10 +101,10 @@ returns evidence with that same scope. Rule interpretation remains outside the
 physical evaluator. Do not hide an entire ruling behind a method named
 `hasRoom`.
 
-This deliberately permits rule-directed analysis of an encounter. The old
-one-way boundary is under test; a broad Scenario API exposed to every rule is
-not the proposed replacement. Add only the assessment operation needed by the
-worked example, then challenge it with the next case.
+This alternative permits rule-directed analysis of an encounter. A broad
+Scenario API exposed to every rule is not the proposed replacement. If needed,
+add only the assessment operation justified by a worked example, then challenge
+it with the next case. Do not build both engines merely to fill a comparison.
 
 ### What a finding must preserve
 
@@ -167,7 +179,7 @@ participants and expand when an observation or duty identifies another relevant
 boat. The participant set and analysis horizon are explicit limits; absence of
 a boat from the input is not proof that it could not matter.
 
-### A complete source-backed path that challenges the model
+### A pairwise, time-dependent baseline
 
 [Case 147](https://media.sailing.org/sailing/wp-content/uploads/2025/07/31104846/WS-Case-Book-2025-2028-v2025-07.pdf#page=317)
 provides this chain:
@@ -190,7 +202,13 @@ This is a source-based reasoning fixture, not a geometric reconstruction or a
 new canonical corpus entry. The experiment must account for each step instead
 of recognizing a case identifier and returning a stored answer.
 
-The design consequence is substantial: evaluating only the keep-clear boat's
+This case supports pairwise reasoning through time; it does not show that
+independent pairs fail or that response assessment activates another duty.
+Use Case 114's linked obligations to investigate those harder questions.
+Pairwise rules may remain useful if their assessments preserve compatible
+actions and assumptions across the group.
+
+The narrower lesson is that evaluating only the keep-clear boat's
 options against a frozen future for the right-of-way boat is insufficient.
 Likewise, rejecting every branch containing a breach would lose a valid
 exoneration analysis. The report must retain breach and exoneration as separate
@@ -246,8 +264,12 @@ to match this proposal.
 
 Build one experimental, inspectable Rule 16.1 analysis report using explicit
 functions. Show source-fact and geometric-evidence entry paths separately. The
-smallest next product slice is a report for the luffing experiment, followed by
-an editor adapter after its claims and unresolved states are credible.
+smallest next product slice is a facts-to-rulings report for the pairwise
+baseline, followed by attempted geometric derivation of its required facts,
+the simultaneous multi-boat challenge, and a held-out mark-room example.
+Expose supported findings in the editor after their claims and unresolved
+states are credible. Keep architecture acceptance separate from experimental
+results; a recommendation does not authorize a production schema migration.
 
 Use the following challenges as acceptance gates, not an instruction to
 implement every rule family at once:
