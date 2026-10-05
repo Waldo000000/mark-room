@@ -32,13 +32,14 @@ sufficient for Rules 15/16 or mark-room.
 
 Results with `synthetic-luff-v1`:
 
-| Encounter                          | Certified joint response | Complete evaluations | Shared evaluations |
-| ---------------------------------- | ------------------------ | -------------------: | -----------------: |
-| Two boats, gradual luff            | Found                    |                    9 |                  2 |
-| Third boat close to windward       | None in tested set       |                   81 |                 81 |
-| Third boat farther to windward     | Found                    |                   81 |                 11 |
-| Two boats, abrupt luff             | None in tested set       |                    9 |                  9 |
-| Two boats, delayed response subset | None in tested set       |                    3 |                  3 |
+| Encounter                           | Certified joint response | Complete evaluations | Shared evaluations |
+| ----------------------------------- | ------------------------ | -------------------: | -----------------: |
+| Two boats, gradual luff             | Found                    |                    9 |                  2 |
+| Third boat close to windward        | None in tested set       |                   81 |                 81 |
+| Third boat farther to windward      | Found                    |                   81 |                 11 |
+| Two boats, abrupt luff              | None in tested set       |                    9 |                  9 |
+| Two boats, delayed response subset  | None in tested set       |                    3 |                  3 |
+| Three boats, incompatible responses | None in tested set       |                   81 |                 81 |
 
 Both implementations agree on the result and first witness. Agreement checks the
 boundary, not independent correctness: they intentionally share the evaluator.

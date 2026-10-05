@@ -44,6 +44,7 @@ describe('timed luffing boundary experiment', () => {
       'witness-found',
       'no-certified-candidate',
       'no-certified-candidate',
+      'no-certified-candidate',
     ]);
     expect(deriveFindings(CASES[1]).requiredPairs).toEqual([
       ['L', 'M'],

@@ -82,6 +82,17 @@ export const CASES: ExperimentCase[] = [
     luffRate: 15,
     minimumMiddleDelay: 1,
   },
+  {
+    id: 'three-incompatible',
+    title: 'Three boats: individually feasible, incompatible responses',
+    question:
+      'Does a response for every pair imply one response for the group?',
+    boats: ['L', 'M', 'W'],
+    middleGap: 0.7,
+    windwardGap: 0.46,
+    luffStart: 0.5,
+    luffRate: 15,
+  },
 ];
 
 export function responseOptions(): ResponseOption[] {
