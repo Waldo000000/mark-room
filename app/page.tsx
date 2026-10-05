@@ -53,6 +53,12 @@ export default function Home() {
           >
             Research prototype: compare luffing analyses
           </Link>
+          <Link
+            href="/experiments/reasoning"
+            className="flex min-h-11 items-center text-sm text-primary underline underline-offset-4"
+          >
+            Research prototype: inspect facts and rulings
+          </Link>
         </section>
       </section>
     </main>
