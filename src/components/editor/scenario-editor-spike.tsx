@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ScenarioFactsInspector } from './scenario-facts-inspector';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -1812,6 +1813,10 @@ export function ScenarioEditorSpike({
             ) : null}
           </svg>
         </div>
+        <ScenarioFactsInspector
+          scenario={scenario}
+          keyframeId={activeKeyframe.id}
+        />
       </section>
 
       <aside className="min-w-0 border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
