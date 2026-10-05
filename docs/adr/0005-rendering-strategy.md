@@ -49,6 +49,23 @@ selection, not interpolated motion. Direct position controls remain available.
 Viewer selection updates the position URL while preserving quiz/question state
 and page scroll, including when a direct position link is used.
 
+Editor and viewer also expose a read-only playback dialog. Opening it plays
+from the first position, with one second per keyframe interval; pause preserves
+the displayed instant, resume continues, and playback stops at the last frame.
+Replay starts from zero. Closing or pressing Escape cancels animation and
+returns to the unchanged recorded-position view. Native dialog isolation keeps
+editor gestures from modifying an interpolated pose. No speed, loop, or timing
+authoring controls are introduced.
+
+Playback linearly interpolates positions and uses the shortest wrapped heading
+arc, choosing clockwise for an exact 180-degree tie. Intermediate tack is
+inferred when heading and wind determine it, otherwise the preceding explicit
+tack is retained. Every integer-second endpoint uses the exact recorded boat
+states, matched by boat identity rather than array order. This is a presentation
+convention, not a claim about an actual tack/gybe route, available room, or
+physical response time. Observed events and rulings are not interpolated.
+One-second spacing does not add timestamps or change the Scenario schema.
+
 The editor exposes a connected rotation handle for the selected boat. Hull
 clicks/taps select a boat without moving it; blank-water clicks/taps clear
 selection without editing Scenario. Mark interaction also clears boat selection.
