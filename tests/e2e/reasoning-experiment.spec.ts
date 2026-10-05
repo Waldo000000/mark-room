@@ -1,5 +1,48 @@
 import { expect, test } from '@playwright/test';
 
+test('keeps current order fixed while mark-room history changes supported duties', async ({
+  page,
+}) => {
+  await page.goto('/experiments/reasoning');
+  await page.getByRole('link', { name: 'Held-out mark-room test' }).click();
+  const panel = page.getByRole('region', {
+    name: 'Mark-room history challenge',
+  });
+  await expect(panel.getByTestId('mark-room-findings')).toContainText(
+    'A must give B mark-room',
+  );
+  await expect(panel.getByTestId('mark-room-dependencies')).toContainText(
+    'A’s mark-room for B includes space for B to meet: give C mark-room.',
+  );
+  const select = panel.getByRole('combobox');
+  await select.selectOption('missing');
+  await expect(panel.getByTestId('mark-room-findings')).not.toContainText(
+    'must give',
+  );
+  await expect(panel.getByTestId('mark-room-findings')).toContainText(
+    'Entry relationship not supplied.',
+  );
+  await select.selectOption('reversed');
+  await expect(panel.getByTestId('mark-room-findings')).toContainText(
+    'B must give A mark-room',
+  );
+  await expect(panel).toContainText(
+    'current outside-to-inside order A / B / C',
+  );
+  await select.selectOption('exception');
+  await expect(panel.getByTestId('mark-room-findings')).not.toContainText(
+    'must give',
+  );
+  await expect(panel.getByTestId('mark-room-findings')).toContainText(
+    'outside this bounded branch',
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});
+
 test('inspects supplied assessments and missing/conflicting inference dependencies', async ({
   page,
 }) => {
@@ -41,7 +84,7 @@ test('inspects supplied assessments and missing/conflicting inference dependenci
     'Source-supplied assessment',
   );
   await page
-    .getByRole('combobox', { name: 'Evidence check' })
+    .getByRole('combobox', { name: 'Evidence check', exact: true })
     .selectOption('missing');
   await expect(exoneration.getByTestId('finding-status')).toHaveText(
     'Unresolved',
@@ -53,7 +96,7 @@ test('inspects supplied assessments and missing/conflicting inference dependenci
     'Supported by supplied premises',
   );
   await page
-    .getByRole('combobox', { name: 'Evidence check' })
+    .getByRole('combobox', { name: 'Evidence check', exact: true })
     .selectOption('conflict');
   await expect(page.getByRole('status')).toContainText(
     'conflicting supplied values',
@@ -62,7 +105,7 @@ test('inspects supplied assessments and missing/conflicting inference dependenci
     'Unresolved',
   );
   await page
-    .getByRole('combobox', { name: 'Evidence check' })
+    .getByRole('combobox', { name: 'Evidence check', exact: true })
     .selectOption('source');
   await expect(exoneration.getByTestId('finding-status')).toHaveText(
     'Supported by supplied premises',

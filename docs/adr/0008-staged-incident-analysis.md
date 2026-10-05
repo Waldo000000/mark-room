@@ -302,6 +302,42 @@ Scenario owner and roadmap #29, and deciding how existing Situation and Ruling
 records relate to the analysis. Do not migrate or rename those records merely
 to match this proposal.
 
+### Held-out mark-room result and recommendation
+
+The pre-mark-room contract is frozen at `8e6baf0`: pairwise episode premises,
+luff-specific group facts, duties/dependencies and physical findings with shared
+response IDs. It had no zone-entry history or mark-room duty kind. Case 114
+question 1 requires both additions; it does not require the consumer to access
+Scenario. The isolated `mark-room-history-v1` contract records each pair's
+outside/inside overlap when the first boat in that pair reached the zone.
+The existing duty dependency function then represents A's obligation to allow B
+space to meet B's obligation to C. Current order cannot replace entry history.
+
+The fixture separates source-stated relationships from applicability supplied
+by the official answer. Its Rule 18 gates expose that upstream legal assessment
+rather than claiming each exception was independently excluded from geometry.
+Missing history, uncertain entry order or an excluded applicability branch
+withholds this bounded conclusion. Other Rule 18 branches, compliance, room
+quantity, breach and penalty are not inferred. No geometric reconstruction or
+radio-sailing zone substitution is involved.
+
+**Recommendation:** retain the strict boundary as the working baseline and
+Situation as relevant sailing facts. Facts need episode/history scope, explicit
+evidence basis and unresolved prerequisites; they need not be a snapshot or a
+single universal list of booleans. Keep the broader analysis report separate.
+The tested consumers use ordinary functions over detached data. We have no
+demonstrated need for a broad geometry API or a second reasoning engine.
+
+This is a bounded favorable result, not proof of universal sufficiency. Supplied
+legal room/applicability assessments do not demonstrate their derivation. The
+physical model lacks calibrated handling and causal response evidence; Scenario
+lacks incident durations. Changing software boundaries would not recover those
+inputs. The next useful product step is the live editor observation subset;
+the next reasoning question is acquisition of right of way (Rule 15) with explicit
+event history, before expanding physical claims. Hail-dependent reasoning still
+needs a separate source-backed challenge before broader architecture acceptance.
+Production schemas and ADR 0004 remain unchanged.
+
 ## Alternatives Considered
 
 - **Enlarge a universal Situation packet first.** It could work for a bounded

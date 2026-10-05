@@ -4,8 +4,8 @@ export type GroupDuty = {
   id: string;
   from: string;
   to: string;
-  kind: 'keep-clear' | 'give-room';
-  rule: '11' | '16.1';
+  kind: 'keep-clear' | 'give-room' | 'give-mark-room';
+  rule: '11' | '16.1' | '18.2(a)(1)';
 };
 export type LuffingGroupFacts = {
   leewardToWindward: string[];
@@ -17,7 +17,9 @@ export type LuffingGroupFacts = {
 
 export function roomDependencies(duties: GroupDuty[]) {
   return duties
-    .filter((duty) => duty.kind === 'give-room')
+    .filter(
+      (duty) => duty.kind === 'give-room' || duty.kind === 'give-mark-room',
+    )
     .map((duty) => ({
       dutyId: duty.id,
       includes: duties
