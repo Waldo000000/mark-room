@@ -16,6 +16,11 @@ This applies to:
 Animation and RRS-language observations are derived from the model, not from
 rendered pixels.
 
+The isolated [reasoning-boundary experiment](adr/0007-reasoning-boundary-experiment.md)
+compares serialized findings with shared analysis for timed, three-boat luffing.
+Its synthetic motion model is not part of the production schema; its proposed
+decision does not supersede the accepted Scenario/Situation/Ruling boundary.
+
 ## Initial Implementation
 
 The provisional `0.1.0` Zod schema lives in

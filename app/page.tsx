@@ -47,6 +47,12 @@ export default function Home() {
               Open editor
             </Link>
           </nav>
+          <Link
+            href="/experiments/luffing"
+            className="mt-5 inline-flex min-h-11 items-center text-sm text-primary underline underline-offset-4"
+          >
+            Research prototype: compare luffing analyses
+          </Link>
         </section>
       </section>
     </main>
