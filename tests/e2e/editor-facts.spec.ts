@@ -33,6 +33,15 @@ test('recomputes live facts for real edits, positions, removal and import', asyn
   );
   await expect(inspector).not.toContainText('Blue:');
   const imported = syntheticScenario();
+  imported.observedEvents = [
+    {
+      id: 'recorded-hail',
+      type: 'hail',
+      atKeyframe: 'middle',
+      boatId: 's',
+      message: 'Room to tack',
+    },
+  ];
   await page
     .getByTestId('import-scenario-json-input')
     .fill(JSON.stringify(imported));
@@ -43,12 +52,20 @@ test('recomputes live facts for real edits, positions, removal and import', asyn
   await expect(inspector).toHaveAttribute('data-keyframe-id', 'before');
   await expect(pairs).toContainText('opposite tacks');
   await expect(inspector).not.toContainText('Yellow:');
+  await expect(inspector.getByTestId('observed-hails')).toHaveCount(0);
   await page.getByTestId('keyframe-tab-middle').click();
+  await expect(inspector.getByTestId('observed-hails')).toContainText(
+    'Room to tack',
+  );
+  await expect(inspector.getByTestId('observed-hails')).toContainText(
+    'Who heard the hail',
+  );
   await expect(inspector.getByTestId('displacement-rate-s')).toContainText(
     'no incident duration supplied',
   );
   await page.getByTestId('delete-keyframe').click();
   await expect(inspector).not.toHaveAttribute('data-keyframe-id', 'middle');
+  await expect(inspector.getByTestId('observed-hails')).toHaveCount(0);
   await expect(
     inspector.getByRole('region', { name: 'Unresolved analysis' }),
   ).toContainText('rulings have not been derived');

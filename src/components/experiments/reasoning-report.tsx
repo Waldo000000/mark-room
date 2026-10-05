@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { MarkRoomReport } from './mark-room-report';
 import { AcquisitionReport } from './acquisition-report';
+import { HailReport } from './hail-report';
 import { analyzeFacts } from '@/src/domain/reasoning-experiment/analyze';
 import { case147Facts } from '@/src/domain/reasoning-experiment/case147';
 import {
@@ -67,6 +68,7 @@ export function ReasoningReport() {
           <a href={`${RULES_URL}#page=35`}>Exoneration: Rule 43</a>
           <a href="#mark-room">Held-out mark-room test</a>
           <a href="#acquisition">Acquiring right of way</a>
+          <a href="#hails">Linked room-to-tack hails</a>
           <Link href="/experiments/luffing">Physical-clearance experiment</Link>
           <Link href="/experiments/scenario-facts">
             Which facts can geometry supply?
@@ -248,6 +250,7 @@ export function ReasoningReport() {
       </details>
       <MarkRoomReport />
       <AcquisitionReport />
+      <HailReport />
     </main>
   );
 }

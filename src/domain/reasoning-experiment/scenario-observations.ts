@@ -10,6 +10,7 @@ import {
 export type ScenarioObservations = {
   scenarioId: string;
   keyframeId: string;
+  hails: { id: string; boatId: string; message: string }[];
   boats: {
     id: string;
     label: string;
@@ -55,6 +56,11 @@ export function observeScenario(
   return {
     scenarioId: scenario.id,
     keyframeId,
+    hails: scenario.observedEvents.flatMap((event) =>
+      event.type === 'hail' && event.atKeyframe === keyframeId
+        ? [{ id: event.id, boatId: event.boatId, message: event.message }]
+        : [],
+    ),
     boats: frame.boatStates.map((boat) => ({
       id: boat.boatId,
       label: scenario.boats.find((item) => item.id === boat.boatId)!.label,
