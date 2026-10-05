@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 
 import {
   BoatGlyph,
+  BOAT_GLYPH_SCALE,
+  BOAT_HULL_PATH,
   deriveSailPresentation,
 } from '@/src/components/scenario/boat-glyph';
 import {
@@ -40,6 +42,7 @@ const DIAGRAM_FONT_SIZE = 0.24;
 const BOAT_LABEL_X_OFFSET = 0.66;
 const BOAT_LABEL_Y_OFFSET = 0.3;
 const EDITOR_DRAG_THRESHOLD_PIXELS = 4;
+const BOAT_HIT_PADDING = 0.08;
 const EDITOR_DRAFT_STORAGE_KEY = 'mark-room.editor.scenario-draft.v1';
 const DEFAULT_MARK_RADIUS = 0.18;
 const ROTATION_HANDLE_MIN_TARGET_RADIUS = 0.72;
@@ -396,6 +399,14 @@ export function ScenarioEditorSpike({
   const selectedBoatState = activeKeyframe.boatStates.find(
     (state) => state.boatId === selectedBoatId,
   );
+  // SVG paint order resolves overlapping hull targets in favour of selection.
+  // Do not reorder Scenario itself or enlarge the selected boat's hit region.
+  const boatStatesInPaintOrder = [
+    ...activeKeyframe.boatStates.filter(
+      (state) => state.boatId !== selectedBoatId,
+    ),
+    ...(selectedBoatState ? [selectedBoatState] : []),
+  ];
   const canChooseTack = selectedBoatState
     ? inferTackFromHeading(
         selectedBoatState.headingDegrees,
@@ -1649,7 +1660,7 @@ export function ScenarioEditorSpike({
               );
             })}
 
-            {activeKeyframe.boatStates.map((state) => {
+            {boatStatesInPaintOrder.map((state) => {
               const boat = scenario.boats.find(
                 (candidate) => candidate.id === state.boatId,
               );
@@ -1670,7 +1681,7 @@ export function ScenarioEditorSpike({
                   onPointerDown={(event) =>
                     beginBoatPointerInteraction(event, boat.id)
                   }
-                  pointerEvents="all"
+                  pointerEvents="none"
                 >
                   <g
                     transform={`translate(${state.position.x} ${screenY}) rotate(${state.headingDegrees})`}
@@ -1693,15 +1704,17 @@ export function ScenarioEditorSpike({
                         strokeWidth="0.045"
                       />
                     ) : null}
+                    <path
+                      d={BOAT_HULL_PATH}
+                      data-testid={`editor-boat-hit-target-${boat.id}`}
+                      fill="transparent"
+                      stroke="transparent"
+                      strokeWidth={(2 * BOAT_HIT_PADDING) / BOAT_GLYPH_SCALE}
+                      strokeLinejoin="round"
+                      pointerEvents="all"
+                      transform={`scale(${BOAT_GLYPH_SCALE})`}
+                    />
                   </g>
-                  <circle
-                    cx={state.position.x}
-                    cy={screenY}
-                    data-testid={`editor-boat-hit-target-${boat.id}`}
-                    fill="transparent"
-                    pointerEvents="all"
-                    r="0.72"
-                  />
                   <text
                     fill="#0f172a"
                     fontSize={DIAGRAM_FONT_SIZE}
