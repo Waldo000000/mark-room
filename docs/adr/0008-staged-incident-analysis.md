@@ -238,6 +238,23 @@ describe the temporal incident without becoming artificial prerequisites for
 every rule. The experiment supports the declared general-RRS context only;
 its agent transcription is not a human-verified corpus record.
 
+### Scenario evidence boundary
+
+`/experiments/scenario-facts` feeds the same consumer a bounded subset derived
+from an independently authored Scenario sketch. Tack comparisons and the
+designated boat's authored tack are snapshot premises. Center separation,
+endpoint heading differences and displacement are inspectable observations;
+none silently becomes a legal overlap, course-change or room claim. Explicit
+experimental interval durations change displacement/time, not the rule facts.
+No duration is taken from playback. Removing timing restores an unresolved
+rate, and changing the Scenario recomputes the observations directly.
+
+Even the applicability of Part 2 Section A is not established by geometric
+input alone. The review page can declare it as an experimental assumption,
+yielding a conditional snapshot duty. Room, entitlement, causation and the
+continuous course-change assessments remain unresolved. This is an input and
+assessment gap, not evidence against the strict software boundary.
+
 The live editor inspector can show useful observations and duties immediately,
 then explain exactly where the reasoning stops. On each edit it recomputes
 against that input revision. For the first slice, recompute the small analysis;
