@@ -35,6 +35,22 @@ export function ScenarioObservationView({
       {observations.pairs.length === 0 && (
         <p className="mt-3">Add a second boat to compare a pair.</p>
       )}
+      {observations.hails.length > 0 && (
+        <div className="mt-4" data-testid="observed-hails">
+          <h3 className="font-semibold">Recorded hails at this position</h3>
+          <ul className="mt-2 space-y-2">
+            {observations.hails.map((hail) => (
+              <li key={hail.id}>
+                {label(hail.boatId)}: “{hail.message}”
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Recorded input only. Who heard the hail, whether it met hailing
+            conditions and who must respond remain unestablished.
+          </p>
+        </div>
+      )}
       <h3 className="mt-4 font-semibold">Change from the previous keyframe</h3>
       {observations.changes.length === 0 ? (
         <p className="mt-2">There is no previous keyframe.</p>

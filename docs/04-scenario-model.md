@@ -95,8 +95,10 @@ keyframes, or treated as additional Situation/Ruling evidence. The
 The editor's expandable **Live Situation preview** recomputes the tested
 observation subset from the current draft and selected authored keyframe on
 every render. It shows authored tack/heading, pairwise tack and center separation,
-and endpoint changes from the preceding keyframe. Import, removal and position
-selection use that same current input. This read-only research preview is not a
+endpoint changes from the preceding keyframe, and hails recorded at the selected
+position. A hail record supplies its author and words, not who heard it or which
+response was possible. Import, removal and position selection use that same
+current input. This read-only research preview is not a
 serialized production Situation: geometry measurements remain observation
 evidence, and legal overlap, room, applicability and rulings remain unresolved.
 No incident duration is inferred from playback and no analysis is persisted.

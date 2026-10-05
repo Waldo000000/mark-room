@@ -8,6 +8,24 @@ import {
 import { syntheticScenario } from './synthetic-scenario';
 
 describe('bounded Scenario observations', () => {
+  it('reports only hails recorded at the selected position without inventing recipients', () => {
+    const scenario = syntheticScenario();
+    scenario.observedEvents = [
+      {
+        id: 'hail-1',
+        type: 'hail',
+        boatId: 's',
+        atKeyframe: 'middle',
+        message: 'Room to tack',
+      },
+    ];
+    expect(observeScenario(scenario, 'before').hails).toEqual([]);
+    expect(observeScenario(scenario, 'middle').hails).toEqual([
+      { id: 'hail-1', boatId: 's', message: 'Room to tack' },
+    ]);
+    scenario.observedEvents = [];
+    expect(observeScenario(scenario, 'middle').hails).toEqual([]);
+  });
   it('derives pair observations in hull lengths at the selected keyframe', () => {
     const observations = observeScenario(syntheticScenario(), 'middle');
     expect(observations.pairs[0]).toMatchObject({

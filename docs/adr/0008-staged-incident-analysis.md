@@ -333,8 +333,9 @@ legal room/applicability assessments do not demonstrate their derivation. The
 physical model lacks calibrated handling and causal response evidence; Scenario
 lacks incident durations. Changing software boundaries would not recover those
 inputs. Use the tested observation subset in the live editor and challenge
-event-history dependencies before expanding physical claims. Hail-dependent reasoning still
-needs a separate source-backed challenge before broader architecture acceptance.
+event-history dependencies before expanding physical claims. Further architecture
+acceptance needs evidence that the physical response assessments can be supplied
+credibly, not only that source-backed duties can be represented.
 Production schemas and ADR 0004 remain unchanged.
 
 ### Acquired-right-of-way follow-on
@@ -354,6 +355,20 @@ entitlement. Withholding response evidence withholds the related breach
 conclusions. Breach and exoneration remain separate, and the rest of Case 93 is
 outside this episode. This supports the baseline recommendation without solving
 the physical/input gaps or accepting a universal fact schema.
+
+### Hail-dependent challenge
+
+Case 113 adds non-geometric events and a conditional response dependency. The
+detached consumer preserves the non-adjacent boat's response duty and the
+middle boat's need to relay if W is not already responding. It does not convert
+the conditional source answer into an actual breach. Rule 20.2(b) response duties
+are not incorrectly gated on the hail complying with Rule 20.1.
+
+The source supplies hearing and response-feasibility facts. Scenario's existing
+hail record establishes only boat, words and authored position; the observation
+view exposes exactly that scope. Missing audibility cannot be repaired by giving
+rule code a geometry service. The tested fact boundary remains useful here,
+but a general evidence schema and full Rule 20 analysis are not established.
 
 ## Alternatives Considered
 
