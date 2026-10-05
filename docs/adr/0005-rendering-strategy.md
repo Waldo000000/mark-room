@@ -56,6 +56,14 @@ Boat and mark movement requires dragging or numeric field edits, so empty-water
 input cannot teleport a selected boat. An empty selection hides boat-specific
 controls until a boat is selected again; ADR 0006 owns draft persistence.
 
+Boat hit areas follow the rendered hull path with 0.08 hull lengths of padding.
+Sails, selection rings and labels do not extend those hit areas. The selected
+boat renders after other boats so its target wins only where their hit areas
+overlap; an exposed part of another boat still selects it. Pointer capture
+keeps the chosen boat for the entire drag. These smaller targets support close
+positioning with browser zoom; the boat picker remains a touch-sized alternative.
+This replaces the former 0.72-radius circular targets following #142.
+
 Hull
 gestures move the boat; handle gestures rotate around its stored position in
 the active keyframe. A gesture retains its initial pointer-to-heading offset
