@@ -36,7 +36,7 @@ test('chooses by-the-lee tack for one boat and position and persists sail semant
     'data-valid',
     'true',
   );
-  await expect(page.getByTestId('editor-boat-blue')).toHaveScreenshot(
+  await expect(glyph).toHaveScreenshot(
     'by-the-lee-boat.png',
     { maxDiffPixelRatio: 0.015 },
   );
