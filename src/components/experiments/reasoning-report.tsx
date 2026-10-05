@@ -64,6 +64,9 @@ export function ReasoningReport() {
           <a href={`${RULES_URL}#page=21`}>Rules 10 and 16.1</a>
           <a href={`${RULES_URL}#page=35`}>Exoneration: Rule 43</a>
           <Link href="/experiments/luffing">Physical-clearance experiment</Link>
+          <Link href="/experiments/scenario-facts">
+            Which facts can geometry supply?
+          </Link>
         </div>
       </header>
 
