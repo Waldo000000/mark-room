@@ -223,6 +223,21 @@ explanation.
 
 ## Consequences
 
+### Source-fact baseline
+
+`/experiments/reasoning` implements the bounded S/PB fact consumer for Rules
+10, 16.1 and 43. The consumer uses a detached JSON-compatible experimental
+packet, with no Scenario or geometry access. It separately reports breach,
+room compliance and exoneration. Withheld or contradictory premises leave
+dependent conclusions unresolved while preserving independent findings.
+
+The difficult room, entitlement and causal assessments remain explicitly
+source-supplied. Reproducing this answer demonstrates inference dependencies,
+not automatic derivation of those assessments. Additional context premises
+describe the temporal incident without becoming artificial prerequisites for
+every rule. The experiment supports the declared general-RRS context only;
+its agent transcription is not a human-verified corpus record.
+
 The live editor inspector can show useful observations and duties immediately,
 then explain exactly where the reasoning stops. On each edit it recomputes
 against that input revision. For the first slice, recompute the small analysis;
