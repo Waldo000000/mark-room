@@ -99,6 +99,11 @@ without foresight.
 
 ## Follow-Up
 
+[ADR 0008](0008-staged-incident-analysis.md) develops the proposed next
+experiment: Situation as an inspectable account of staged incident analysis,
+including obligations, response evidence, breach and exoneration. It remains
+proposed and does not replace the accepted production boundary.
+
 Before extending the production schema, define one source-backed Rule 16.1
 question and the facts that could justify its answer. Distinguish observed
 events, available responses, obligations, and conclusions. Require a complete
