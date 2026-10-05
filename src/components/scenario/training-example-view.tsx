@@ -17,6 +17,7 @@ import {
   selectRulingStatements,
 } from '@/src/components/scenario/ruling-presentation';
 import { ViewerKeyframeTimeline } from '@/src/components/scenario/viewer-keyframe-timeline';
+import { ScenarioPlayback } from '@/src/components/scenario/scenario-playback';
 import type { CorpusMetadata } from '@/src/domain/corpus/schema';
 import { deriveApplicableRuleQuestion } from '@/src/domain/quiz/applicable-rule';
 import { deriveKeepClearQuestion } from '@/src/domain/quiz/keep-clear';
@@ -152,6 +153,9 @@ export function TrainingExampleView({
               />
             ) : null}
 
+            <div className="mb-4">
+              <ScenarioPlayback scenario={scenario} />
+            </div>
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-base font-semibold">{keyframe.label}</h2>
               <p className="text-sm text-muted-foreground">

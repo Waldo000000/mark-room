@@ -84,6 +84,12 @@ Corpus records associate this model with separate metadata containing teaching
 text, source provenance, and verification status. Those fields describe the
 record and its stewardship, not the sailing scenario itself.
 
+The editor and viewer offer a separate illustrative playback preview. Keyframe
+index is mapped to seconds for that presentation only; Scenario still has no
+physical timestamps. Interpolated poses are never saved, validated as authored
+keyframes, or treated as additional Situation/Ruling evidence. The
+[rendering decision](adr/0005-rendering-strategy.md) owns interpolation behavior.
+
 ## Pipeline Models
 
 MarkRoom uses three bounded models:

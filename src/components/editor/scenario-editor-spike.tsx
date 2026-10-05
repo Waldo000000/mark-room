@@ -14,6 +14,7 @@ import {
   KeyframeTrackLines,
 } from '@/src/components/scenario/ghosted-keyframe-boats';
 import { KeyframeScrubber } from '@/src/components/scenario/keyframe-scrubber';
+import { ScenarioPlayback } from '@/src/components/scenario/scenario-playback';
 import {
   alignedHeadingForBoatMove,
   isHeadingAlignmentDisabled,
@@ -1457,6 +1458,7 @@ export function ScenarioEditorSpike({
               keyframes={scenario.keyframes}
               onSelect={setActiveKeyframeId}
             />
+            <ScenarioPlayback scenario={scenario} />
           </div>
           <label className="mt-4 grid gap-2 text-sm font-semibold">
             Keyframe label
