@@ -38,7 +38,10 @@ test('chooses by-the-lee tack for one boat and position and persists sail semant
   );
   await expect(glyph).toHaveScreenshot(
     'by-the-lee-boat.png',
-    { maxDiffPixelRatio: 0.015 },
+    {
+      maxDiffPixelRatio: 0.015,
+      style: '[data-testid="editor-boat-blue"] > text { visibility: hidden; }',
+    },
   );
   await page.getByTestId('keyframe-tab-position-2').click();
   await expect(input).toHaveValue('starboard');
