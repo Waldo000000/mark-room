@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { JointReasoningPanel } from './joint-reasoning-panel';
 import {
   BoatGlyph,
   BOAT_GLYPH_INTERNAL_HULL_LENGTH,
@@ -153,6 +154,10 @@ export function LuffingExperiment() {
           an inherent cost of a strict boundary.
         </p>
       </section>
+
+      {encounter.boats.length > 2 && (
+        <JointReasoningPanel packet={analysis.packet} />
+      )}
 
       <section
         aria-label="Inspect a response"

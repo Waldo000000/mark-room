@@ -255,6 +255,27 @@ yielding a conditional snapshot duty. Room, entitlement, causation and the
 continuous course-change assessments remain unresolved. This is an input and
 assessment gap, not evidence against the strict software boundary.
 
+### Simultaneous three-boat challenge
+
+The `three-incompatible` synthetic encounter retains the L/M motion and uses a
+0.46-hull-length windward gap. The existing finite model certifies 36 L/M,
+42 L/W and 3 M/W combinations, but zero joint combinations. L/M and M/W require
+disjoint M choices in this set. Moving W farther away leaves every L/M result
+unchanged and permits 14 joint combinations. These are physical-model results,
+not legal thresholds or a proof that no seamanlike response exists.
+
+The detached packet preserves the needed joint identity without arbitrary
+geometry access. The source-fact duty example separately derives the linked
+Rule 11/16.1 obligations in Case 114 question 2; the physical model does not
+establish those source premises or determine whether the obligations were met.
+The report exposes both chains rather than converting clearance into room.
+
+The strict implementation survives this challenge. No demonstrated need
+justifies adding a rule-directed engine. A same-prefix/different-future check
+also retains the retrospective limitation: complete-interval certificates are
+not evidence of an available decision policy. The next test changes the rule
+family and introduces zone-entry history before recommending broader adoption.
+
 The live editor inspector can show useful observations and duties immediately,
 then explain exactly where the reasoning stops. On each edit it recomputes
 against that input revision. For the first slice, recompute the small analysis;

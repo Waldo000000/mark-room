@@ -54,3 +54,30 @@ export function assessFindings(packet: FindingsPacket): Assessment {
     evaluatedCandidates: packet.candidates.length,
   };
 }
+
+export function assessCompatibility(packet: FindingsPacket) {
+  const pairs = packet.requiredPairs.map((boats) => {
+    const passing = packet.candidates.filter((candidate) =>
+      candidateWorks(candidate, [boats]),
+    );
+    return {
+      boats,
+      candidateCount: passing.length,
+      middleOptions: [
+        ...new Set(passing.map((candidate) => candidate.middleOption)),
+      ],
+    };
+  });
+  const joint = packet.candidates.filter((candidate) =>
+    candidateWorks(candidate, packet.requiredPairs),
+  );
+  return {
+    pairs,
+    eachPairHasCandidate:
+      pairs.length > 0 && pairs.every((pair) => pair.candidateCount > 0),
+    jointCandidateCount: joint.length,
+    jointWitnessId: joint[0]?.id ?? null,
+    selectionBasis: 'whole-interval-retrospective' as const,
+    causalAvailability: 'not-established' as const,
+  };
+}

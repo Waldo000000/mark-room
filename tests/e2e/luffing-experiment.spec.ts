@@ -1,4 +1,61 @@
 import { expect, test } from '@playwright/test';
+import {
+  CASES,
+  initialPosition,
+} from '../../src/domain/derivation-experiment/model';
+
+test('shows actual incompatible pairwise responses without claiming a sailing breach', async ({
+  page,
+}) => {
+  await page.goto('/experiments/luffing');
+  await page
+    .getByRole('combobox', { name: 'Encounter', exact: true })
+    .selectOption('three-incompatible');
+  await expect(page.getByTestId('compatibility-result')).toHaveText(
+    'Every pair has a candidate, but no joint candidate works.',
+  );
+  await expect(page.getByTestId('pair-candidate-counts')).toContainText(
+    'L / M: 36 combinations',
+  );
+  await expect(page.getByTestId('pair-candidate-counts')).toContainText(
+    'M / W: 3 combinations',
+  );
+  await expect(page.getByTestId('joint-candidate-count')).toHaveText('0');
+  const encounter = CASES.find((item) => item.id === 'three-incompatible')!;
+  const position = initialPosition(encounter, 'W');
+  await expect(page.getByTestId('experiment-boat-W')).toHaveAttribute(
+    'data-x',
+    String(position.x),
+  );
+  await expect(page.getByTestId('experiment-boat-W')).toHaveAttribute(
+    'data-y',
+    String(position.y),
+  );
+  await expect(page.getByTestId('experiment-boat-W')).toHaveAttribute(
+    'data-tack',
+    'starboard',
+  );
+  await page
+    .getByText('The separate legal dependency: Case 114, question 2', {
+      exact: true,
+    })
+    .click();
+  await expect(
+    page.getByTestId('group-duties').getByRole('listitem'),
+  ).toHaveCount(6);
+  await expect(
+    page.getByText('L’s room for M includes M’s room obligation to W.', {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole('combobox', { name: 'Encounter', exact: true })
+    .selectOption('three-open');
+  await expect(page.getByTestId('joint-candidate-count')).toHaveText('14');
+  await expect(page.getByTestId('compatibility-result')).toContainText(
+    'complete combination',
+  );
+});
 
 test('compares boundaries and inspects a timed three-boat response', async ({
   page,
